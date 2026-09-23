@@ -18,8 +18,17 @@ class InteractiveWhiteboard {
     this.currentColor = '#6d28d9'; // Default regal purple
     this.currentSize = 4;
     this.currentStroke = null;
+    this.currentStrokeId = null;
     this.lastPoint = null;
     this.lastMidPoint = null;
+
+    // Live stroke streaming buffer (stream points to peers at ~40 FPS)
+    this.liveChunkBuffer = [];
+    this.lastLiveChunkTime = 0;
+
+    // Remote active drawing streams from partner
+    this.remoteActiveStrokes = {};
+    this.handledRemoteStrokeIds = new Set();
 
     // Viewport dimensions in CSS pixels
     this.width = 0;
@@ -45,6 +54,48 @@ class InteractiveWhiteboard {
   /* --------------------------------------------------------------------------
      Canvas Sizing & High-DPI Resolution
      -------------------------------------------------------------------------- */
+  getWidth() {
+    if (this.width && this.width > 0) return this.width;
+    if (this.canvas) {
+      const rect = this.canvas.getBoundingClientRect();
+      if (rect.width > 0) {
+        this.width = rect.width;
+        this.height = rect.height;
+        return this.width;
+      }
+    }
+    if (this.viewport) {
+      const rect = this.viewport.getBoundingClientRect();
+      if (rect.width > 0) {
+        this.width = rect.width;
+        this.height = rect.height;
+        return this.width;
+      }
+    }
+    return window.innerWidth || 1200;
+  }
+
+  getHeight() {
+    if (this.height && this.height > 0) return this.height;
+    if (this.canvas) {
+      const rect = this.canvas.getBoundingClientRect();
+      if (rect.height > 0) {
+        this.width = rect.width;
+        this.height = rect.height;
+        return this.height;
+      }
+    }
+    if (this.viewport) {
+      const rect = this.viewport.getBoundingClientRect();
+      if (rect.height > 0) {
+        this.width = rect.width;
+        this.height = rect.height;
+        return this.height;
+      }
+    }
+    return Math.max((window.innerHeight || 800) - 130, 600);
+  }
+
   initCanvasSize() {
     if (!this.canvas || !this.viewport) return;
 
@@ -199,7 +250,20 @@ class InteractiveWhiteboard {
   initSyncHandlers() {
     if (!this.syncEngine) return;
 
-    // Incoming remote stroke from other participant/tab
+    // Real-Time Live Drawing Handlers (Updates simultaneously with cursor!)
+    this.syncEngine.onRemoteLiveStart = (data) => {
+      this.handleRemoteLiveStart(data);
+    };
+
+    this.syncEngine.onRemoteLiveChunk = (data) => {
+      this.handleRemoteLiveChunk(data);
+    };
+
+    this.syncEngine.onRemoteLiveEnd = (data) => {
+      this.handleRemoteLiveEnd(data);
+    };
+
+    // Completed remote stroke fallback
     this.syncEngine.onRemoteStroke = (strokeData) => {
       this.handleRemoteStroke(strokeData);
     };
@@ -280,15 +344,15 @@ class InteractiveWhiteboard {
      -------------------------------------------------------------------------- */
   getPointerPos(e) {
     const rect = this.canvas.getBoundingClientRect();
-    const w = rect.width || this.width || 1;
-    const h = rect.height || this.height || 1;
+    const w = rect.width || this.getWidth();
+    const h = rect.height || this.getHeight();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     return {
       x: x,
       y: y,
-      nx: x / w,
-      ny: y / h
+      nx: Math.round((x / w) * 10000) / 10000,
+      ny: Math.round((y / h) * 10000) / 10000
     };
   }
 
@@ -326,8 +390,10 @@ class InteractiveWhiteboard {
     } catch (err) {}
 
     const pos = this.getPointerPos(e);
+    this.currentStrokeId = 'stk_' + Math.random().toString(36).substring(2, 8);
 
     this.currentStroke = {
+      id: this.currentStrokeId,
       tool: this.currentTool,
       color: this.currentColor,
       size: this.currentSize,
@@ -350,8 +416,23 @@ class InteractiveWhiteboard {
     this.lastPoint = pos;
     this.lastMidPoint = pos;
 
+    // Reset live streaming buffer
+    this.liveChunkBuffer = [];
+    this.lastLiveChunkTime = Date.now();
+
+    // Stream LIVE START event to partner immediately!
     if (this.syncEngine) {
       this.syncEngine.sendCursor(pos.nx, pos.ny);
+      if (this.syncEngine.sendLiveStart) {
+        this.syncEngine.sendLiveStart({
+          strokeId: this.currentStrokeId,
+          slideIndex: this.activeSlideIndex,
+          tool: this.currentTool,
+          color: this.currentColor,
+          size: this.currentSize,
+          point: { nx: pos.nx, ny: pos.ny }
+        });
+      }
     }
   }
 
@@ -377,9 +458,10 @@ class InteractiveWhiteboard {
       // Distance filtering to eliminate zero-delta jitter
       const dx = pos.x - this.lastPoint.x;
       const dy = pos.y - this.lastPoint.y;
-      if (dx * dx + dy * dy < 0.6) continue;
+      if (dx * dx + dy * dy < 0.8) continue;
 
       this.currentStroke.points.push(pos);
+      this.liveChunkBuffer.push([pos.nx, pos.ny]);
 
       // Quadratic Bézier curve to midpoint for studio-smooth curves
       const newMidPoint = {
@@ -399,6 +481,20 @@ class InteractiveWhiteboard {
     const lastPos = this.currentStroke.points[this.currentStroke.points.length - 1];
     if (lastPos && this.syncEngine) {
       this.syncEngine.sendCursor(lastPos.nx, lastPos.ny);
+
+      // Flush live chunk to partner every ~30ms or every 3+ points
+      const now = Date.now();
+      if (this.liveChunkBuffer.length >= 3 || (this.liveChunkBuffer.length > 0 && now - this.lastLiveChunkTime >= 25)) {
+        if (this.syncEngine.sendLiveChunk) {
+          this.syncEngine.sendLiveChunk({
+            strokeId: this.currentStrokeId,
+            slideIndex: this.activeSlideIndex,
+            pts: this.liveChunkBuffer
+          });
+        }
+        this.liveChunkBuffer = [];
+        this.lastLiveChunkTime = now;
+      }
     }
   }
 
@@ -423,24 +519,166 @@ class InteractiveWhiteboard {
         this.ctx.stroke();
       }
 
+      // Flush remaining buffered live points
+      if (this.liveChunkBuffer.length > 0 && this.syncEngine && this.syncEngine.sendLiveChunk) {
+        this.syncEngine.sendLiveChunk({
+          strokeId: this.currentStrokeId,
+          slideIndex: this.activeSlideIndex,
+          pts: this.liveChunkBuffer
+        });
+        this.liveChunkBuffer = [];
+      }
+
+      // Compact stroke points for fast network payload
+      const compactedPoints = this.currentStroke.points.map(p => ({
+        nx: p.nx,
+        ny: p.ny
+      }));
+
+      const finalStroke = {
+        id: this.currentStrokeId,
+        tool: this.currentStroke.tool,
+        color: this.currentStroke.color,
+        size: this.currentStroke.size,
+        points: compactedPoints
+      };
+
       const activeSlide = this.slides[this.activeSlideIndex];
       if (activeSlide) {
-        activeSlide.strokes.push(this.currentStroke);
+        activeSlide.strokes.push(finalStroke);
         activeSlide.redoStack = []; // Clear redo stack on new action
       }
 
-      // Broadcast completed stroke to all peers / tabs
+      // Broadcast completed stroke (both live end & full stroke fallback)
       if (this.syncEngine) {
+        if (this.syncEngine.sendLiveEnd) {
+          this.syncEngine.sendLiveEnd({
+            strokeId: this.currentStrokeId,
+            slideIndex: this.activeSlideIndex,
+            stroke: finalStroke
+          });
+        }
         this.syncEngine.sendStroke({
           slideIndex: this.activeSlideIndex,
-          stroke: this.currentStroke
+          stroke: finalStroke
         });
       }
     }
 
     this.currentStroke = null;
+    this.currentStrokeId = null;
     this.lastPoint = null;
     this.lastMidPoint = null;
+  }
+
+  /* --------------------------------------------------------------------------
+     Real-Time Remote Live Drawing (Simultaneous with Partner's Cursor!)
+     -------------------------------------------------------------------------- */
+  handleRemoteLiveStart(data) {
+    if (!data || !data.strokeId) return;
+    if (data.slideIndex !== this.activeSlideIndex) return;
+
+    const w = this.getWidth();
+    const h = this.getHeight();
+    const dpr = window.devicePixelRatio || 1;
+    this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const pt = {
+      x: data.point.nx * w,
+      y: data.point.ny * h,
+      nx: data.point.nx,
+      ny: data.point.ny
+    };
+
+    this.remoteActiveStrokes[data.strokeId] = {
+      id: data.strokeId,
+      tool: data.tool,
+      color: data.color,
+      size: data.size,
+      points: [pt],
+      lastPoint: pt,
+      lastMidPoint: pt
+    };
+
+    // Draw initial dot immediately under the cursor
+    this.applyToolStyles(data.tool, data.color, data.size);
+    const dotRadius = (data.tool === 'eraser' ? data.size * 2.5 : data.size) / 2;
+    this.ctx.beginPath();
+    this.ctx.arc(pt.x, pt.y, Math.max(dotRadius, 1), 0, Math.PI * 2);
+    if (data.tool === 'eraser') {
+      this.ctx.fill();
+    } else {
+      this.ctx.fillStyle = data.color || '#6d28d9';
+      this.ctx.fill();
+    }
+  }
+
+  handleRemoteLiveChunk(data) {
+    if (!data || !data.strokeId || !data.pts) return;
+    if (data.slideIndex !== this.activeSlideIndex) return;
+
+    let remote = this.remoteActiveStrokes[data.strokeId];
+    if (!remote) return;
+
+    const w = this.getWidth();
+    const h = this.getHeight();
+    const dpr = window.devicePixelRatio || 1;
+    this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    this.applyToolStyles(remote.tool, remote.color, remote.size);
+
+    for (const [nx, ny] of data.pts) {
+      const pos = { x: nx * w, y: ny * h, nx, ny };
+      remote.points.push(pos);
+
+      const newMidPoint = {
+        x: (remote.lastPoint.x + pos.x) / 2,
+        y: (remote.lastPoint.y + pos.y) / 2
+      };
+
+      this.ctx.beginPath();
+      this.ctx.moveTo(remote.lastMidPoint.x, remote.lastMidPoint.y);
+      this.ctx.quadraticCurveTo(remote.lastPoint.x, remote.lastPoint.y, newMidPoint.x, newMidPoint.y);
+      this.ctx.stroke();
+
+      remote.lastPoint = pos;
+      remote.lastMidPoint = newMidPoint;
+    }
+  }
+
+  handleRemoteLiveEnd(data) {
+    if (!data || !data.strokeId) return;
+    this.handledRemoteStrokeIds.add(data.strokeId);
+
+    const targetSlide = this.slides[data.slideIndex];
+    const remote = this.remoteActiveStrokes[data.strokeId];
+
+    if (remote && remote.points.length > 1 && data.slideIndex === this.activeSlideIndex) {
+      this.applyToolStyles(remote.tool, remote.color, remote.size);
+      this.ctx.beginPath();
+      this.ctx.moveTo(remote.lastMidPoint.x, remote.lastMidPoint.y);
+      this.ctx.lineTo(remote.lastPoint.x, remote.lastPoint.y);
+      this.ctx.stroke();
+    }
+
+    if (targetSlide) {
+      const finalStroke = data.stroke || (remote ? {
+        id: remote.id,
+        tool: remote.tool,
+        color: remote.color,
+        size: remote.size,
+        points: remote.points
+      } : null);
+
+      if (finalStroke) {
+        // Avoid duplicate insertion
+        if (!targetSlide.strokes.some(s => s.id === data.strokeId)) {
+          targetSlide.strokes.push(finalStroke);
+        }
+        targetSlide.redoStack = [];
+      }
+    }
+
+    delete this.remoteActiveStrokes[data.strokeId];
   }
 
   /* --------------------------------------------------------------------------
@@ -449,11 +687,17 @@ class InteractiveWhiteboard {
   renderStroke(stroke) {
     if (!stroke || !stroke.points || stroke.points.length === 0 || !this.ctx) return;
     const points = stroke.points;
+
+    const w = this.getWidth();
+    const h = this.getHeight();
+    const dpr = window.devicePixelRatio || 1;
+    this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
     this.applyToolStyles(stroke.tool, stroke.color, stroke.size);
 
     const getPt = (p) => ({
-      x: p.nx !== undefined ? p.nx * this.width : p.x,
-      y: p.ny !== undefined ? p.ny * this.height : p.y
+      x: p.nx !== undefined ? p.nx * w : (p.x || 0),
+      y: p.ny !== undefined ? p.ny * h : (p.y || 0)
     });
 
     if (points.length === 1) {
@@ -527,10 +771,18 @@ class InteractiveWhiteboard {
   }
 
   /* --------------------------------------------------------------------------
-     Remote Collaboration Handlers
+     Legacy Remote Collaboration Handlers
      -------------------------------------------------------------------------- */
   handleRemoteStroke(data) {
     if (!data || !data.stroke) return;
+    const strokeId = data.stroke.id;
+    if (strokeId && this.handledRemoteStrokeIds.has(strokeId)) {
+      return; // Already processed via live stream!
+    }
+    if (strokeId) {
+      this.handledRemoteStrokeIds.add(strokeId);
+    }
+
     const targetSlide = this.slides[data.slideIndex];
     if (targetSlide) {
       targetSlide.strokes.push(data.stroke);
@@ -558,8 +810,10 @@ class InteractiveWhiteboard {
       if (lbl) lbl.textContent = partnerName;
     }
 
-    const x = nx * (this.width || this.viewport.clientWidth);
-    const y = ny * (this.height || this.viewport.clientHeight);
+    const w = this.getWidth();
+    const h = this.getHeight();
+    const x = nx * w;
+    const y = ny * h;
     this.remoteCursorEl.style.transform = `translate(${x}px, ${y}px)`;
     this.remoteCursorEl.style.display = 'flex';
 

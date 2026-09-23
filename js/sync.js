@@ -344,6 +344,15 @@ class WorkspaceSyncEngine {
       case 'WB_STROKE':
         if (this.onRemoteStroke) this.onRemoteStroke(packet.payload);
         break;
+      case 'WB_LIVE_START':
+        if (this.onRemoteLiveStart) this.onRemoteLiveStart(packet.payload);
+        break;
+      case 'WB_LIVE_CHUNK':
+        if (this.onRemoteLiveChunk) this.onRemoteLiveChunk(packet.payload);
+        break;
+      case 'WB_LIVE_END':
+        if (this.onRemoteLiveEnd) this.onRemoteLiveEnd(packet.payload);
+        break;
       case 'WB_CLEAR':
         if (this.onRemoteClear) this.onRemoteClear(packet.payload);
         break;
@@ -388,10 +397,22 @@ class WorkspaceSyncEngine {
      -------------------------------------------------------------------------- */
   sendStroke(arg1, arg2) {
     if (arg1 && arg1.stroke !== undefined) {
-      this.broadcast('WB_STROKE', { stroke: arg1.stroke, slideIndex: arg1.slideIndex });
+      this.broadcast('WB_STROKE', { stroke: arg1.stroke, slideIndex: arg1.slideIndex }, 1);
     } else {
-      this.broadcast('WB_STROKE', { stroke: arg1, slideIndex: arg2 });
+      this.broadcast('WB_STROKE', { stroke: arg1, slideIndex: arg2 }, 1);
     }
+  }
+
+  sendLiveStart(payload) {
+    this.broadcast('WB_LIVE_START', payload, 0);
+  }
+
+  sendLiveChunk(payload) {
+    this.broadcast('WB_LIVE_CHUNK', payload, 0);
+  }
+
+  sendLiveEnd(payload) {
+    this.broadcast('WB_LIVE_END', payload, 1);
   }
 
   sendClear(slideId) {
