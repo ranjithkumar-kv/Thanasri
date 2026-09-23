@@ -288,32 +288,50 @@
   width: 100%;
   height: 100%;
   position: relative;
-  background: #ffffff;
-  cursor: crosshair;
+  background: var(--purple-50, #f8f6fc);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 14px;
+  box-sizing: border-box;
   user-select: none;
   -webkit-user-select: none;
-  touch-action: none;
+}
+
+/* 16:9 Universal Slide Frame (Identical aspect ratio & coordinates across all devices) */
+.whiteboard-slide-wrapper {
+  position: relative;
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 12px 35px rgba(91, 33, 182, 0.12), 0 2px 8px rgba(0, 0, 0, 0.05);
+  border: 1.5px solid var(--purple-200, #e9d5ff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  max-width: 100%;
+  max-height: 100%;
 }
 
 #whiteboard-canvas {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  touch-action: none;
   display: block;
+  touch-action: none;
+  background: #ffffff;
+  cursor: crosshair;
 }
 
 /* Cursor indicator for remote peer (Zoom-like) */
 .peer-cursor {
   position: absolute;
+  top: 0;
+  left: 0;
   pointer-events: none;
   z-index: 30;
-  display: flex;
+  display: none;
   align-items: center;
   gap: 4px;
-  transition: transform 0.08s linear;
+  transition: transform 0.04s linear;
 }
 
 .peer-cursor-pointer {
