@@ -122,7 +122,7 @@ class GamesHub {
 
   getXOSymbol(player) {
     if (this.xoSymbolTheme === 'classic') {
-      return player === 'X' ? '❌' : '⭕';
+      return player === 'X' ? 'X' : 'O';
     }
     return player === 'X' ? '💙' : '💜';
   }
@@ -140,7 +140,7 @@ class GamesHub {
     const labelEl = document.getElementById('xo-theme-label');
     if (iconEl && labelEl) {
       if (this.xoSymbolTheme === 'classic') {
-        iconEl.textContent = '❌⭕';
+        iconEl.innerHTML = '<span style="color:#ef4444;font-weight:900;">X</span><span style="color:#2563eb;font-weight:900;">O</span>';
         labelEl.textContent = 'Classic XO';
       } else {
         iconEl.textContent = '💙💜';
@@ -152,10 +152,10 @@ class GamesHub {
     const scoreLabelX = document.getElementById('xo-score-label-x');
     const scoreLabelO = document.getElementById('xo-score-label-o');
     if (scoreLabelX) {
-      scoreLabelX.textContent = this.xoSymbolTheme === 'classic' ? '❌ RK' : '💙 RK';
+      scoreLabelX.innerHTML = this.xoSymbolTheme === 'classic' ? '<span style="color:#ef4444;font-weight:900;">X</span> RK' : '💙 RK';
     }
     if (scoreLabelO) {
-      scoreLabelO.textContent = this.xoSymbolTheme === 'classic' ? '⭕ Thanu' : '💜 Thanu';
+      scoreLabelO.innerHTML = this.xoSymbolTheme === 'classic' ? '<span style="color:#2563eb;font-weight:900;">O</span> Thanu' : '💜 Thanu';
     }
 
     // Refresh existing moves on the board
@@ -164,9 +164,14 @@ class GamesHub {
         if (player) {
           const cell = document.querySelector(`.xo-cell[data-index="${idx}"]`);
           if (cell) {
-            const sym = this.getXOSymbol(player);
-            const markerClass = player === 'X' ? 'xo-marker-x' : 'xo-marker-o';
-            cell.innerHTML = `<span class="${markerClass}">${sym}</span>`;
+            if (this.xoSymbolTheme === 'classic') {
+              const markerClass = player === 'X' ? 'xo-classic-x' : 'xo-classic-o';
+              cell.innerHTML = `<span class="${markerClass}">${player}</span>`;
+            } else {
+              const sym = player === 'X' ? '💙' : '💜';
+              const markerClass = player === 'X' ? 'xo-marker-x' : 'xo-marker-o';
+              cell.innerHTML = `<span class="${markerClass}">${sym}</span>`;
+            }
           }
         }
       });
@@ -271,9 +276,14 @@ class GamesHub {
     const cell = document.querySelector(`.xo-cell[data-index="${index}"]`);
     if (cell) {
       cell.classList.add('taken');
-      const symbol = this.getXOSymbol(player);
-      const markerClass = player === 'X' ? 'xo-marker-x' : 'xo-marker-o';
-      cell.innerHTML = `<span class="${markerClass}">${symbol}</span>`;
+      if (this.xoSymbolTheme === 'classic') {
+        const markerClass = player === 'X' ? 'xo-classic-x' : 'xo-classic-o';
+        cell.innerHTML = `<span class="${markerClass}">${player}</span>`;
+      } else {
+        const symbol = player === 'X' ? '💙' : '💜';
+        const markerClass = player === 'X' ? 'xo-marker-x' : 'xo-marker-o';
+        cell.innerHTML = `<span class="${markerClass}">${symbol}</span>`;
+      }
     }
   }
 
@@ -349,24 +359,48 @@ class GamesHub {
     });
 
     const indicator = document.getElementById('xo-turn-indicator');
-    const xSym = this.getXOSymbol('X');
-    const oSym = this.getXOSymbol('O');
+    const isClassic = this.xoSymbolTheme === 'classic';
+    const xName = isClassic ? '<span style="color:#ef4444;font-weight:900;">X</span> RK' : 'RK 💙';
+    const oName = isClassic ? '<span style="color:#2563eb;font-weight:900;">O</span> Thanu' : 'Thanu 💜';
+
+    const winnerName = winData.winner === 'X' ? xName : oName;
+    const winnerPlain = winData.winner === 'X' ? (isClassic ? 'RK (X)' : 'RK 💙') : (isClassic ? 'Thanu (O)' : 'Thanu 💜');
 
     if (winData.winner === 'X') {
       this.scores.x++;
-      const name = this.xoMode === 'online' ? (window.workspaceSync?.userRole === 'thanu' ? `RK ${xSym}` : `You (RK ${xSym})`) : `RK ${xSym}`;
-      if (indicator) indicator.innerHTML = `🎉 <b style="color:#0284c7">${name} Wins!</b>`;
+      const name = this.xoMode === 'online' ? (window.workspaceSync?.userRole === 'thanu' ? winnerName : `You (${winnerName})`) : winnerName;
+      if (indicator) indicator.innerHTML = `🎉 <b>${name} Wins!</b>`;
     } else {
       this.scores.o++;
-      const name = this.xoMode === 'ai' ? `Bot ${oSym}` : (this.xoMode === 'online' ? (window.workspaceSync?.userRole === 'thanu' ? `You (Thanu ${oSym})` : `Thanu ${oSym}`) : `Thanu ${oSym}`);
-      if (indicator) indicator.innerHTML = `🎉 <b style="color:var(--purple-600)">${name} Wins!</b>`;
+      const botName = isClassic ? '<span style="color:#2563eb;font-weight:900;">O</span> Bot' : 'Bot 💜';
+      const name = this.xoMode === 'ai' ? botName : (this.xoMode === 'online' ? (window.workspaceSync?.userRole === 'thanu' ? `You (${winnerName})` : winnerName) : winnerName);
+      if (indicator) indicator.innerHTML = `🎉 <b>${name} Wins!</b>`;
     }
 
     this.updateXOScores();
 
-    // Confetti celebration
+    // 1. Victory Fanfare Sound Chime
+    this.playVictoryFanfare();
+
+    // 2. Multi-wave Confetti Cannons
     if (window.birthdayApp) {
-      window.birthdayApp.triggerBurstConfetti();
+      window.birthdayApp.triggerBurstConfetti(110);
+      setTimeout(() => window.birthdayApp && window.birthdayApp.triggerBurstConfetti(75), 250);
+      setTimeout(() => window.birthdayApp && window.birthdayApp.triggerBurstConfetti(85), 500);
+    }
+
+    // 3. Victory Celebration Banner Overlay
+    const banner = document.getElementById('xo-victory-banner');
+    const titleEl = document.getElementById('xo-vic-title');
+    const subEl = document.getElementById('xo-vic-sub');
+    if (banner && titleEl && subEl) {
+      titleEl.innerHTML = `🎉 ${winnerPlain} Won! 🏆`;
+      subEl.textContent = `Three in a row! Amazing match! ✨`;
+      banner.classList.add('active');
+      clearTimeout(this._vicBannerTimeout);
+      this._vicBannerTimeout = setTimeout(() => {
+        banner.classList.remove('active');
+      }, 4500);
     }
   }
 
@@ -382,8 +416,9 @@ class GamesHub {
     const indicator = document.getElementById('xo-turn-indicator');
     if (!indicator || !this.xoGameActive) return;
 
-    const xSym = this.getXOSymbol('X');
-    const oSym = this.getXOSymbol('O');
+    const isClassic = this.xoSymbolTheme === 'classic';
+    const xSym = isClassic ? '<span style="color:#ef4444;font-weight:900;">X</span>' : '💙';
+    const oSym = isClassic ? '<span style="color:#2563eb;font-weight:900;">O</span>' : '💜';
 
     if (this.xoMode === 'online') {
       const myPiece = this.getMyXOPiece();
@@ -392,8 +427,7 @@ class GamesHub {
       const partner = sync ? sync.getPartnerDisplayName() : 'Partner';
 
       if (isMyTurn) {
-        const mySym = this.getXOSymbol(myPiece);
-        const myName = myPiece === 'X' ? `RK ${mySym}` : `Thanu ${mySym}`;
+        const myName = myPiece === 'X' ? `${xSym} RK` : `${oSym} Thanu`;
         indicator.innerHTML = `✨ <b>Your Turn!</b> Play with ${myName}`;
         indicator.style.background = 'var(--purple-100)';
         indicator.style.color = 'var(--purple-900)';
@@ -408,7 +442,7 @@ class GamesHub {
       if (this.xoCurrentPlayer === 'X') {
         indicator.innerHTML = `${xSym} RK's Turn (Player 1)`;
       } else {
-        const opp = this.xoMode === 'ai' ? 'Bot thinking...' : `Thanu ${oSym}`;
+        const opp = this.xoMode === 'ai' ? 'Bot thinking...' : `${oSym} Thanu`;
         indicator.innerHTML = `${oSym} Thanu's Turn (${opp})`;
       }
     }
@@ -429,6 +463,10 @@ class GamesHub {
     this.xoCurrentPlayer = 'X';
     this.xoGameActive = true;
 
+    const banner = document.getElementById('xo-victory-banner');
+    if (banner) banner.classList.remove('active');
+    clearTimeout(this._vicBannerTimeout);
+
     const cells = document.querySelectorAll('.xo-cell');
     cells.forEach(cell => {
       cell.classList.remove('taken', 'winner-cell');
@@ -440,6 +478,44 @@ class GamesHub {
     if (broadcast && this.xoMode === 'online') {
       const sync = window.workspaceSync || window.wbSyncEngine;
       if (sync) sync.sendXOReset('X');
+    }
+  }
+
+  playVictoryFanfare() {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      if (ctx.state === 'suspended') ctx.resume();
+
+      const notes = [
+        { f: 523.25, d: 0.12 }, // C5
+        { f: 659.25, d: 0.12 }, // E5
+        { f: 783.99, d: 0.16 }, // G5
+        { f: 1046.50, d: 0.45 } // C6
+      ];
+
+      let now = ctx.currentTime + 0.05;
+      notes.forEach((n, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(n.f, now);
+
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(0.24, now + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + n.d);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(now);
+        osc.stop(now + n.d + 0.05);
+
+        now += (idx === 2 ? 0.18 : 0.12);
+      });
+    } catch (e) {
+      console.log('Fanfare audio note:', e);
     }
   }
 

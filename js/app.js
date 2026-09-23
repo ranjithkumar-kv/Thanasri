@@ -405,6 +405,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Birthday module
   window.birthdayApp = new BirthdayCelebration();
+  window.birthdayQuiz = new BirthdayQuiz();
 
   // Universal Two-Device Sync Engine
   window.workspaceSync = new WorkspaceSyncEngine();

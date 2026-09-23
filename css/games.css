@@ -239,9 +239,15 @@
 }
 
 .xo-cell.winner-cell {
-  background: linear-gradient(135deg, var(--purple-200), var(--purple-300));
-  border-color: var(--purple-600);
-  box-shadow: inset 0 0 12px rgba(109, 40, 217, 0.35);
+  background: linear-gradient(135deg, #fef08a, #fce7f3, #e0e7ff) !important;
+  border-color: #f59e0b !important;
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.6), inset 0 0 12px rgba(245, 158, 11, 0.4) !important;
+  animation: winCellGlow 1.2s infinite alternate ease-in-out;
+}
+
+@keyframes winCellGlow {
+  0% { box-shadow: 0 0 15px rgba(245, 158, 11, 0.5), inset 0 0 8px rgba(245, 158, 11, 0.2); }
+  100% { box-shadow: 0 0 28px rgba(236, 72, 153, 0.7), inset 0 0 16px rgba(168, 85, 247, 0.4); }
 }
 
 .xo-cell span {
@@ -255,15 +261,96 @@
   pointer-events: none;
 }
 
+/* Hearts Theme Markers */
 .xo-marker-x {
-  color: var(--purple-700);
+  color: #0284c7;
   font-weight: 900;
-  text-shadow: 0 2px 8px rgba(109, 40, 217, 0.3);
+  filter: drop-shadow(0 2px 8px rgba(2, 132, 199, 0.4));
 }
 
 .xo-marker-o {
   color: #a855f7;
   filter: drop-shadow(0 2px 8px rgba(168, 85, 247, 0.4));
+}
+
+/* Classic Theme Markers: X in Bold Red, O in Bold Blue */
+.xo-classic-x {
+  color: #ef4444 !important;
+  font-weight: 900 !important;
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 2.7rem !important;
+  line-height: 1;
+  text-shadow: 0 2px 10px rgba(239, 68, 68, 0.4);
+  user-select: none;
+}
+
+.xo-classic-o {
+  color: #2563eb !important;
+  font-weight: 900 !important;
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 2.7rem !important;
+  line-height: 1;
+  text-shadow: 0 2px 10px rgba(37, 99, 235, 0.4);
+  user-select: none;
+}
+
+/* Win Celebration Banner Overlay */
+.xo-victory-banner {
+  display: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.9);
+  background: rgba(30, 10, 60, 0.94);
+  border: 2px solid #facc15;
+  border-radius: var(--radius-2xl);
+  padding: 1.5rem 2rem;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 35px rgba(250, 204, 21, 0.6);
+  z-index: 50;
+  text-align: center;
+  backdrop-filter: blur(16px);
+  color: #ffffff;
+  animation: victoryPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  pointer-events: auto;
+  min-width: 270px;
+}
+
+@keyframes victoryPop {
+  0% { transform: translate(-50%, -50%) scale(0.7); opacity: 0; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+
+.xo-victory-banner.active {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.xo-vic-trophy {
+  font-size: 3.2rem;
+  animation: trophyFloat 1.2s infinite alternate ease-in-out;
+  line-height: 1;
+}
+
+@keyframes trophyFloat {
+  0% { transform: translateY(0) rotate(-4deg); }
+  100% { transform: translateY(-8px) rotate(4deg); }
+}
+
+.xo-vic-title {
+  font-size: 1.5rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, #fef08a, #f472b6, #c084fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+}
+
+.xo-vic-sub {
+  font-size: 0.9rem;
+  color: #e9d5ff;
+  margin-bottom: 0.5rem;
 }
 
 @media (max-width: 480px) {

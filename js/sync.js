@@ -465,6 +465,13 @@ class WorkspaceSyncEngine {
   }
 
   /* --------------------------------------------------------------------------
+     Module: Birthday Quiz Sync Helpers
+     -------------------------------------------------------------------------- */
+  sendQuizAnswers(answers) {
+    this.broadcast('BDAY_QUIZ_ANSWERS', { answers });
+  }
+
+  /* --------------------------------------------------------------------------
      Module 3: Word Bridge Game Sync Helpers
      -------------------------------------------------------------------------- */
   sendWordPair(startChar, endChar, pairKey) {

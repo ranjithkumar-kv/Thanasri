@@ -18,12 +18,12 @@
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 
   <!-- Application Stylesheets (80% Purple, 20% White Theme) -->
-  <link rel="stylesheet" href="css/main.css?v=11">
-  <link rel="stylesheet" href="css/birthday.css?v=11">
-  <link rel="stylesheet" href="css/whiteboard.css?v=11">
-  <link rel="stylesheet" href="css/games.css?v=11">
-  <link rel="stylesheet" href="css/japanese.css?v=11">
-  <link rel="stylesheet" href="css/saved-modules.css?v=11">
+  <link rel="stylesheet" href="css/main.css?v=12">
+  <link rel="stylesheet" href="css/birthday.css?v=12">
+  <link rel="stylesheet" href="css/whiteboard.css?v=12">
+  <link rel="stylesheet" href="css/games.css?v=12">
+  <link rel="stylesheet" href="css/japanese.css?v=12">
+  <link rel="stylesheet" href="css/saved-modules.css?v=12">
 </head>
 
 <body>
@@ -97,18 +97,133 @@
           everything you pursue. Enjoy every second of your day!.
         </p>
 
-        <div style="margin-top: 1rem;">
-          <button id="btn-welcome-workspace" class="btn-welcome-workspace"
-            onclick="if(window.app){window.app.enterWorkspace();}">
-            <span>Welcome to the Workspace</span>
-            <span class="arrow-icon">➔</span>
-          </button>
-        </div>
-
         <div class="surprise-presents">
           <div class="present-box">🎁 Sweet Note 1</div>
           <div class="present-box">🎁 Secret Wish 2</div>
           <div class="present-box">🎁 Special Blessing 3</div>
+        </div>
+
+        <!-- ================================================================
+             INTERACTIVE BIRTHDAY QUESTIONNAIRE FOR THANU
+             ================================================================ -->
+        <div class="birthday-quiz-container" id="birthday-quiz-container">
+          <div class="quiz-header-ribbon">
+            <span class="quiz-ribbon-icon">💌</span>
+            <span>A Special Birthday Quiz for Cuteuhhh</span>
+            <span class="quiz-ribbon-sparkle">✨</span>
+          </div>
+          <p class="quiz-desc">
+            Answer these 8 cute questions to unlock your personal workspace! 💜
+          </p>
+
+          <!-- Progress Bar & Counter -->
+          <div class="quiz-progress-wrapper">
+            <div class="quiz-progress-track">
+              <div class="quiz-progress-bar" id="quiz-progress-bar" style="width: 0%;"></div>
+            </div>
+            <div class="quiz-progress-info">
+              <span id="quiz-progress-count">0 of 8 answered</span>
+              <span id="quiz-progress-badge" class="quiz-progress-badge">In Progress ⏳</span>
+            </div>
+          </div>
+
+          <div class="quiz-questions-list">
+
+            <!-- Question 1: Hotspot Password -->
+            <div class="quiz-card-item" id="quiz-item-1" data-q="1">
+              <div class="quiz-q-num">Question 1</div>
+              <h3 class="quiz-q-title">1. What's your hotspot password? 📶</h3>
+              <div class="quiz-input-wrapper">
+                <input type="text" id="quiz-q1-input" class="quiz-text-input" placeholder="Type your hotspot password here... 😊" autocomplete="off">
+              </div>
+            </div>
+
+            <!-- Question 2: Mom or Dad -->
+            <div class="quiz-card-item" id="quiz-item-2" data-q="2">
+              <div class="quiz-q-num">Question 2</div>
+              <h3 class="quiz-q-title">2. Who do you love more—Mom or Dad? 👨‍👩‍👧</h3>
+              <div class="quiz-options-group">
+                <button type="button" class="quiz-choice-btn" data-q="2" data-val="Mom">👩 Mom 💖</button>
+                <button type="button" class="quiz-choice-btn" data-q="2" data-val="Dad">👨 Dad 💙</button>
+              </div>
+              <div id="quiz-q2-reaction" class="quiz-reaction-msg" style="display:none;"></div>
+            </div>
+
+            <!-- Question 3: Gill or Me -->
+            <div class="quiz-card-item" id="quiz-item-3" data-q="3">
+              <div class="quiz-q-num">Question 3</div>
+              <h3 class="quiz-q-title">3. Who do you like the most—Gill or Me? 🏏🙋‍♂️</h3>
+              <div class="quiz-options-group">
+                <button type="button" class="quiz-choice-btn" data-q="3" data-val="Gill">🏏 Gill</button>
+                <button type="button" class="quiz-choice-btn" data-q="3" data-val="Me">🙋‍♂️ Me (RK)</button>
+              </div>
+              <div id="quiz-q3-reaction" class="quiz-reaction-msg" style="display:none;"></div>
+            </div>
+
+            <!-- Question 4: One thing you like about me -->
+            <div class="quiz-card-item" id="quiz-item-4" data-q="4">
+              <div class="quiz-q-num">Question 4</div>
+              <h3 class="quiz-q-title">4. What is one thing you like about me? 😊</h3>
+              <div class="quiz-input-wrapper">
+                <textarea id="quiz-q4-input" class="quiz-textarea" rows="2" placeholder="Tell me what you like about me... 💜"></textarea>
+              </div>
+            </div>
+
+            <!-- Question 5: One thing you don't like about me -->
+            <div class="quiz-card-item" id="quiz-item-5" data-q="5">
+              <div class="quiz-q-num">Question 5</div>
+              <h3 class="quiz-q-title">5. What is one thing you don't like about me? 🙈</h3>
+              <div class="quiz-input-wrapper">
+                <textarea id="quiz-q5-input" class="quiz-textarea" rows="2" placeholder="Be 100% honest... What don't you like? 😉"></textarea>
+              </div>
+            </div>
+
+            <!-- Question 6: Most memorable moment -->
+            <div class="quiz-card-item" id="quiz-item-6" data-q="6">
+              <div class="quiz-q-num">Question 6</div>
+              <h3 class="quiz-q-title">6. What is the most memorable moment you've had with me? 💭</h3>
+              <div class="quiz-input-wrapper">
+                <textarea id="quiz-q6-input" class="quiz-textarea" rows="2" placeholder="Share our most memorable moment... ✨"></textarea>
+              </div>
+            </div>
+
+            <!-- Question 7: Younger brother or friend -->
+            <div class="quiz-card-item" id="quiz-item-7" data-q="7">
+              <div class="quiz-q-num">Question 7</div>
+              <h3 class="quiz-q-title">7. Who am I to you—a younger brother or a friend? 🤔</h3>
+              <div class="quiz-options-group">
+                <button type="button" class="quiz-choice-btn" id="quiz-q7-brother-btn" data-q="7" data-val="Younger Brother">👦 A Younger Brother</button>
+                <button type="button" class="quiz-choice-btn" id="quiz-q7-friend-btn" data-q="7" data-val="A Friend">👫 A Friend ✨</button>
+              </div>
+              <div id="quiz-q7-reaction" class="quiz-reaction-msg" style="display:none;"></div>
+            </div>
+
+            <!-- Question 8: Birthday pic with runaway 'No' button -->
+            <div class="quiz-card-item" id="quiz-item-8" data-q="8">
+              <div class="quiz-q-num">Question 8</div>
+              <h3 class="quiz-q-title">8. Will you send me your birthday pic? 📸✨</h3>
+              <div class="quiz-runaway-arena" id="quiz-runaway-arena">
+                <button type="button" class="quiz-choice-btn quiz-yes-btn" id="quiz-q8-yes-btn" data-q="8" data-val="Yes">📸 Yes, Of Course! 🥰</button>
+                <button type="button" class="quiz-choice-btn quiz-no-btn runaway-btn" id="quiz-q8-no-btn" data-q="8" data-val="No">🙅‍♀️ No</button>
+              </div>
+              <div id="quiz-q8-reaction" class="quiz-reaction-msg" style="display:none;"></div>
+            </div>
+
+          </div>
+
+          <!-- Unlock Workspace Completion Box -->
+          <div class="quiz-unlock-box" id="quiz-unlock-box">
+            <div class="quiz-unlock-status" id="quiz-unlock-status">
+              <span class="quiz-lock-icon" id="quiz-lock-icon">🔒</span>
+              <span id="quiz-unlock-msg">Answer all 8 questions above to unlock your workspace!</span>
+            </div>
+            <button id="btn-welcome-workspace" class="btn-welcome-workspace" style="display: none;"
+              onclick="if(window.app){window.app.enterWorkspace();}">
+              <span>🚀 Welcome to the Workspace</span>
+              <span class="arrow-icon">➔</span>
+            </button>
+          </div>
+
         </div>
       </div>
     </section>
@@ -450,6 +565,16 @@
                   <div class="xo-cell" data-index="6"></div>
                   <div class="xo-cell" data-index="7"></div>
                   <div class="xo-cell" data-index="8"></div>
+                </div>
+
+                <!-- Win Celebration Banner Overlay -->
+                <div id="xo-victory-banner" class="xo-victory-banner">
+                  <div class="xo-vic-trophy">🏆</div>
+                  <h3 id="xo-vic-title" class="xo-vic-title">🎉 WINNER! 🏆</h3>
+                  <p id="xo-vic-sub" class="xo-vic-sub">Magnificent round! ✨</p>
+                  <button id="xo-vic-btn" class="btn btn-primary btn-sm" onclick="if(window.gamesHub){window.gamesHub.resetXORound(true);}">
+                    🔄 Play Next Round
+                  </button>
                 </div>
 
               </div>
@@ -1063,16 +1188,16 @@
   <!-- Application Scripts -->
   <script src="js/vendor/mqtt.min.js"></script>
   <script src="https://unpkg.com/mqtt@5.3.5/dist/mqtt.min.js"></script>
-  <script src="js/sync.js?v=11"></script>
-  <script src="js/calculator.js?v=11"></script>
-  <script src="js/notepad.js?v=11"></script>
-  <script src="js/whiteboard.js?v=11"></script>
-  <script src="js/wordlist.js?v=11"></script>
-  <script src="js/games.js?v=11"></script>
-  <script src="js/japanese.js?v=11"></script>
-  <script src="js/savedModules.js?v=11"></script>
-  <script src="js/birthday.js?v=11"></script>
-  <script src="js/app.js?v=11"></script>
+  <script src="js/sync.js?v=12"></script>
+  <script src="js/calculator.js?v=12"></script>
+  <script src="js/notepad.js?v=12"></script>
+  <script src="js/whiteboard.js?v=12"></script>
+  <script src="js/wordlist.js?v=12"></script>
+  <script src="js/games.js?v=12"></script>
+  <script src="js/japanese.js?v=12"></script>
+  <script src="js/savedModules.js?v=12"></script>
+  <script src="js/birthday.js?v=12"></script>
+  <script src="js/app.js?v=12"></script>
 
 </body>
 
