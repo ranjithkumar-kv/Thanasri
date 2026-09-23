@@ -118,7 +118,7 @@ class WorkspaceSyncEngine {
 
     // Re-subscribe MQTT & reopen BroadcastChannel
     if (this.broadcastChannel) {
-      try { this.broadcastChannel.close(); } catch (e) {}
+      try { this.broadcastChannel.close(); } catch (e) { }
     }
     this.initBroadcastChannel();
 
@@ -286,7 +286,7 @@ class WorkspaceSyncEngine {
     if (this.broadcastChannel) {
       try {
         this.broadcastChannel.postMessage(packet);
-      } catch (e) {}
+      } catch (e) { }
     }
 
     // 2. Broadcast across internet via MQTT WebSockets

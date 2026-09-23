@@ -18,12 +18,12 @@
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 
   <!-- Application Stylesheets (80% Purple, 20% White Theme) -->
-  <link rel="stylesheet" href="css/main.css?v=13">
-  <link rel="stylesheet" href="css/birthday.css?v=13">
-  <link rel="stylesheet" href="css/whiteboard.css?v=13">
-  <link rel="stylesheet" href="css/games.css?v=13">
-  <link rel="stylesheet" href="css/japanese.css?v=13">
-  <link rel="stylesheet" href="css/saved-modules.css?v=13">
+  <link rel="stylesheet" href="css/main.css?v=14">
+  <link rel="stylesheet" href="css/birthday.css?v=14">
+  <link rel="stylesheet" href="css/whiteboard.css?v=14">
+  <link rel="stylesheet" href="css/games.css?v=14">
+  <link rel="stylesheet" href="css/japanese.css?v=14">
+  <link rel="stylesheet" href="css/saved-modules.css?v=14">
 </head>
 
 <body>
@@ -254,6 +254,13 @@
         </div>
 
         <div class="header-actions">
+          <!-- Thanu's Birthday Quiz Answers Pill for RK -->
+          <button id="btn-view-quiz-answers" class="answers-pill-btn"
+            onclick="if(window.birthdayQuiz){window.birthdayQuiz.openAnswersModal();}" title="View Thanu's Birthday Answers">
+            <span>💌 Thanu's Answers</span>
+            <span class="pill-badge" id="quiz-answers-pill-badge" style="display: none;">0/8</span>
+          </button>
+
           <!-- Small option: Saved modules above the page -->
           <button id="top-saved-modules-btn" class="saved-modules-pill"
             onclick="if(window.app){window.app.openWorkspaceModule('saved-modules');}" title="View Saved Modules">
@@ -297,6 +304,11 @@
             <div class="hub-hero">
               <div class="hub-hero-badge-row">
                 <div class="hub-badge">💜 Thanu's Creative Hub</div>
+                <button type="button" id="btn-hub-answers-link" class="btn-hub-answers-link"
+                  onclick="if(window.birthdayQuiz){window.birthdayQuiz.openAnswersModal();}"
+                  title="View Thanu's Birthday Quiz Answers">
+                  💌 Thanu's Answers
+                </button>
                 <button type="button" id="btn-hub-birthday-link" class="btn-hub-birthday-link"
                   onclick="if(window.app){window.app.navigateTo('birthday', 'hub');}"
                   title="View birthday greeting card again">
@@ -1181,6 +1193,51 @@
     </div>
   </div>
 
+  <!-- Modal 4: Birthday Quiz Answers Viewer for RK -->
+  <div id="quiz-answers-modal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 680px; max-height: 88vh; display: flex; flex-direction: column;">
+      <div class="modal-header" style="background: linear-gradient(135deg, var(--purple-800), var(--purple-950)); color: white; border-bottom: 2px solid var(--purple-700);">
+        <div style="display: flex; align-items: center; gap: 0.65rem;">
+          <span style="font-size: 1.5rem;">💌</span>
+          <div>
+            <h3 style="margin: 0; color: white; font-size: 1.2rem; font-weight: 800;">Thanu's Birthday Answers</h3>
+            <span id="quiz-modal-subtitle" style="font-size: 0.8rem; color: #e9d5ff; font-weight: 500;">Live sync & saved responses from Thanu</span>
+          </div>
+        </div>
+        <button class="calc-close-btn" id="btn-close-quiz-answers" style="color: white; font-size: 1.5rem; opacity: 0.9;">✕</button>
+      </div>
+
+      <!-- Status & Quick Action Toolbar -->
+      <div class="quiz-modal-toolbar">
+        <div class="quiz-status-tag" id="quiz-modal-status-tag">
+          <span class="quiz-status-dot" id="quiz-modal-status-dot"></span>
+          <span id="quiz-modal-status-text">Checking answers...</span>
+        </div>
+        <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+          <button type="button" id="btn-refresh-quiz-sync" class="btn btn-sm btn-secondary" title="Request latest answers via Cloud Sync">
+            🔄 Refresh
+          </button>
+          <button type="button" id="btn-copy-modal-answers" class="btn btn-sm btn-white" title="Copy formatted answers to clipboard">
+            📋 Copy
+          </button>
+          <button type="button" id="btn-whatsapp-modal-answers" class="btn btn-sm btn-primary" title="Open formatted answers in WhatsApp">
+            📲 WhatsApp
+          </button>
+        </div>
+      </div>
+
+      <!-- Answers Scrollable Container -->
+      <div class="modal-body quiz-answers-scroll" id="quiz-answers-list-container" style="padding: 1.25rem; overflow-y: auto; flex: 1;">
+        <!-- Injected via JavaScript dynamically -->
+      </div>
+
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; background: #faf5ff; border-top: 1.5px solid var(--purple-200);">
+        <span id="quiz-modal-footer-time" style="font-size: 0.8rem; color: var(--purple-700); font-weight: 600;">Synced in real-time</span>
+        <button type="button" class="btn btn-secondary btn-sm" id="btn-close-quiz-answers-footer">Close</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notifications Container -->
   <div id="toast-container" class="toast-container"></div>
 
@@ -1188,16 +1245,16 @@
   <!-- Application Scripts -->
   <script src="js/vendor/mqtt.min.js"></script>
   <script src="https://unpkg.com/mqtt@5.3.5/dist/mqtt.min.js"></script>
-  <script src="js/sync.js?v=13"></script>
-  <script src="js/calculator.js?v=13"></script>
-  <script src="js/notepad.js?v=13"></script>
-  <script src="js/whiteboard.js?v=13"></script>
-  <script src="js/wordlist.js?v=13"></script>
-  <script src="js/games.js?v=13"></script>
-  <script src="js/japanese.js?v=13"></script>
-  <script src="js/savedModules.js?v=13"></script>
-  <script src="js/birthday.js?v=13"></script>
-  <script src="js/app.js?v=13"></script>
+  <script src="js/sync.js?v=14"></script>
+  <script src="js/calculator.js?v=14"></script>
+  <script src="js/notepad.js?v=14"></script>
+  <script src="js/whiteboard.js?v=14"></script>
+  <script src="js/wordlist.js?v=14"></script>
+  <script src="js/games.js?v=14"></script>
+  <script src="js/japanese.js?v=14"></script>
+  <script src="js/savedModules.js?v=14"></script>
+  <script src="js/birthday.js?v=14"></script>
+  <script src="js/app.js?v=14"></script>
 
 </body>
 
