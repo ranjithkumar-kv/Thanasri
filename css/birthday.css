@@ -28,38 +28,45 @@
   z-index: 5;
 }
 
-/* Ambient Floating Purple Hearts */
+/* Ambient Floating Purple Hearts & Emojis across Entire Screen */
 .floating-hearts-container {
-  position: absolute;
-  inset: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
   overflow: hidden;
   pointer-events: none;
-  z-index: 2;
+  z-index: 1;
 }
 
 .floating-heart {
-  position: absolute;
-  bottom: -60px;
+  position: fixed;
+  bottom: 0;
   color: #c084fc;
   font-size: 1.8rem;
-  opacity: 0.7;
-  filter: drop-shadow(0 0 10px rgba(192, 132, 252, 0.6));
-  animation: floatUpward 7s linear infinite;
+  opacity: 0;
+  filter: drop-shadow(0 0 12px rgba(192, 132, 252, 0.7));
+  animation: floatUpward 8s linear infinite;
+  user-select: none;
+  pointer-events: none;
+  z-index: 1;
+  will-change: transform, opacity;
 }
 
 @keyframes floatUpward {
   0% {
-    transform: translateY(0) rotate(0deg) scale(0.7);
+    transform: translateY(105vh) rotate(0deg) scale(0.65);
     opacity: 0;
   }
-  15% {
+  12% {
     opacity: 0.85;
   }
   85% {
     opacity: 0.85;
   }
   100% {
-    transform: translateY(-110vh) rotate(360deg) scale(1.2);
+    transform: translateY(-15vh) rotate(360deg) scale(1.15);
     opacity: 0;
   }
 }

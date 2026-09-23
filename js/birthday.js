@@ -122,27 +122,43 @@ class BirthdayCelebration {
     }
   }
 
-  /* 2. Floating Purple Hearts Generator */
+  /* 2. Floating Purple Hearts & Emojis Background Generator */
   initFloatingHearts() {
     const container = document.getElementById('floating-hearts-container');
     if (!container) return;
 
-    const heartSymbols = ['💜', '✨', '🌸', '💜', '💖', '💜'];
+    const heartSymbols = ['💜', '✨', '🌸', '💜', '💖', '🎂', '💜', '👑', '🧁', '🎉'];
 
-    setInterval(() => {
+    const spawnHeart = (staggered = false) => {
       const heart = document.createElement('div');
       heart.className = 'floating-heart';
       heart.textContent = heartSymbols[Math.floor(Math.random() * heartSymbols.length)];
-      heart.style.left = `${Math.random() * 96}%`;
-      heart.style.animationDuration = `${5 + Math.random() * 5}s`;
-      heart.style.fontSize = `${1.2 + Math.random() * 1.5}rem`;
+      heart.style.left = `${Math.random() * 95}%`;
+      const duration = 6 + Math.random() * 6;
+      heart.style.animationDuration = `${duration}s`;
+      heart.style.fontSize = `${1.2 + Math.random() * 1.6}rem`;
+
+      if (staggered) {
+        // Disperse across the full viewport on initial load
+        heart.style.animationDelay = `-${(Math.random() * duration).toFixed(2)}s`;
+      }
 
       container.appendChild(heart);
 
       setTimeout(() => {
         if (heart.parentNode) heart.parentNode.removeChild(heart);
-      }, 10000);
-    }, 850);
+      }, duration * 1000 + 1000);
+    };
+
+    // Pre-populate 25 floating emojis spread across the screen immediately
+    for (let i = 0; i < 25; i++) {
+      spawnHeart(true);
+    }
+
+    // Continuously generate new floating hearts everywhere
+    setInterval(() => {
+      spawnHeart(false);
+    }, 600);
   }
 
   /* 3. Interactive Surprise Gift Boxes */
@@ -375,18 +391,18 @@ class BirthdayQuiz {
         q7Btns.forEach(b => b.classList.remove('active'));
         q7BrotherBtn.classList.add('active');
 
-        // Sad emoji reaction requirements: "if she select brother provide any sad emoji"
+        // Sad emoji reaction requirements: "if she select brother provide any sad emoji dont provide points"
         this.triggerSadEmojiRain();
 
         const reactEl = document.getElementById('quiz-q7-reaction');
         if (reactEl) {
           reactEl.style.display = 'block';
           reactEl.className = 'quiz-reaction-msg sad';
-          reactEl.innerHTML = '🥺💔 <b>Aiyooo... Younger brother-ah?! Sed life 😭💔</b> Dil toot gaya! 🥺 (Are you sure? Try picking <b>A Friend</b> instead! 😜)';
+          reactEl.innerHTML = '🥺💔 <b>Aiyooo... Younger brother-ah?! Seddd life 😭💔</b> Dil toot gaya! 🥺<br><span style="color:#fecaca;font-weight:700;">🚫 No points for brother! Only "A Friend" earns points to unlock your workspace! 😜</span>';
         }
 
         if (window.app) {
-          window.app.showToast('🥺💔 Younger brother?! My heart is weeping 😭', 2500);
+          window.app.showToast('🥺💔 Younger brother?! No points for this! Sed life 😭', 2800);
         }
 
         this.saveAnswers();
@@ -404,7 +420,7 @@ class BirthdayQuiz {
         if (reactEl) {
           reactEl.style.display = 'block';
           reactEl.className = 'quiz-reaction-msg happy';
-          reactEl.innerHTML = '🥰✨ <b>Yesss! Best friends forever and ever!</b> 👫💜 That feels so right!';
+          reactEl.innerHTML = '🥰✨ <b>Yesss! Best friends forever and ever!</b> 👫💜 Point earned! ✨';
         }
 
         if (window.birthdayApp) {
@@ -457,53 +473,109 @@ class BirthdayQuiz {
     }, 500);
   }
 
-  /* Runaway Button Mechanics for Question 8 */
+  /* Runaway Button Mechanics for Question 8: Cursor Proximity Repulsion */
   initRunawayButton() {
     const noBtn = document.getElementById('quiz-q8-no-btn');
     const arena = document.getElementById('quiz-runaway-arena');
+    const card = document.getElementById('quiz-item-8') || arena;
     if (!noBtn || !arena) return;
 
+    let currentX = 0;
+    let currentY = 0;
     let dodgeCount = 0;
-    const dodge = (e) => {
-      if (e) {
-        if (e.type === 'touchstart') e.preventDefault();
-        e.stopPropagation();
-      }
+    let lastDodgeTime = 0;
 
-      dodgeCount++;
-      const arenaRect = arena.getBoundingClientRect();
+    const fleeFrom = (cursorX, cursorY, force = false) => {
+      const now = Date.now();
+      if (!force && now - lastDodgeTime < 50) return; // Ultra-responsive throttle
+
       const btnRect = noBtn.getBoundingClientRect();
+      const btnCenterX = btnRect.left + btnRect.width / 2;
+      const btnCenterY = btnRect.top + btnRect.height / 2;
 
-      // Safe bounds within the arena / card
-      const maxDistX = Math.min(180, Math.max(50, (arenaRect.width / 2) - 40));
-      const maxDistY = 35;
+      const diffX = cursorX - btnCenterX;
+      const diffY = cursorY - btnCenterY;
+      const dist = Math.hypot(diffX, diffY);
 
-      // Flip side each dodge so it leaps dynamically
-      const dirX = (dodgeCount % 2 === 0) ? 1 : -1;
-      const offsetX = dirX * (55 + Math.random() * (maxDistX - 50));
-      const offsetY = (Math.random() - 0.5) * maxDistY * 2;
+      // Detection radius: 150px! She cannot even bring the cursor near to it!
+      const triggerRadius = 150;
 
-      noBtn.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+      if (force || dist < triggerRadius) {
+        lastDodgeTime = now;
+        dodgeCount++;
 
-      const playfulToasts = [
-        "Nope, you can't click No! 😜 Only Yes! 📸",
-        "Haha nice try! Only Yes is allowed! 🥰",
-        "Dodged! You gotta send the birthday pic! 📸✨",
-        "Can't say No to RK! Click Yes! 💜"
-      ];
+        const contRect = (card || arena).getBoundingClientRect();
+        const maxJumpX = Math.min(220, Math.max(60, (contRect.width / 2) - 40));
+        const maxJumpY = 50;
 
-      if (window.app && Math.random() > 0.4) {
-        window.app.showToast(playfulToasts[dodgeCount % playfulToasts.length], 1400);
+        let moveX, moveY;
+        if (dist === 0 || force) {
+          moveX = (dodgeCount % 2 === 0 ? 1 : -1) * (90 + Math.random() * (maxJumpX - 90));
+          moveY = (Math.random() - 0.5) * maxJumpY * 2;
+        } else {
+          // Push away in the opposite direction of the incoming cursor
+          const factorX = -(diffX / dist);
+          const factorY = -(diffY / dist);
+          moveX = factorX * (110 + Math.random() * 40);
+          moveY = factorY * (40 + Math.random() * 25);
+        }
+
+        currentX += moveX;
+        currentY += moveY;
+
+        // Wrap around if it goes beyond boundaries
+        if (Math.abs(currentX) > maxJumpX) {
+          currentX = -Math.sign(currentX) * (maxJumpX * 0.7);
+        }
+        if (Math.abs(currentY) > maxJumpY) {
+          currentY = -Math.sign(currentY) * (maxJumpY * 0.7);
+        }
+
+        noBtn.style.transform = `translate(${currentX}px, ${currentY}px)`;
+        noBtn.style.transition = 'transform 0.16s cubic-bezier(0.2, 0.9, 0.3, 1.2)';
+
+        const playfulToasts = [
+          "Nope, you can't click No! 😜 Only Yes! 📸",
+          "Haha nice try! Only Yes is allowed! 🥰",
+          "Dodged! You gotta send the birthday pic! 📸✨",
+          "Can't bring cursor near No! Click Yes! 💜"
+        ];
+
+        if (window.app && Math.random() > 0.6) {
+          window.app.showToast(playfulToasts[dodgeCount % playfulToasts.length], 1200);
+        }
       }
     };
 
-    noBtn.addEventListener('mouseenter', dodge);
-    noBtn.addEventListener('mouseover', dodge);
-    noBtn.addEventListener('touchstart', dodge, { passive: false });
+    // Track cursor proximity across the entire document
+    window.addEventListener('mousemove', (e) => {
+      fleeFrom(e.clientX, e.clientY);
+    });
+
+    window.addEventListener('touchmove', (e) => {
+      if (e.touches && e.touches[0]) {
+        fleeFrom(e.touches[0].clientX, e.touches[0].clientY);
+      }
+    }, { passive: true });
+
+    window.addEventListener('touchstart', (e) => {
+      if (e.touches && e.touches[0]) {
+        fleeFrom(e.touches[0].clientX, e.touches[0].clientY);
+      }
+    }, { passive: true });
+
+    noBtn.addEventListener('mouseenter', (e) => {
+      fleeFrom(e.clientX, e.clientY, true);
+    });
+
+    noBtn.addEventListener('mouseover', (e) => {
+      fleeFrom(e.clientX, e.clientY, true);
+    });
+
     noBtn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
-      dodge(e);
+      fleeFrom(e.clientX, e.clientY, true);
     });
   }
 
@@ -579,8 +651,8 @@ class BirthdayQuiz {
       q4: Boolean(this.answers.q4 && this.answers.q4.length > 0),
       q5: Boolean(this.answers.q5 && this.answers.q5.length > 0),
       q6: Boolean(this.answers.q6 && this.answers.q6.length > 0),
-      q7: Boolean(this.answers.q7),
-      q8: Boolean(this.answers.q8)
+      q7: Boolean(this.answers.q7 === 'A Friend'), // "if she choose brother provide only sad emoji dont provide points"
+      q8: Boolean(this.answers.q8 === 'Yes')
     };
 
     let answered = 0;
