@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thanu's WorkSpace - Birthday Special</title>
+  <meta name="description"
+    content="A personalized purple and white workspace gift for Thanu with multi-slide whiteboard, stress buster games, and Japanese learning.">
+
+  <!-- Browser Tab Favicon (Purple Heart) -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.88em%22 font-size=%2288%22>💜</text></svg>">
+  <link rel="alternate icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.88em%22 font-size=%2288%22>💜</text></svg>">
+
+
+  <!-- PeerJS for Real-Time WebRTC Whiteboard Collaboration -->
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+
+  <!-- Application Stylesheets (80% Purple, 20% White Theme) -->
+  <link rel="stylesheet" href="css/main.css?v=2">
+  <link rel="stylesheet" href="css/birthday.css?v=2">
+  <link rel="stylesheet" href="css/whiteboard.css?v=2">
+  <link rel="stylesheet" href="css/games.css?v=2">
+  <link rel="stylesheet" href="css/japanese.css?v=2">
+  <link rel="stylesheet" href="css/saved-modules.css?v=2">
+</head>
+
+<body>
+
+  <div id="app">
+
+    <!-- ====================================================================
+         VIEW 1: PASSCODE LOCK SCREEN
+         ==================================================================== -->
+    <section id="passcode-view" class="view-section active">
+      <div class="passcode-bg-decor">
+        <div class="decor-blob blob-1"></div>
+        <div class="decor-blob blob-2"></div>
+      </div>
+
+      <div class="passcode-box card-glass">
+        <div class="passcode-avatar">💜</div>
+        <h2>Thanu's WorkSpace</h2>
+        <p>A personalized haven crafted specially for you. Please enter your secret passcode to unlock!</p>
+
+        <div class="passcode-input-group">
+          <input type="password" id="passcode-input" class="passcode-input" placeholder="Enter secret passcode..."
+            autocomplete="off" autofocus />
+          <button type="button" id="toggle-pwd-btn" class="toggle-pwd-btn" title="Show/Hide passcode">👁️</button>
+        </div>
+
+        <div id="passcode-error" class="passcode-error">
+          Incorrect passcode! Try again 💜
+        </div>
+
+        <button type="button" id="passcode-submit-btn" class="btn btn-primary"
+          onclick="if(window.app){window.app.checkPasscode();}" style="width: 100%; padding: 0.95rem;">
+          Unlock WorkSpace ➔
+        </button>
+
+        <div class="passcode-hint" id="passcode-hint-btn" title="Hint: your hotspot password 😊">
+          <span>💡 Need a hint? Click here</span>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ====================================================================
+         VIEW 2: BIRTHDAY WISHING PAGE
+         "Wish you a Happy Birthday Cuteuhhh (purple heart)"
+         "Welcome to the Workspace"
+         ==================================================================== -->
+    <section id="birthday-view" class="view-section">
+      <canvas id="confetti-canvas"></canvas>
+      <div class="floating-hearts-container" id="floating-hearts-container"></div>
+
+      <button id="btn-birthday-back" class="btn-birthday-back" onclick="if(window.app){window.app.goBack();}"
+        title="Go back to passcode lock screen">
+        <span class="back-arrow">←</span> Lock / Go Back
+      </button>
+
+      <button id="music-toggle-btn" class="music-toggle-btn" title="Play celebration melody">
+        🎶 Play Birthday Chime
+      </button>
+
+      <div class="birthday-card">
+        <div class="birthday-badge-icon">🎂</div>
+        <div class="birthday-ribbon">✨ A Very Special Day ✨</div>
+
+        <h1 class="birthday-title">
+          Wish you a Happy Birthday Cuteuhhh <span class="purple-heart">💜</span>
+        </h1>
+
+        <p class="birthday-subtitle">
+          May this new chapter bring you endless reasons to smile, total peace of mind, and the success you deserve in
+          everything you pursue. Enjoy every second of your day!.
+        </p>
+
+        <div style="margin-top: 1rem;">
+          <button id="btn-welcome-workspace" class="btn-welcome-workspace"
+            onclick="if(window.app){window.app.enterWorkspace();}">
+            <span>Welcome to the Workspace</span>
+            <span class="arrow-icon">➔</span>
+          </button>
+        </div>
+
+        <div class="surprise-presents">
+          <div class="present-box">🎁 Sweet Note 1</div>
+          <div class="present-box">🎁 Secret Wish 2</div>
+          <div class="present-box">🎁 Special Blessing 3</div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ====================================================================
+         VIEW 3: MAIN WORKSPACE CONTAINER
+         ==================================================================== -->
+    <section id="workspace-view" class="view-section">
+
+      <!-- Top Workspace Navigation Bar -->
+      <header class="workspace-header">
+        <div class="header-left">
+          <button type="button" id="header-back-btn" class="header-back-btn"
+            onclick="if(window.app){window.app.goBack();}" title="Go back to previous page" style="display: none;">
+            <span class="back-arrow">←</span>
+            <span id="header-back-label" class="back-text">Go Back</span>
+          </button>
+
+          <div class="brand-wrapper" id="brand-btn" onclick="if(window.app){window.app.openWorkspaceModule('hub');}"
+            title="Back to Hub">
+            <div class="brand-logo-badge">T💜</div>
+            <div class="brand-info">
+              <h1>Thanu's WorkSpace</h1>
+              <span>Personal Studio</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <!-- Small option: Saved modules above the page -->
+          <button id="top-saved-modules-btn" class="saved-modules-pill"
+            onclick="if(window.app){window.app.openWorkspaceModule('saved-modules');}" title="View Saved Modules">
+            <span>📚 Saved modules</span>
+            <span class="pill-badge" id="saved-modules-badge">3</span>
+          </button>
+
+          <!-- Real-Time Two-Device Live Sync Pill -->
+          <button id="top-sync-pill" class="top-sync-pill waiting" title="Two-Device Sync Settings (Click to configure)">
+            <span class="top-sync-dot" id="top-sync-dot"></span>
+            <span id="top-sync-status-text">Connecting...</span>
+          </button>
+
+          <!-- Floating Calculator Quick Toggle -->
+          <button class="calc-toggle-btn" onclick="if(window.miniCalc){window.miniCalc.toggle();}"
+            title="Open Mini Calculator">
+            🧮
+          </button>
+
+          <!-- Floating Quick Notepad Toggle -->
+          <button id="top-notepad-btn" class="notepad-toggle-btn calc-toggle-btn"
+            title="Open Quick Notepad">
+            📝
+          </button>
+        </div>
+      </header>
+
+      <!-- Subnav Navigation Bar (Shown when inside a module) -->
+      <div id="workspace-subnav" class="workspace-subnav" style="display: none;">
+        <div class="subnav-left">
+          <button type="button" id="btn-subnav-back" class="btn-go-back" onclick="if(window.app){window.app.goBack();}"
+            title="Go back to previous page">
+            <span class="back-arrow">←</span>
+            <span>Go Back</span>
+          </button>
+          <div class="nav-breadcrumbs">
+            <a href="#" id="bc-home-link">🏠 Hub</a>
+            <span>/</span>
+            <span id="bc-current-page">Module</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- MAIN CONTENT SUBVIEWS -->
+      <main style="flex-grow: 1; display: flex; flex-direction: column;">
+
+        <!-- ------------------------------------------------------------------
+             SUBVIEW 3A: WORKSPACE HUB (3 Cards)
+             ------------------------------------------------------------------ -->
+        <div id="subview-hub" class="workspace-subview">
+          <div class="hub-container">
+
+            <div class="hub-hero">
+              <div class="hub-hero-badge-row">
+                <div class="hub-badge">💜 Thanu's Creative Hub</div>
+                <button type="button" id="btn-hub-birthday-link" class="btn-hub-birthday-link"
+                  onclick="if(window.app){window.app.navigateTo('birthday', 'hub');}"
+                  title="View birthday greeting card again">
+                  🎂 View Birthday Card
+                </button>
+              </div>
+              <h2>Welcome to Your Workspace</h2>
+              <p>Everything you need in one place: develop knowledge on collaborative boards, unwind with relaxing
+                stress-buster games, and master Japanese from the basics.</p>
+            </div>
+
+            <div class="modules-grid">
+
+              <!-- Option 1: Wish to Know -->
+              <div class="module-card" id="card-wish-to-know"
+                onclick="if(window.app){window.app.openWorkspaceModule('wish-to-know');}">
+                <div class="card-icon-bubble">💡</div>
+                <h3>Wish to Know</h3>
+                <div class="module-desc">Develop your knowledge</div>
+                <p class="module-detail">
+                  Interactive multi-slide whiteboard with Zoom-like real-time live synchronization, custom purple pens,
+                  eraser, and an integrated mini calculator.
+                </p>
+                <div class="card-action">
+                  <span>Enter Knowledge Board</span>
+                  <span>➔</span>
+                </div>
+              </div>
+
+              <!-- Option 2: Pass the Time -->
+              <div class="module-card" id="card-pass-the-time"
+                onclick="if(window.app){window.app.openWorkspaceModule('pass-the-time');}">
+                <div class="card-icon-bubble">🎮</div>
+                <h3>Pass the Time</h3>
+                <div class="module-desc">Stress Buster</div>
+                <p class="module-detail">
+                  Take a relaxing break! Play XO (Tic-Tac-Toe) with friend or smart bot, challenge your typing speed
+                  with encouraging affirmations, and play Word Bridge letter thinking game.
+                </p>
+                <div class="card-action">
+                  <span>Play Games</span>
+                  <span>➔</span>
+                </div>
+              </div>
+
+              <!-- Option 3: 日本語を学ぶ -->
+              <div class="module-card" id="card-learn-japanese"
+                onclick="if(window.app){window.app.openWorkspaceModule('learn-japanese');}">
+                <div class="card-icon-bubble">🌸</div>
+                <h3>日本語を学ぶ</h3>
+                <div class="module-desc">Learn Japanese</div>
+                <p class="module-detail">
+                  A structured Japanese curriculum starting from basics: full Hiragana & Katakana charts with audio
+                  speech pronunciation, greetings, numbers, and quizzes.
+                </p>
+                <div class="card-action">
+                  <span>Start Learning</span>
+                  <span>➔</span>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+
+
+        <!-- ------------------------------------------------------------------
+             SUBVIEW 3B: WISH TO KNOW (Whiteboard & Mini Calculator)
+             ------------------------------------------------------------------ -->
+        <div id="subview-wish-to-know" class="workspace-subview" style="display: none;">
+          <div class="whiteboard-container">
+
+            <!-- Top Whiteboard Controls Bar -->
+            <div class="wb-header">
+              <div class="wb-title-group">
+                <h2>Wish to Know</h2>
+                <span class="wb-desc-tag">Develop your knowledge</span>
+              </div>
+
+              <!-- Zoom-like Live Sync Badge -->
+              <div class="wb-sync-badge" id="wb-sync-indicator" title="Synced across open tabs and peer sessions">
+                <div class="sync-dot"></div>
+                <span id="wb-peer-count">Live Sync Ready</span>
+              </div>
+
+              <div class="wb-header-actions">
+                <button id="wb-notepad-btn" class="notepad-toggle-btn btn btn-white btn-sm" title="Open Quick Notepad">
+                  📝 Notepad
+                </button>
+                <button id="btn-save-slide" class="btn btn-primary btn-sm">
+                  💾 Save to Saved Modules
+                </button>
+                <button class="calc-toggle-btn" title="Toggle Mini Calculator">
+                  🧮
+                </button>
+              </div>
+            </div>
+
+            <!-- Slides Ribbon Strip -->
+            <div class="wb-slides-strip">
+              <div style="display: flex; align-items: center; gap: 0.6rem;">
+                <button id="btn-prev-slide" class="btn btn-white btn-sm">◀</button>
+                <span id="current-slide-indicator"
+                  style="font-weight: 800; color: var(--purple-900); font-size: 0.85rem;">1 / 1</span>
+                <button id="btn-next-slide" class="btn btn-white btn-sm">▶</button>
+              </div>
+
+              <div class="slides-list" id="slides-list">
+                <!-- Dynamically generated slide chips -->
+              </div>
+
+              <button id="btn-add-slide" class="btn-add-slide">
+                <span>+</span> New Slide
+              </button>
+            </div>
+
+            <!-- Main Whiteboard Canvas Viewport -->
+            <div class="wb-main-area">
+
+              <!-- Floating Drawing Toolbar -->
+              <div class="wb-floating-toolbar">
+                <div class="tool-group">
+                  <button id="tool-pen-btn" class="tool-btn active" title="Pen">✏️</button>
+                  <button id="tool-eraser-btn" class="tool-btn" title="Eraser">🧹</button>
+                </div>
+
+                <div class="tool-divider"></div>
+
+                <!-- Palette Colors -->
+                <div class="color-swatches-wrapper">
+                  <div class="color-swatch active" data-color="#6d28d9" style="background: #6d28d9;"
+                    title="Royal Purple"></div>
+                  <div class="color-swatch" data-color="#8b5cf6" style="background: #8b5cf6;" title="Electric Purple">
+                  </div>
+                  <div class="color-swatch" data-color="#4c1d95" style="background: #4c1d95;" title="Deep Amethyst">
+                  </div>
+                  <div class="color-swatch" data-color="#c084fc" style="background: #c084fc;" title="Lavender"></div>
+                  <div class="color-swatch" data-color="#18181b" style="background: #18181b;" title="Midnight Black">
+                  </div>
+                  <div class="color-swatch" data-color="#ec4899" style="background: #ec4899;" title="Cute Pink"></div>
+                  <div class="color-swatch" data-color="#0284c7" style="background: #0284c7;" title="Sky Blue"></div>
+                  <input type="color" id="custom-color-picker" class="custom-color-input" value="#6d28d9"
+                    title="Pick any color" />
+                </div>
+
+                <div class="tool-divider"></div>
+
+                <!-- Stroke Size Slider -->
+                <div class="stroke-size-selector" title="Brush Size">
+                  <span style="font-size: 0.8rem; font-weight: 700; color: var(--purple-800);">Size</span>
+                  <input type="range" id="stroke-size-range" min="2" max="36" value="4">
+                </div>
+
+                <div class="tool-divider"></div>
+
+                <!-- Undo / Redo / Clear -->
+                <div class="tool-group">
+                  <button id="tool-undo-btn" class="tool-btn" title="Undo">↩️</button>
+                  <button id="tool-redo-btn" class="tool-btn" title="Redo">↪️</button>
+                  <button id="tool-clear-btn" class="tool-btn" style="color: #dc2626;" title="Clear Slide">🗑️</button>
+                </div>
+
+                <div class="tool-divider"></div>
+
+                <!-- Quick Notepad Toggle on Whiteboard -->
+                <div class="tool-group">
+                  <button id="tool-notepad-btn" class="tool-btn notepad-toggle-btn" title="Open Quick Notepad (Type Notes)">📝</button>
+                </div>
+              </div>
+
+              <!-- Canvas element -->
+              <div class="canvas-viewport">
+                <canvas id="whiteboard-canvas"></canvas>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+
+
+        <!-- ------------------------------------------------------------------
+             SUBVIEW 3C: PASS THE TIME (Stress Buster Games)
+             ------------------------------------------------------------------ -->
+        <div id="subview-pass-the-time" class="workspace-subview" style="display: none;">
+          <div class="games-container">
+
+            <div class="games-header">
+              <h2>Pass the Time</h2>
+              <div class="games-desc">Stress Buster</div>
+              <p class="games-subtext">Relax and have fun with games designed to boost your mood and relieve stress!</p>
+            </div>
+
+            <!-- Games Selector Tabs -->
+            <div class="games-tabs">
+              <button class="game-tab-btn active" data-game="xo">
+                <span>✨</span> XO Game (Tic-Tac-Toe)
+              </button>
+              <button class="game-tab-btn" data-game="typing">
+                <span>⌨️</span> Typing Game (Speed & Flow)
+              </button>
+              <button class="game-tab-btn" data-game="wordbridge">
+                <span>🔤</span> Word Bridge (Start & End)
+              </button>
+            </div>
+
+            <!-- GAME 1: XO GAME -->
+            <div id="game-xo" class="game-panel active">
+              <div class="xo-layout">
+
+                <div class="xo-controls-bar">
+                  <div class="mode-select-pill">
+                    <button id="xo-mode-online" class="mode-btn active">👫 2 Devices Online</button>
+                    <button id="xo-mode-pvp" class="mode-btn">Pass & Play</button>
+                    <button id="xo-mode-ai" class="mode-btn">vs Bot 💜</button>
+                  </div>
+                  <button id="xo-reset-btn" class="btn btn-secondary btn-sm">🔄 New Round</button>
+                </div>
+
+                <div class="xo-scoreboard">
+                  <div class="score-box">
+                    <h4>💙 RK (X)</h4>
+                    <span id="xo-score-x">0</span>
+                  </div>
+                  <div class="score-box">
+                    <h4>Ties</h4>
+                    <span id="xo-score-ties">0</span>
+                  </div>
+                  <div class="score-box">
+                    <h4>💜 Thanu (O)</h4>
+                    <span id="xo-score-o">0</span>
+                  </div>
+                </div>
+
+                <div id="xo-turn-indicator" class="xo-turn-indicator">
+                  💙 RK's Turn (Player 1)
+                </div>
+
+                <div class="xo-grid" id="xo-grid">
+                  <div class="xo-cell" data-index="0"></div>
+                  <div class="xo-cell" data-index="1"></div>
+                  <div class="xo-cell" data-index="2"></div>
+                  <div class="xo-cell" data-index="3"></div>
+                  <div class="xo-cell" data-index="4"></div>
+                  <div class="xo-cell" data-index="5"></div>
+                  <div class="xo-cell" data-index="6"></div>
+                  <div class="xo-cell" data-index="7"></div>
+                  <div class="xo-cell" data-index="8"></div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- GAME 2: TYPING GAME -->
+            <div id="game-typing" class="game-panel">
+              <div class="typing-layout">
+
+                <div class="typing-stats-row">
+                  <div class="typing-stat-card">
+                    <span class="val" id="typing-wpm">0</span>
+                    <span class="lbl">Speed (WPM)</span>
+                  </div>
+                  <div class="typing-stat-card">
+                    <span class="val" id="typing-acc">100%</span>
+                    <span class="lbl">Accuracy</span>
+                  </div>
+                  <div class="typing-stat-card">
+                    <span class="val" id="typing-timer">60s</span>
+                    <span class="lbl">Time Left</span>
+                  </div>
+                </div>
+
+                <div class="typing-passage-box" id="typing-passage-box">
+                  <!-- Text populated by JS -->
+                </div>
+
+                <input type="text" id="typing-input-field" class="typing-input"
+                  placeholder="Start typing the text above here..." autocomplete="off" />
+
+                <div style="text-align: right;">
+                  <button id="typing-restart-btn" class="btn btn-secondary">
+                    🔄 Next Passage
+                  </button>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- GAME 3: WORD BRIDGE (Start & End Letter Challenge) -->
+            <div id="game-wordbridge" class="game-panel">
+              <div class="wordbridge-layout">
+
+                <!-- Live Game Stats Bar -->
+                <div class="wb-stats-bar">
+                  <div class="wb-stat-item">
+                    <span class="stat-lbl">WORDS FOUND</span>
+                    <span class="stat-val" id="wb-words-count">0</span>
+                  </div>
+                  <div class="wb-stat-item">
+                    <span class="stat-lbl">SCORE</span>
+                    <span class="stat-val" id="wb-score">0 pts</span>
+                  </div>
+                  <div class="wb-stat-item">
+                    <span class="stat-lbl">STREAK</span>
+                    <span class="stat-val streak" id="wb-streak">🔥 0</span>
+                  </div>
+                  <div class="wb-stat-item">
+                    <span class="stat-lbl">BEST STREAK</span>
+                    <span class="stat-val" id="wb-best-streak">🏆 0</span>
+                  </div>
+                </div>
+
+                <!-- Main Challenge Bridge Card -->
+                <div class="wb-challenge-card card-glass">
+                  <div class="wb-card-tag">✨ Word Bridge Challenge ✨</div>
+                  <p class="wb-card-subtitle">Think of a word that starts and ends with the letters below!</p>
+                  
+                  <div class="wb-letters-container">
+                    <div class="wb-letter-card start-card">
+                      <span class="wb-letter-pos">STARTING WITH</span>
+                      <span class="wb-letter-display" id="wb-start-letter">S</span>
+                    </div>
+
+                    <div class="wb-bridge-connector">
+                      <div class="wb-connector-line">
+                        <span class="connector-dot"></span>
+                        <span class="connector-dot"></span>
+                        <span class="connector-dot"></span>
+                      </div>
+                      <div class="wb-connector-badge">Type word below</div>
+                      <div class="wb-connector-line">
+                        <span class="connector-dot"></span>
+                        <span class="connector-dot"></span>
+                        <span class="connector-dot"></span>
+                      </div>
+                    </div>
+
+                    <div class="wb-letter-card end-card">
+                      <span class="wb-letter-pos">ENDING WITH</span>
+                      <span class="wb-letter-display" id="wb-end-letter">T</span>
+                    </div>
+                  </div>
+
+                  <!-- Input & Submit Form -->
+                  <form id="wb-submit-form" onsubmit="return false;" class="wb-input-group">
+                    <input 
+                      type="text" 
+                      id="wb-word-input" 
+                      class="wb-word-input" 
+                      placeholder="Type a word starting with S and ending with T..." 
+                      autocomplete="off"
+                      spellcheck="false"
+                    />
+                    <button type="submit" id="wb-submit-btn" class="btn btn-primary wb-submit-btn">
+                      <span>Submit</span>
+                      <span>➔</span>
+                    </button>
+                  </form>
+
+                  <!-- Feedback Alert Area -->
+                  <div id="wb-feedback" class="wb-feedback-box"></div>
+
+                  <!-- Action Buttons Row -->
+                  <div class="wb-actions-row">
+                    <button type="button" id="wb-next-pair-btn" class="btn btn-secondary btn-sm">
+                      <span>🔀</span> Next Letter Pair
+                    </button>
+                    <button type="button" id="wb-hint-btn" class="btn btn-white btn-sm">
+                      <span>💡</span> Clue / Hint
+                    </button>
+                    <button type="button" id="wb-reset-btn" class="btn btn-white btn-sm">
+                      <span>🔄</span> Reset Game
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Found Words Collection Card -->
+                <div class="wb-found-section">
+                  <div class="wb-found-header">
+                    <h4>Words Found for Current Pair (<span id="wb-current-pair-tag">S ... T</span>):</h4>
+                    <span class="wb-found-count-tag" id="wb-pair-found-count">0 words</span>
+                  </div>
+                  <div id="wb-found-chips" class="wb-chips-grid">
+                    <span class="wb-empty-chip">No words found for this pair yet. Start typing above! 💜</span>
+                  </div>
+                </div>
+
+                <!-- How to Play Card -->
+                <div class="wb-instructions-card">
+                  <h4>📖 How to Play:</h4>
+                  <ul>
+                    <li>1. Look at the two letters: the left is the <strong>starting letter</strong> and the right is the <strong>ending letter</strong>.</li>
+                    <li>2. Think of any real English word (at least 3 letters) that fits. For example, for <strong>S ... T</strong>: <em>SMART, START, SWEET, SUNSET, STREET</em>!</li>
+                    <li>3. Type your word and press Enter. You can find multiple words for the same pair to boost your streak, or skip to a new pair anytime!</li>
+                  </ul>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+
+        <!-- ------------------------------------------------------------------
+             SUBVIEW 3D: 日本語を学ぶ (Learn Japanese)
+             ------------------------------------------------------------------ -->
+        <div id="subview-learn-japanese" class="workspace-subview" style="display: none;">
+          <div class="japanese-container">
+
+            <div class="japanese-header">
+              <h2>日本語を学ぶ</h2>
+              <div class="japanese-desc-badge">Learn Japanese</div>
+              <p class="japanese-subtext">A complete step-by-step Japanese learning plan from the foundations with audio
+                voice pronunciation.</p>
+            </div>
+
+            <!-- Curriculum Tabs -->
+            <div class="jp-tabs-strip">
+              <button class="jp-tab-btn active" data-target="kana">
+                <span>🔤</span> Kana Syllabary
+              </button>
+              <button class="jp-tab-btn" data-target="phrases">
+                <span>💬</span> Daily Phrases & Birthday
+              </button>
+              <button class="jp-tab-btn" data-target="numbers">
+                <span>🔢</span> Numbers & Counting
+              </button>
+              <button class="jp-tab-btn" data-target="grammar">
+                <span>📐</span> Core Grammar Particles
+              </button>
+              <button class="jp-tab-btn" data-target="quiz">
+                <span>🎯</span> Interactive Quiz
+              </button>
+            </div>
+
+            <!-- TAB 1: KANA (Hiragana & Katakana) -->
+            <div id="jp-kana" class="jp-panel active">
+              <div class="jp-panel-header">
+                <div>
+                  <h3>The Kana Writing Systems</h3>
+                  <p>Click any character to hear native audio pronunciation!</p>
+                </div>
+
+                <div class="kana-toggle-row">
+                  <button id="btn-show-hiragana" class="kana-toggle-btn active">Hiragana (ひらがな)</button>
+                  <button id="btn-show-katakana" class="kana-toggle-btn">Katakana (カタカナ)</button>
+                </div>
+              </div>
+
+              <div class="kana-grid" id="kana-grid">
+                <!-- Generated by JS -->
+              </div>
+            </div>
+
+            <!-- TAB 2: PHRASES -->
+            <div id="jp-phrases" class="jp-panel">
+              <div class="jp-panel-header">
+                <div>
+                  <h3>Essential Greetings & Expressions</h3>
+                  <p>Click any card to listen to the Japanese pronunciation.</p>
+                </div>
+              </div>
+
+              <div class="phrases-grid" id="phrases-grid">
+                <!-- Generated by JS -->
+              </div>
+            </div>
+
+            <!-- TAB 3: NUMBERS -->
+            <div id="jp-numbers" class="jp-panel">
+              <div class="jp-panel-header">
+                <div>
+                  <h3>Numbers & Counting</h3>
+                  <p>Learn how to count and tell dates in Japanese.</p>
+                </div>
+              </div>
+
+              <div class="phrases-grid" id="numbers-grid">
+                <!-- Generated by JS -->
+              </div>
+            </div>
+
+            <!-- TAB 4: GRAMMAR -->
+            <div id="jp-grammar" class="jp-panel">
+              <div class="jp-panel-header">
+                <div>
+                  <h3>Core Sentence Structure & Particles</h3>
+                  <p>Japanese basic word order is SOV (Subject - Object - Verb). Particles mark the role of each word.
+                  </p>
+                </div>
+              </div>
+
+              <div class="grammar-stack">
+                <div class="grammar-card">
+                  <div class="grammar-title">
+                    <span class="grammar-pill">は (wa)</span>
+                    <h4>Topic Marker</h4>
+                  </div>
+                  <p class="grammar-explanation">Written as 'ha' but pronounced 'wa'. It indicates the topic of the
+                    sentence ("As for...").</p>
+                  <div class="grammar-example">
+                    <div class="jp-eg">わたし は たの です。(Watashi wa Thanu desu.)</div>
+                    <div class="en-eg">I am Thanu.</div>
+                  </div>
+                </div>
+
+                <div class="grammar-card">
+                  <div class="grammar-title">
+                    <span class="grammar-pill">を (o / wo)</span>
+                    <h4>Direct Object Marker</h4>
+                  </div>
+                  <p class="grammar-explanation">Indicates the object that is directly receiving the action of a verb.
+                  </p>
+                  <div class="grammar-example">
+                    <div class="jp-eg">ほん を よみます。(Hon o yomimasu.)</div>
+                    <div class="en-eg">I read a book.</div>
+                  </div>
+                </div>
+
+                <div class="grammar-card">
+                  <div class="grammar-title">
+                    <span class="grammar-pill">に (ni)</span>
+                    <h4>Time & Destination Marker</h4>
+                  </div>
+                  <p class="grammar-explanation">Marks a specific point in time or direction towards a goal/place.</p>
+                  <div class="grammar-example">
+                    <div class="jp-eg">にほん に いきます。(Nihon ni ikimasu.)</div>
+                    <div class="en-eg">I am going to Japan.</div>
+                  </div>
+                </div>
+
+                <div class="grammar-card">
+                  <div class="grammar-title">
+                    <span class="grammar-pill">で (de)</span>
+                    <h4>Location of Action & Means</h4>
+                  </div>
+                  <p class="grammar-explanation">Specifies where an action takes place or the instrument/tool used.</p>
+                  <div class="grammar-example">
+                    <div class="jp-eg">としょかん で べんきょうします。(Toshokan de benkyoushimasu.)</div>
+                    <div class="en-eg">I study at the library.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- TAB 5: QUIZ -->
+            <div id="jp-quiz" class="jp-panel">
+              <div class="quiz-container">
+                <div class="quiz-progress-bar">
+                  <div class="quiz-progress-fill" id="quiz-progress-fill"></div>
+                </div>
+
+                <div id="quiz-active-area">
+                  <div class="quiz-question-box">
+                    <div class="quiz-prompt-lbl" id="quiz-counter">Question 1 of 8</div>
+                    <div class="quiz-main-char" id="quiz-current-char">あ</div>
+                    <p style="font-size:0.9rem; color:var(--purple-700);">What is the correct Romaji reading for this
+                      character?</p>
+                  </div>
+
+                  <div class="quiz-options-grid" id="quiz-options-grid">
+                    <!-- 4 options created by JS -->
+                  </div>
+                </div>
+
+                <div id="quiz-result-area" style="display: none; text-align: center; padding: 2rem;">
+                  <div style="font-size: 3.5rem; margin-bottom: 0.5rem;">🎉</div>
+                  <h3 style="font-size: 1.8rem; font-weight: 800; color: var(--purple-950); margin-bottom: 0.5rem;">Quiz
+                    Completed!</h3>
+                  <p style="color: var(--purple-700); margin-bottom: 1.25rem;">Great job practicing Japanese Cuteuhhh!
+                  </p>
+                  <div style="font-size: 2.2rem; font-weight: 900; color: var(--purple-600); margin-bottom: 1.5rem;"
+                    id="quiz-final-score">8 / 8</div>
+                  <button id="btn-restart-quiz" class="btn btn-primary">Take Another Quiz 🔄</button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+
+        <!-- ------------------------------------------------------------------
+             SUBVIEW 3E: SAVED MODULES
+             ------------------------------------------------------------------ -->
+        <div id="subview-saved-modules" class="workspace-subview" style="display: none;">
+          <div class="saved-container">
+
+            <div class="saved-header">
+              <div>
+                <h2>Saved Modules</h2>
+                <p style="color: var(--purple-700); font-size: 0.95rem;">
+                  Archive of drawings created in "Wish to Know" and previous topics & lectures taken.
+                </p>
+              </div>
+
+              <button id="btn-open-add-lecture" class="btn btn-primary">
+                <span>+</span> Add Topic / Lecture
+              </button>
+            </div>
+
+            <!-- Saved Subtabs -->
+            <div class="saved-tabs-row">
+              <button class="saved-tab-btn active" data-target="slides">
+                <span>🎨</span> Whiteboard Notes & Slides
+              </button>
+              <button class="saved-tab-btn" data-target="lectures">
+                <span>📖</span> Lectures & Topics Taken
+              </button>
+            </div>
+
+            <!-- TAB 1: SAVED WHITEBOARD SLIDES -->
+            <div id="saved-slides" class="saved-panel active">
+              <div id="saved-slides-empty" class="empty-state-box" style="display: none;">
+                <div class="empty-state-icon">🎨</div>
+                <h3>No Saved Slides Yet</h3>
+                <p>Open "Wish to Know", draw anything, and click "Save to Saved Modules" to archive your slides here.
+                </p>
+              </div>
+
+              <div class="slides-gallery-grid" id="saved-slides-grid">
+                <!-- Slide cards rendered by JS -->
+              </div>
+            </div>
+
+            <!-- TAB 2: LECTURES & TOPICS TAKEN -->
+            <div id="saved-lectures" class="saved-panel">
+              <div class="lectures-controls-bar">
+                <div class="search-input-wrap">
+                  <span class="search-icon-pos">🔍</span>
+                  <input type="text" id="lecture-search-input" placeholder="Search lectures by title or topic..." />
+                </div>
+                <span style="font-size: 0.85rem; color: var(--purple-700); font-weight: 600;">Personal Learning
+                  Archive</span>
+              </div>
+
+              <div id="lectures-empty" class="empty-state-box" style="display: none;">
+                <div class="empty-state-icon">📚</div>
+                <h3>No Lectures Added Yet</h3>
+                <p>Click the "+ Add Topic / Lecture" button above to record previous sessions, study notes, or topics.
+                </p>
+              </div>
+
+              <div class="lectures-list-grid" id="lectures-list-grid">
+                <!-- Lecture cards rendered by JS -->
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </main>
+
+    </section>
+
+  </div>
+
+
+  <!-- ====================================================================
+       FLOATING DRAGGABLE MINI CALCULATOR WIDGET
+       "small icon for mini calculator"
+       ==================================================================== -->
+  <div id="mini-calc-widget" class="mini-calc-widget">
+    <div class="calc-titlebar" id="calc-titlebar">
+      <span>🧮 Mini Calculator</span>
+      <button class="calc-close-btn" id="calc-close-btn" title="Close">✕</button>
+    </div>
+
+    <div class="calc-screen">
+      <div class="calc-history" id="calc-history"></div>
+      <div class="calc-output" id="calc-output">0</div>
+    </div>
+
+    <div class="calc-keys-grid">
+      <button class="calc-btn clear-btn" data-action="clear">C</button>
+      <button class="calc-btn op-btn" data-action="backspace">⌫</button>
+      <button class="calc-btn op-btn" data-action="percent">%</button>
+      <button class="calc-btn op-btn" data-action="divide">÷</button>
+
+      <button class="calc-btn" data-key="7">7</button>
+      <button class="calc-btn" data-key="8">8</button>
+      <button class="calc-btn" data-key="9">9</button>
+      <button class="calc-btn op-btn" data-action="multiply">×</button>
+
+      <button class="calc-btn" data-key="4">4</button>
+      <button class="calc-btn" data-key="5">5</button>
+      <button class="calc-btn" data-key="6">6</button>
+      <button class="calc-btn op-btn" data-action="subtract">−</button>
+
+      <button class="calc-btn" data-key="1">1</button>
+      <button class="calc-btn" data-key="2">2</button>
+      <button class="calc-btn" data-key="3">3</button>
+      <button class="calc-btn op-btn" data-action="add">+</button>
+
+      <button class="calc-btn" data-action="plus-minus">±</button>
+      <button class="calc-btn" data-key="0">0</button>
+      <button class="calc-btn" data-key=".">.</button>
+      <button class="calc-btn op-btn" data-action="sqrt">√</button>
+
+      <button class="calc-btn equals-btn" data-action="equals">=</button>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       FLOATING DRAGGABLE QUICK NOTEPAD WIDGET
+       "in wish to know add one icon near board where i need to type something like note pad"
+       ==================================================================== -->
+  <div id="notepad-widget" class="notepad-widget">
+    <div class="notepad-titlebar" id="notepad-titlebar">
+      <div class="np-title-content">
+        <span>📝 Quick Notepad</span>
+        <span class="notepad-saved-status" id="notepad-saved-status">✨ Auto-saved</span>
+      </div>
+      <button class="calc-close-btn" id="notepad-close-btn" title="Close Notepad">✕</button>
+    </div>
+
+    <div class="notepad-toolbar">
+      <button class="np-tool-btn" id="notepad-copy-btn" title="Copy all notes">📋 Copy</button>
+      <button class="np-tool-btn" id="notepad-download-btn" title="Download as .txt">💾 Download</button>
+      <button class="np-tool-btn" id="notepad-clear-btn" title="Clear text">🗑️ Clear</button>
+    </div>
+
+    <div class="notepad-body">
+      <textarea id="notepad-textarea" class="notepad-textarea" placeholder="Type your lecture notes, quick thoughts, formulas, or reminders here... (Auto-saves continuously 💜)"></textarea>
+    </div>
+
+    <div class="notepad-footer">
+      <span class="notepad-stats" id="notepad-stats">0 words • 0 chars</span>
+      <span class="notepad-hint">💡 Drag header to move</span>
+    </div>
+  </div>
+
+
+  <!-- ====================================================================
+       MODALS
+       ==================================================================== -->
+
+  <!-- Modal 1: Add Lecture / Topic Form -->
+  <div id="add-lecture-modal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Add Topic / Lecture Taken</h3>
+        <button class="calc-close-btn" id="btn-cancel-lecture"
+          style="font-size: 1.5rem; color: var(--purple-700);">✕</button>
+      </div>
+      <form id="add-lecture-form">
+        <div class="modal-body">
+          <div class="lecture-form">
+            <div class="form-row">
+              <div class="form-field">
+                <label for="form-lecture-title">Topic Title *</label>
+                <input type="text" id="form-lecture-title" placeholder="e.g. Python Data Structures" required />
+              </div>
+              <div class="form-field">
+                <label for="form-lecture-date">Date Taken</label>
+                <input type="date" id="form-lecture-date" />
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label for="form-lecture-category">Subject / Category</label>
+              <select id="form-lecture-category">
+                <option value="Programming">Programming & Tech</option>
+                <option value="Japanese">Japanese Language</option>
+                <option value="Mathematics">Mathematics</option>
+                <option value="Design">Design & UI/UX</option>
+                <option value="General">General Knowledge</option>
+              </select>
+            </div>
+
+            <div class="form-field">
+              <label for="form-lecture-notes">Lecture Notes / Summary</label>
+              <textarea id="form-lecture-notes" rows="4"
+                placeholder="Summarize key takeaways, explanations, and thoughts from the lecture..."></textarea>
+            </div>
+
+            <div class="form-field">
+              <label for="form-lecture-points">Key Concepts Covered (One per line)</label>
+              <textarea id="form-lecture-points" rows="3"
+                placeholder="Concept 1&#10;Concept 2&#10;Concept 3"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Save Lecture to Archive 💜</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 2: Slide Full Preview Modal -->
+  <div id="slide-preview-modal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 900px;">
+      <div class="modal-header">
+        <h3 id="slide-preview-title">Whiteboard Slide</h3>
+        <button class="calc-close-btn" id="btn-close-slide-preview"
+          style="font-size: 1.5rem; color: var(--purple-700);">✕</button>
+      </div>
+      <div class="modal-body" style="background: #ffffff; text-align: center; padding: 1.5rem;">
+        <img id="slide-preview-img" src="" alt="Slide Preview"
+          style="max-width: 100%; max-height: 65vh; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);" />
+      </div>
+      <div class="modal-footer">
+        <a id="slide-preview-download" href="" download="slide.png" class="btn btn-primary">Download Slide Image
+          (PNG)</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 3: Two-Device Live Pairing & Sync Settings -->
+  <div id="sync-pair-modal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3>👫 Two-Device Live Sync</h3>
+        <button class="calc-close-btn" id="sync-pair-modal-close" style="font-size: 1.5rem; color: var(--purple-700);">✕</button>
+      </div>
+      <div class="modal-body" style="padding: 1.25rem;">
+        <div id="modal-partner-status" style="margin-bottom: 1.25rem; padding: 0.75rem 1rem; background: var(--purple-50); border-radius: var(--radius-md); border: 1px solid var(--purple-200); text-align: center;">
+          <span style="color: #ca8a04; font-weight: 600;">🟡 Connecting to Real-Time Cloud...</span>
+        </div>
+
+        <div class="form-field" style="margin-bottom: 1.25rem;">
+          <label style="font-weight: 700; color: var(--purple-900); font-size: 0.9rem; display: block; margin-bottom: 0.5rem;">Who is using this device?</label>
+          <div style="display: flex; gap: 1.25rem;">
+            <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer; font-weight: 600; color: var(--purple-900);">
+              <input type="radio" name="sync-user-role" id="role-me-radio" value="rk" checked />
+              <span>RK 💙 (Player 1)</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer; font-weight: 600; color: var(--purple-900);">
+              <input type="radio" name="sync-user-role" id="role-thanu-radio" value="thanu" />
+              <span>Thanu 💜 (Player 2)</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-field" style="margin-bottom: 1.25rem;">
+          <label for="sync-room-input" style="font-weight: 700; color: var(--purple-900); font-size: 0.9rem; display: block; margin-bottom: 0.4rem;">Shared Room Code (Must match on both devices):</label>
+          <input type="text" id="sync-room-input" class="passcode-input" style="font-size: 0.95rem; padding: 0.6rem 0.8rem; text-align: left; width: 100%; border: 1.5px solid var(--purple-300); border-radius: var(--radius-md);" value="thanu-and-rk-forever" />
+          <p style="font-size: 0.78rem; color: var(--purple-600); margin-top: 0.35rem;">Both RK and Thanu will automatically connect as long as your room codes match.</p>
+        </div>
+
+        <div style="display: flex; gap: 0.6rem; margin-top: 1.25rem;">
+          <button type="button" id="sync-copy-link-btn" class="btn btn-secondary btn-sm" style="flex: 1;">
+            📋 Copy Invite Link
+          </button>
+          <button type="button" id="sync-room-save-btn" class="btn btn-primary btn-sm" style="flex: 1;">
+            💾 Save & Connect
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notifications Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+
+  <!-- Application Scripts -->
+  <script src="js/vendor/mqtt.min.js"></script>
+  <script src="https://unpkg.com/mqtt@5.3.5/dist/mqtt.min.js"></script>
+  <script src="js/sync.js?v=6"></script>
+  <script src="js/calculator.js?v=6"></script>
+  <script src="js/notepad.js?v=6"></script>
+  <script src="js/whiteboard.js?v=6"></script>
+  <script src="js/wordlist.js?v=6"></script>
+  <script src="js/games.js?v=6"></script>
+  <script src="js/japanese.js?v=6"></script>
+  <script src="js/savedModules.js?v=6"></script>
+  <script src="js/birthday.js?v=6"></script>
+  <script src="js/app.js?v=6"></script>
+
+</body>
+
+</html>

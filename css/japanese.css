@@ -1,0 +1,420 @@
+/* ==========================================================================
+   Thanu's WorkSpace - Learn Japanese Styles
+   Module: "日本語を学ぶ" (Learn Japanese)
+   80% Purple & 20% White aesthetic
+   ========================================================================== */
+
+.japanese-container {
+  max-width: 1150px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 2.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.japanese-header {
+  text-align: center;
+}
+
+.japanese-header h2 {
+  font-family: 'Outfit', 'Noto Sans JP', sans-serif;
+  font-size: 2.4rem;
+  font-weight: 800;
+  color: var(--purple-950);
+  margin-bottom: 0.35rem;
+}
+
+.japanese-desc-badge {
+  display: inline-block;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--purple-700);
+  background: var(--purple-100);
+  padding: 0.25rem 0.95rem;
+  border-radius: var(--radius-full);
+  margin-bottom: 0.5rem;
+}
+
+.japanese-subtext {
+  color: var(--purple-800);
+  font-size: 0.95rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Curriculum Level Selector Tabs */
+.jp-tabs-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.jp-tab-btn {
+  padding: 0.6rem 1.25rem;
+  border-radius: var(--radius-full);
+  border: 1.5px solid var(--purple-300);
+  background: var(--white);
+  color: var(--purple-800);
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+}
+
+.jp-tab-btn:hover {
+  border-color: var(--purple-500);
+  background: var(--purple-50);
+}
+
+.jp-tab-btn.active {
+  background: linear-gradient(135deg, var(--purple-600), var(--purple-800));
+  color: var(--white);
+  border-color: var(--purple-900);
+  box-shadow: 0 4px 14px rgba(109, 40, 217, 0.3);
+}
+
+/* Tab Panels */
+.jp-panel {
+  display: none;
+  background: var(--white);
+  border: 2px solid var(--purple-200);
+  border-radius: var(--radius-xl);
+  padding: 2.25rem;
+  box-shadow: var(--shadow-md);
+  animation: fadeIn 0.3s ease;
+}
+
+.jp-panel.active {
+  display: block;
+}
+
+.jp-panel-header {
+  margin-bottom: 1.75rem;
+  border-bottom: 1.5px solid var(--purple-100);
+  padding-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.jp-panel-header h3 {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--purple-950);
+}
+
+.jp-panel-header p {
+  color: var(--purple-700);
+  font-size: 0.9rem;
+}
+
+/* Kana Grid */
+.kana-toggle-row {
+  display: flex;
+  gap: 0.5rem;
+  background: var(--purple-100);
+  padding: 4px;
+  border-radius: var(--radius-full);
+}
+
+.kana-toggle-btn {
+  padding: 0.35rem 0.95rem;
+  border-radius: var(--radius-full);
+  border: none;
+  background: transparent;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--purple-800);
+  cursor: pointer;
+}
+
+.kana-toggle-btn.active {
+  background: var(--purple-600);
+  color: var(--white);
+}
+
+.kana-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(95px, 1fr));
+  gap: 12px;
+}
+
+.kana-card {
+  background: var(--purple-50);
+  border: 1.5px solid var(--purple-200);
+  border-radius: var(--radius-md);
+  padding: 0.85rem 0.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.kana-card:hover {
+  background: var(--purple-100);
+  border-color: var(--purple-500);
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
+}
+
+.kana-char {
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--purple-950);
+  line-height: 1.2;
+}
+
+.kana-romaji {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--purple-600);
+  margin-top: 0.2rem;
+}
+
+.kana-audio-hint {
+  font-size: 0.72rem;
+  color: var(--purple-400);
+  margin-top: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.kana-card:hover .kana-audio-hint {
+  color: var(--purple-700);
+}
+
+/* Phrases & Vocabulary Cards */
+.phrases-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.phrase-card {
+  background: var(--purple-50);
+  border: 1.5px solid var(--purple-200);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.phrase-card:hover {
+  background: var(--purple-100);
+  border-color: var(--purple-400);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.phrase-card.special-birthday {
+  background: linear-gradient(135deg, #f5f3ff, #ede9fe);
+  border: 2px solid var(--purple-400);
+  box-shadow: 0 4px 16px rgba(168, 85, 247, 0.25);
+}
+
+.phrase-content h4 {
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--purple-950);
+  margin-bottom: 0.25rem;
+}
+
+.phrase-romaji {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--purple-600);
+  margin-bottom: 0.25rem;
+}
+
+.phrase-meaning {
+  font-size: 0.85rem;
+  color: var(--purple-800);
+}
+
+.phrase-speaker-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--white);
+  border: 1.5px solid var(--purple-300);
+  color: var(--purple-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  transition: all var(--transition-fast);
+}
+
+.phrase-card:hover .phrase-speaker-btn {
+  background: var(--purple-600);
+  color: var(--white);
+  border-color: var(--purple-700);
+}
+
+/* Grammar Cards */
+.grammar-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.grammar-card {
+  background: var(--purple-50);
+  border: 1.5px solid var(--purple-200);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+}
+
+.grammar-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.grammar-pill {
+  background: var(--purple-600);
+  color: var(--white);
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-weight: 800;
+  font-size: 1.1rem;
+}
+
+.grammar-card h4 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--purple-950);
+}
+
+.grammar-explanation {
+  font-size: 0.92rem;
+  color: var(--purple-800);
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.grammar-example {
+  background: var(--white);
+  border-left: 4px solid var(--purple-500);
+  padding: 0.85rem 1rem;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+
+.grammar-example .jp-eg {
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--purple-950);
+}
+
+.grammar-example .en-eg {
+  font-size: 0.85rem;
+  color: var(--purple-600);
+  margin-top: 0.2rem;
+}
+
+/* Japanese Quiz View */
+.quiz-container {
+  max-width: 650px;
+  margin: 0 auto;
+}
+
+.quiz-progress-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--purple-100);
+  border-radius: var(--radius-full);
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+}
+
+.quiz-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--purple-500), var(--purple-700));
+  width: 0%;
+  transition: width 0.3s ease;
+}
+
+.quiz-question-box {
+  background: var(--purple-50);
+  border: 2px solid var(--purple-300);
+  border-radius: var(--radius-xl);
+  padding: 2.25rem 1.75rem;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.quiz-prompt-lbl {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--purple-600);
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+.quiz-main-char {
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 4rem;
+  font-weight: 900;
+  color: var(--purple-950);
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+
+.quiz-options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 1.5rem;
+}
+
+.quiz-opt-btn {
+  padding: 1.1rem;
+  background: var(--white);
+  border: 2px solid var(--purple-200);
+  border-radius: var(--radius-lg);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--purple-900);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.quiz-opt-btn:hover {
+  border-color: var(--purple-500);
+  background: var(--purple-50);
+  transform: translateY(-2px);
+}
+
+.quiz-opt-btn.correct {
+  background: #dcfce7;
+  border-color: #22c55e;
+  color: #15803d;
+}
+
+.quiz-opt-btn.wrong {
+  background: #fee2e2;
+  border-color: #ef4444;
+  color: #b91c1c;
+}

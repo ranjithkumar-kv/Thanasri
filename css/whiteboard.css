@@ -1,0 +1,664 @@
+/* ==========================================================================
+   Thanu's WorkSpace - Whiteboard & Mini Calculator Styles
+   Module: "Wish to Know" (Develop your knowledge)
+   80% Purple & 20% White aesthetic
+   ========================================================================== */
+
+.whiteboard-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 65px);
+  background: var(--purple-50);
+  overflow: hidden;
+  position: relative;
+}
+
+/* Whiteboard Top Action & Room Bar */
+.wb-header {
+  background: var(--white);
+  border-bottom: 2px solid var(--purple-200);
+  padding: 0.65rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  box-shadow: var(--shadow-sm);
+  z-index: 10;
+}
+
+.wb-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.wb-title-group h2 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--purple-950);
+  line-height: 1;
+}
+
+.wb-desc-tag {
+  font-size: 0.78rem;
+  font-weight: 600;
+  background: var(--purple-100);
+  color: var(--purple-800);
+  padding: 0.2rem 0.65rem;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--purple-300);
+}
+
+/* Live Zoom-like Sync Badge */
+.wb-sync-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--purple-50);
+  border: 1.5px solid var(--purple-300);
+  color: var(--purple-900);
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.wb-sync-badge:hover {
+  background: var(--purple-100);
+  border-color: var(--purple-500);
+}
+
+.sync-dot {
+  width: 9px;
+  height: 9px;
+  background: #10b981;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #10b981;
+  animation: pulseDot 2s infinite;
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+}
+
+.wb-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+/* Slides Navigation Strip */
+.wb-slides-strip {
+  background: var(--purple-100);
+  border-bottom: 1.5px solid var(--purple-200);
+  padding: 0.5rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.slides-list {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.slide-chip {
+  padding: 0.35rem 0.85rem;
+  background: var(--white);
+  border: 1.5px solid var(--purple-300);
+  border-radius: var(--radius-md);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--purple-800);
+  cursor: pointer;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all var(--transition-fast);
+}
+
+.slide-chip:hover {
+  background: var(--purple-50);
+  border-color: var(--purple-500);
+}
+
+.slide-chip.active {
+  background: linear-gradient(135deg, var(--purple-600), var(--purple-800));
+  color: var(--white);
+  border-color: var(--purple-900);
+  box-shadow: 0 2px 8px rgba(109, 40, 217, 0.25);
+}
+
+.btn-add-slide {
+  padding: 0.35rem 0.75rem;
+  background: var(--purple-600);
+  color: var(--white);
+  border-radius: var(--radius-md);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  transition: background var(--transition-fast);
+}
+.btn-add-slide:hover {
+  background: var(--purple-700);
+}
+
+.slide-controls-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--purple-900);
+}
+
+/* Whiteboard Body */
+.wb-main-area {
+  flex-grow: 1;
+  position: relative;
+  display: flex;
+  overflow: hidden;
+}
+
+/* Floating Toolbar (Tools: Pen, Eraser, Colors, Calculator) */
+.wb-floating-toolbar {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--white-95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 2px solid var(--purple-300);
+  box-shadow: var(--shadow-lg);
+  border-radius: var(--radius-full);
+  padding: 0.45rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  z-index: 20;
+}
+
+.tool-group {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.tool-divider {
+  width: 1px;
+  height: 24px;
+  background: var(--purple-200);
+  margin: 0 0.25rem;
+}
+
+.tool-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1.5px solid transparent;
+  background: transparent;
+  color: var(--purple-800);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  position: relative;
+}
+
+.tool-btn:hover {
+  background: var(--purple-100);
+  color: var(--purple-900);
+}
+
+.tool-btn.active {
+  background: linear-gradient(135deg, var(--purple-600), var(--purple-700));
+  color: var(--white);
+  border-color: var(--white);
+  box-shadow: 0 2px 10px rgba(109, 40, 217, 0.35);
+}
+
+/* Color Swatches */
+.color-swatches-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.color-swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--white);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.color-swatch:hover {
+  transform: scale(1.2);
+}
+
+.color-swatch.active {
+  transform: scale(1.25);
+  box-shadow: 0 0 0 2.5px var(--purple-700);
+}
+
+.custom-color-input {
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  background: none;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Stroke size indicator */
+.stroke-size-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0 0.3rem;
+}
+
+.stroke-size-selector input[type="range"] {
+  width: 70px;
+  accent-color: var(--purple-600);
+}
+
+/* Canvas Viewport */
+.canvas-viewport {
+  flex-grow: 1;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background: #ffffff;
+  cursor: crosshair;
+}
+
+#whiteboard-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+
+/* Cursor indicator for remote peer (Zoom-like) */
+.peer-cursor {
+  position: absolute;
+  pointer-events: none;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: transform 0.08s linear;
+}
+
+.peer-cursor-pointer {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--purple-600);
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 8px rgba(124, 58, 237, 0.6);
+}
+
+.peer-cursor-label {
+  background: var(--purple-900);
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   Small Icon & Draggable Mini Calculator
+   ========================================================================== */
+
+/* Calculator Toggle Button (Can be placed in floating toolbar or bottom corner) */
+.calc-toggle-btn {
+  background: linear-gradient(135deg, var(--purple-600), var(--purple-700));
+  color: var(--white);
+  border: 2px solid var(--white);
+  border-radius: 50%;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+  transition: transform var(--transition-fast);
+}
+
+.calc-toggle-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.4);
+}
+
+/* Draggable Floating Calculator */
+.mini-calc-widget {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 290px;
+  background: var(--white);
+  border: 2px solid var(--purple-400);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 15px 40px rgba(91, 33, 182, 0.35);
+  overflow: hidden;
+  z-index: 100;
+  display: none;
+  flex-direction: column;
+  animation: calcPop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  user-select: none;
+}
+
+.mini-calc-widget.active {
+  display: flex;
+}
+
+@keyframes calcPop {
+  from { transform: scale(0.85); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.calc-titlebar {
+  background: linear-gradient(135deg, var(--purple-700), var(--purple-800));
+  color: var(--white);
+  padding: 0.65rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: grab;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.calc-titlebar:active {
+  cursor: grabbing;
+}
+
+.calc-close-btn {
+  background: none;
+  border: none;
+  color: var(--purple-200);
+  font-size: 1.1rem;
+  cursor: pointer;
+  line-height: 1;
+}
+.calc-close-btn:hover {
+  color: var(--white);
+}
+
+.calc-screen {
+  background: var(--purple-50);
+  padding: 1rem 1.25rem;
+  text-align: right;
+  border-bottom: 2px solid var(--purple-200);
+}
+
+.calc-history {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  color: var(--purple-600);
+  min-height: 18px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calc-output {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: var(--purple-950);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calc-keys-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  padding: 10px;
+  background: var(--purple-100);
+}
+
+.calc-btn {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  padding: 12px 0;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--purple-200);
+  background: var(--white);
+  color: var(--purple-900);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.calc-btn:hover {
+  background: var(--purple-50);
+  border-color: var(--purple-400);
+}
+
+.calc-btn:active {
+  transform: scale(0.94);
+}
+
+.calc-btn.op-btn {
+  background: var(--purple-200);
+  color: var(--purple-800);
+  font-weight: 800;
+}
+
+.calc-btn.op-btn:hover {
+  background: var(--purple-300);
+  color: var(--purple-950);
+}
+
+.calc-btn.equals-btn {
+  background: linear-gradient(135deg, var(--purple-600), var(--purple-800));
+  color: var(--white);
+  font-weight: 800;
+  grid-column: span 2;
+}
+
+.calc-btn.equals-btn:hover {
+  background: linear-gradient(135deg, var(--purple-500), var(--purple-700));
+}
+
+.calc-btn.clear-btn {
+  background: #fee2e2;
+  color: #dc2626;
+  border-color: #fca5a5;
+}
+.calc-btn.clear-btn:hover {
+  background: #fecaca;
+}
+
+/* ==========================================================================
+   Draggable Floating Quick Notepad
+   ========================================================================== */
+.notepad-widget {
+  position: fixed;
+  bottom: 30px;
+  right: 335px;
+  width: 320px;
+  height: 420px;
+  background: var(--white);
+  border: 2px solid var(--purple-400);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 16px 45px rgba(91, 33, 182, 0.32);
+  overflow: hidden;
+  z-index: 101;
+  display: none;
+  flex-direction: column;
+  animation: notepadPop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.notepad-widget.active {
+  display: flex;
+}
+
+@keyframes notepadPop {
+  from { transform: scale(0.85); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.notepad-titlebar {
+  background: linear-gradient(135deg, var(--purple-700), var(--purple-850, #4c1d95));
+  color: var(--white);
+  padding: 0.65rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: grab;
+  font-size: 0.85rem;
+  font-weight: 700;
+  user-select: none;
+}
+
+.notepad-titlebar:active {
+  cursor: grabbing;
+}
+
+.np-title-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.notepad-saved-status {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #d8b4fe;
+  opacity: 0.9;
+  transition: opacity 0.3s ease;
+}
+
+.notepad-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  background: var(--purple-50);
+  border-bottom: 1px solid var(--purple-200);
+}
+
+.np-tool-btn {
+  background: var(--white);
+  border: 1px solid var(--purple-200);
+  border-radius: var(--radius-sm);
+  padding: 0.25rem 0.55rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--purple-800);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-family: inherit;
+}
+
+.np-tool-btn:hover {
+  background: var(--purple-100);
+  border-color: var(--purple-400);
+  color: var(--purple-950);
+}
+
+.notepad-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #fcfaff;
+  padding: 0;
+  overflow: hidden;
+}
+
+.notepad-textarea {
+  flex: 1;
+  width: 100%;
+  border: none;
+  outline: none;
+  resize: none;
+  padding: 0.75rem 0.9rem;
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--purple-950);
+  background: transparent;
+  box-sizing: border-box;
+}
+
+.notepad-textarea::placeholder {
+  color: var(--purple-400);
+  font-size: 0.82rem;
+  font-style: italic;
+}
+
+.notepad-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.35rem 0.75rem;
+  background: var(--purple-50);
+  border-top: 1px solid var(--purple-200);
+  font-size: 0.72rem;
+  color: var(--purple-700);
+  font-weight: 600;
+  user-select: none;
+}
+
+.notepad-hint {
+  font-size: 0.68rem;
+  color: var(--purple-500);
+}
+
+@media (max-width: 768px) {
+  .wb-header {
+    flex-wrap: wrap;
+    padding: 0.5rem 0.75rem;
+  }
+  .wb-floating-toolbar {
+    width: 95%;
+    overflow-x: auto;
+    border-radius: var(--radius-md);
+    top: 8px;
+    padding: 0.35rem 0.5rem;
+  }
+  .notepad-widget {
+    right: 15px;
+    bottom: 20px;
+    width: calc(100vw - 30px);
+    max-width: 320px;
+    height: 360px;
+  }
+}
+
