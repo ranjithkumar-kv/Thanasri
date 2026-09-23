@@ -344,6 +344,9 @@ class WorkspaceSyncEngine {
       case 'WB_STROKE':
         if (this.onRemoteStroke) this.onRemoteStroke(packet.payload);
         break;
+      case 'WB_SEND_ART':
+        if (this.onRemoteSendArt) this.onRemoteSendArt(packet.payload);
+        break;
       case 'WB_LIVE_START':
         if (this.onRemoteLiveStart) this.onRemoteLiveStart(packet.payload);
         break;
@@ -413,6 +416,10 @@ class WorkspaceSyncEngine {
 
   sendLiveEnd(payload) {
     this.broadcast('WB_LIVE_END', payload, 1);
+  }
+
+  sendArt(data) {
+    this.broadcast('WB_SEND_ART', data, 1);
   }
 
   sendClear(slideId) {

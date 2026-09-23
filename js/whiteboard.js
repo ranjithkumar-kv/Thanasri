@@ -2,6 +2,7 @@
    Thanu's WorkSpace - Interactive Multi-Slide Whiteboard
    Module: "Wish to Know" (Develop your knowledge)
    Live collaboration (Zoom-like), tools, slide management, 16:9 uniform projection
+   Features explicit "Send Art" to push completed artwork with 100% precision
    ========================================================================== */
 
 class InteractiveWhiteboard {
@@ -22,17 +23,8 @@ class InteractiveWhiteboard {
     this.currentColor = '#6d28d9'; // Default regal purple
     this.currentSize = 4;
     this.currentStroke = null;
-    this.currentStrokeId = null;
     this.lastPoint = null;
     this.lastMidPoint = null;
-
-    // Live stroke streaming buffer (stream points to peers at ~40 FPS)
-    this.liveChunkBuffer = [];
-    this.lastLiveChunkTime = 0;
-
-    // Remote active drawing streams from partner
-    this.remoteActiveStrokes = {};
-    this.handledRemoteStrokeIds = new Set();
 
     // Slide dimensions in CSS pixels (strictly 16:9 across all devices)
     this.width = 1280;
@@ -130,11 +122,22 @@ class InteractiveWhiteboard {
   initEventListeners() {
     if (!this.canvas) return;
 
-    // Pointer events with pointer capture for flawless drawing
+    // Pointer events with pointer capture for flawless local drawing
     this.canvas.addEventListener('pointerdown', (e) => this.startDrawing(e));
     this.canvas.addEventListener('pointermove', (e) => this.draw(e));
     this.canvas.addEventListener('pointerup', (e) => this.stopDrawing(e));
     this.canvas.addEventListener('pointercancel', (e) => this.stopDrawing(e));
+
+    // Send Art Buttons (Both Header and Floating Toolbar)
+    const sendHeaderBtn = document.getElementById('btn-send-art');
+    const sendToolBtn = document.getElementById('tool-send-btn');
+
+    if (sendHeaderBtn) {
+      sendHeaderBtn.addEventListener('click', () => this.sendArtToPartner());
+    }
+    if (sendToolBtn) {
+      sendToolBtn.addEventListener('click', () => this.sendArtToPartner());
+    }
 
     // Tools Buttons
     const penBtn = document.getElementById('tool-pen-btn');
@@ -230,22 +233,9 @@ class InteractiveWhiteboard {
   initSyncHandlers() {
     if (!this.syncEngine) return;
 
-    // Real-Time Live Drawing Handlers (Updates simultaneously with cursor!)
-    this.syncEngine.onRemoteLiveStart = (data) => {
-      this.handleRemoteLiveStart(data);
-    };
-
-    this.syncEngine.onRemoteLiveChunk = (data) => {
-      this.handleRemoteLiveChunk(data);
-    };
-
-    this.syncEngine.onRemoteLiveEnd = (data) => {
-      this.handleRemoteLiveEnd(data);
-    };
-
-    // Completed remote stroke fallback
-    this.syncEngine.onRemoteStroke = (strokeData) => {
-      this.handleRemoteStroke(strokeData);
+    // "Send Art" event received from partner
+    this.syncEngine.onRemoteSendArt = (data) => {
+      this.handleRemoteSendArt(data);
     };
 
     // Remote clear board
@@ -359,7 +349,7 @@ class InteractiveWhiteboard {
   }
 
   /* --------------------------------------------------------------------------
-     High-Precision, Butter-Smooth Drawing Engine
+     High-Precision, Butter-Smooth Local Drawing Engine
      -------------------------------------------------------------------------- */
   startDrawing(e) {
     if (!this.canvas || !this.ctx) return;
@@ -376,10 +366,10 @@ class InteractiveWhiteboard {
     } catch (err) {}
 
     const pos = this.getPointerPos(e);
-    this.currentStrokeId = 'stk_' + Math.random().toString(36).substring(2, 8);
+    const strokeId = 'stk_' + Math.random().toString(36).substring(2, 8);
 
     this.currentStroke = {
-      id: this.currentStrokeId,
+      id: strokeId,
       tool: this.currentTool,
       color: this.currentColor,
       size: this.currentSize,
@@ -404,23 +394,9 @@ class InteractiveWhiteboard {
     this.lastPoint = pos;
     this.lastMidPoint = pos;
 
-    // Reset live streaming buffer
-    this.liveChunkBuffer = [];
-    this.lastLiveChunkTime = Date.now();
-
-    // Stream LIVE START event to partner immediately!
+    // Send cursor position to partner
     if (this.syncEngine) {
       this.syncEngine.sendCursor(pos.nx, pos.ny);
-      if (this.syncEngine.sendLiveStart) {
-        this.syncEngine.sendLiveStart({
-          strokeId: this.currentStrokeId,
-          slideIndex: this.activeSlideIndex,
-          tool: this.currentTool,
-          color: this.currentColor,
-          size: this.currentSize,
-          point: { nx: pos.nx, ny: pos.ny }
-        });
-      }
     }
   }
 
@@ -450,7 +426,6 @@ class InteractiveWhiteboard {
       if (dnx * dnx + dny * dny < 0.0000003) continue;
 
       this.currentStroke.points.push(pos);
-      this.liveChunkBuffer.push([pos.nx, pos.ny]);
 
       // Quadratic Bézier curve to midpoint for studio-smooth curves
       const newMidPoint = {
@@ -470,22 +445,6 @@ class InteractiveWhiteboard {
     const lastPos = this.currentStroke.points[this.currentStroke.points.length - 1];
     if (lastPos && this.syncEngine) {
       this.syncEngine.sendCursor(lastPos.nx, lastPos.ny);
-
-      const now = Date.now();
-      if (this.liveChunkBuffer.length >= 2 || (this.liveChunkBuffer.length > 0 && now - this.lastLiveChunkTime >= 20)) {
-        if (this.syncEngine.sendLiveChunk) {
-          this.syncEngine.sendLiveChunk({
-            strokeId: this.currentStrokeId,
-            slideIndex: this.activeSlideIndex,
-            tool: this.currentTool,
-            color: this.currentColor,
-            size: this.currentSize,
-            pts: this.liveChunkBuffer
-          });
-        }
-        this.liveChunkBuffer = [];
-        this.lastLiveChunkTime = now;
-      }
     }
   }
 
@@ -511,19 +470,6 @@ class InteractiveWhiteboard {
         this.ctx.stroke();
       }
 
-      // Flush remaining buffered live points
-      if (this.liveChunkBuffer.length > 0 && this.syncEngine && this.syncEngine.sendLiveChunk) {
-        this.syncEngine.sendLiveChunk({
-          strokeId: this.currentStrokeId,
-          slideIndex: this.activeSlideIndex,
-          tool: this.currentTool,
-          color: this.currentColor,
-          size: this.currentSize,
-          pts: this.liveChunkBuffer
-        });
-        this.liveChunkBuffer = [];
-      }
-
       // Compact stroke points strictly in normalized coordinates [0, 1]
       const compactedPoints = this.currentStroke.points.map(p => ({
         nx: p.nx,
@@ -531,7 +477,7 @@ class InteractiveWhiteboard {
       }));
 
       const finalStroke = {
-        id: this.currentStrokeId,
+        id: this.currentStroke.id,
         tool: this.currentStroke.tool,
         color: this.currentStroke.color,
         size: this.currentStroke.size,
@@ -543,164 +489,106 @@ class InteractiveWhiteboard {
         activeSlide.strokes.push(finalStroke);
         activeSlide.redoStack = [];
       }
-
-      // Broadcast completed stroke (both live end & full stroke fallback)
-      if (this.syncEngine) {
-        if (this.syncEngine.sendLiveEnd) {
-          this.syncEngine.sendLiveEnd({
-            strokeId: this.currentStrokeId,
-            slideIndex: this.activeSlideIndex,
-            stroke: finalStroke
-          });
-        }
-        this.syncEngine.sendStroke({
-          slideIndex: this.activeSlideIndex,
-          stroke: finalStroke
-        });
-      }
     }
 
     this.currentStroke = null;
-    this.currentStrokeId = null;
     this.lastPoint = null;
     this.lastMidPoint = null;
   }
 
   /* --------------------------------------------------------------------------
-     Real-Time Remote Live Drawing (Simultaneous with Partner's Cursor!)
+     "Send Art to Partner" Action
+     Pushes completed artwork to other device with 100% precision
      -------------------------------------------------------------------------- */
-  handleRemoteLiveStart(data) {
-    if (!data || !data.strokeId) return;
-    if (data.slideIndex !== this.activeSlideIndex) return;
-
-    const w = this.width;
-    const h = this.height;
-    const dpr = window.devicePixelRatio || 1;
-    this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-    const pt = {
-      x: data.point.nx * w,
-      y: data.point.ny * h,
-      nx: data.point.nx,
-      ny: data.point.ny
-    };
-
-    this.remoteActiveStrokes[data.strokeId] = {
-      id: data.strokeId,
-      tool: data.tool,
-      color: data.color,
-      size: data.size,
-      points: [pt],
-      lastPoint: pt,
-      lastMidPoint: pt
-    };
-
-    const scale = Math.max(0.4, w / 1200);
-    const scaledSize = Math.max(1.5, (data.size || 4) * scale);
-    this.applyToolStyles(data.tool, data.color, scaledSize);
-
-    const dotRadius = (data.tool === 'eraser' ? scaledSize * 2.5 : scaledSize) / 2;
-    this.ctx.beginPath();
-    this.ctx.arc(pt.x, pt.y, Math.max(dotRadius, 1), 0, Math.PI * 2);
-    if (data.tool === 'eraser') {
-      this.ctx.fill();
-    } else {
-      this.ctx.fillStyle = data.color || '#6d28d9';
-      this.ctx.fill();
-    }
-  }
-
-  handleRemoteLiveChunk(data) {
-    if (!data || !data.strokeId || !data.pts) return;
-    if (data.slideIndex !== this.activeSlideIndex) return;
-
-    let remote = this.remoteActiveStrokes[data.strokeId];
-    const w = this.width;
-    const h = this.height;
-    const dpr = window.devicePixelRatio || 1;
-    this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-    // Auto-heal if WB_LIVE_START was delayed or dropped
-    if (!remote) {
-      const firstPt = data.pts[0];
-      const pt = {
-        x: firstPt[0] * w,
-        y: firstPt[1] * h,
-        nx: firstPt[0],
-        ny: firstPt[1]
-      };
-      remote = {
-        id: data.strokeId,
-        tool: data.tool || 'pen',
-        color: data.color || '#6d28d9',
-        size: data.size || 4,
-        points: [pt],
-        lastPoint: pt,
-        lastMidPoint: pt
-      };
-      this.remoteActiveStrokes[data.strokeId] = remote;
-    }
-
-    const scale = Math.max(0.4, w / 1200);
-    const scaledSize = Math.max(1.5, (remote.size || 4) * scale);
-    this.applyToolStyles(remote.tool, remote.color, scaledSize);
-
-    for (const [nx, ny] of data.pts) {
-      const pos = { x: nx * w, y: ny * h, nx, ny };
-      remote.points.push(pos);
-
-      const newMidPoint = {
-        x: (remote.lastPoint.x + pos.x) / 2,
-        y: (remote.lastPoint.y + pos.y) / 2
-      };
-
-      this.ctx.beginPath();
-      this.ctx.moveTo(remote.lastMidPoint.x, remote.lastMidPoint.y);
-      this.ctx.quadraticCurveTo(remote.lastPoint.x, remote.lastPoint.y, newMidPoint.x, newMidPoint.y);
-      this.ctx.stroke();
-
-      remote.lastPoint = pos;
-      remote.lastMidPoint = newMidPoint;
-    }
-  }
-
-  handleRemoteLiveEnd(data) {
-    if (!data || !data.strokeId) return;
-    this.handledRemoteStrokeIds.add(data.strokeId);
-
-    const targetSlide = this.slides[data.slideIndex];
-    const remote = this.remoteActiveStrokes[data.strokeId];
-
-    const finalStroke = data.stroke || (remote ? {
-      id: remote.id,
-      tool: remote.tool,
-      color: remote.color,
-      size: remote.size,
-      points: remote.points.map(p => ({ nx: p.nx, ny: p.ny }))
-    } : null);
-
-    if (finalStroke && targetSlide) {
-      if (!targetSlide.strokes.some(s => s.id === data.strokeId)) {
-        targetSlide.strokes.push(finalStroke);
+  sendArtToPartner() {
+    const currentSlide = this.slides[this.activeSlideIndex];
+    if (!currentSlide || !currentSlide.strokes || currentSlide.strokes.length === 0) {
+      if (window.app) {
+        window.app.showToast('Please draw your artwork first before sending! 🎨');
       }
-      targetSlide.redoStack = [];
+      return;
+    }
 
-      // If chunks were missing or stroke wasn't rendered live, render full stroke accurately
-      if (data.slideIndex === this.activeSlideIndex) {
-        if (!remote || remote.points.length < 2) {
-          this.renderStroke(finalStroke);
-        } else {
-          const scale = Math.max(0.4, this.width / 1200);
-          this.applyToolStyles(remote.tool, remote.color, Math.max(1.5, remote.size * scale));
-          this.ctx.beginPath();
-          this.ctx.moveTo(remote.lastMidPoint.x, remote.lastMidPoint.y);
-          this.ctx.lineTo(remote.lastPoint.x, remote.lastPoint.y);
-          this.ctx.stroke();
-        }
+    const sendBtns = [
+      document.getElementById('btn-send-art'),
+      document.getElementById('tool-send-btn')
+    ].filter(Boolean);
+
+    // Visual button loading state
+    sendBtns.forEach(btn => {
+      btn.dataset.origHtml = btn.innerHTML;
+      btn.innerHTML = '⏳ Sending...';
+      btn.disabled = true;
+    });
+
+    const partnerName = this.syncEngine?.partnerName || 'Partner';
+    const payload = {
+      slideIndex: this.activeSlideIndex,
+      slideName: currentSlide.name,
+      strokes: currentSlide.strokes,
+      senderName: this.syncEngine?.getUserDisplayName() || 'Partner'
+    };
+
+    if (this.syncEngine) {
+      if (this.syncEngine.sendArt) {
+        this.syncEngine.sendArt(payload);
+      }
+      // Also sync full slide state for catch-up persistence
+      if (this.syncEngine.sendWhiteboardState) {
+        this.syncEngine.sendWhiteboardState(this.slides, this.activeSlideIndex);
       }
     }
 
-    delete this.remoteActiveStrokes[data.strokeId];
+    setTimeout(() => {
+      sendBtns.forEach(btn => {
+        btn.classList.add('sent-success');
+        btn.innerHTML = `✨ Sent to ${partnerName}!`;
+      });
+
+      if (window.app) {
+        window.app.showToast(`Artwork sent to ${partnerName}! 🚀💜✨`);
+      }
+
+      setTimeout(() => {
+        sendBtns.forEach(btn => {
+          btn.classList.remove('sent-success');
+          btn.innerHTML = btn.dataset.origHtml || '🚀 Send Art';
+          btn.disabled = false;
+        });
+      }, 2400);
+    }, 250);
+  }
+
+  /* --------------------------------------------------------------------------
+     Receive Art from Partner
+     -------------------------------------------------------------------------- */
+  handleRemoteSendArt(data) {
+    if (!data || !data.strokes) return;
+    const targetIndex = data.slideIndex !== undefined ? data.slideIndex : this.activeSlideIndex;
+
+    // Ensure slides array has the target slide
+    while (this.slides.length <= targetIndex) {
+      const newId = this.slides.length + 1;
+      this.slides.push({
+        id: newId,
+        name: `Slide ${newId}`,
+        strokes: [],
+        redoStack: []
+      });
+    }
+
+    this.slides[targetIndex].strokes = data.strokes;
+    this.slides[targetIndex].redoStack = [];
+
+    // Switch to the slide containing the new artwork
+    this.activeSlideIndex = targetIndex;
+    this.renderSlideChips();
+    this.redrawActiveSlide();
+
+    const sender = data.senderName || 'Your partner';
+    if (window.app) {
+      window.app.showToast(`${sender} sent you new artwork! 🎨💜✨`, 4000);
+    }
   }
 
   /* --------------------------------------------------------------------------
@@ -791,28 +679,6 @@ class InteractiveWhiteboard {
     if (activeSlide && activeSlide.strokes) {
       for (const stroke of activeSlide.strokes) {
         this.renderStroke(stroke);
-      }
-    }
-  }
-
-  /* --------------------------------------------------------------------------
-     Legacy Remote Collaboration Handlers
-     -------------------------------------------------------------------------- */
-  handleRemoteStroke(data) {
-    if (!data || !data.stroke) return;
-    const strokeId = data.stroke.id;
-    if (strokeId && this.handledRemoteStrokeIds.has(strokeId)) {
-      return; // Already processed via live stream!
-    }
-    if (strokeId) {
-      this.handledRemoteStrokeIds.add(strokeId);
-    }
-
-    const targetSlide = this.slides[data.slideIndex];
-    if (targetSlide) {
-      targetSlide.strokes.push(data.stroke);
-      if (data.slideIndex === this.activeSlideIndex) {
-        this.renderStroke(data.stroke);
       }
     }
   }
