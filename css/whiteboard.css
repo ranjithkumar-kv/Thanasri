@@ -290,6 +290,9 @@
   position: relative;
   background: #ffffff;
   cursor: crosshair;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
 }
 
 #whiteboard-canvas {
@@ -299,6 +302,7 @@
   width: 100%;
   height: 100%;
   touch-action: none;
+  display: block;
 }
 
 /* Cursor indicator for remote peer (Zoom-like) */

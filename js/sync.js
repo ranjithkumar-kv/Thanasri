@@ -268,7 +268,7 @@ class WorkspaceSyncEngine {
   /* --------------------------------------------------------------------------
      Publishing / Broadcasting
      -------------------------------------------------------------------------- */
-  broadcast(type, payload = {}) {
+  broadcast(type, payload = {}, qos = 1) {
     const packetId = 'msg_' + Math.random().toString(36).substring(2, 9) + '_' + Date.now();
     this.recentMessageIds.add(packetId);
 
@@ -292,7 +292,7 @@ class WorkspaceSyncEngine {
     // 2. Broadcast across internet via MQTT WebSockets
     if (this.mqttClient && this.mqttClient.connected) {
       try {
-        this.mqttClient.publish(this.topic, JSON.stringify(packet), { qos: 1 });
+        this.mqttClient.publish(this.topic, JSON.stringify(packet), { qos: qos });
       } catch (e) {
         console.warn('MQTT publish error:', e);
       }
@@ -403,7 +403,10 @@ class WorkspaceSyncEngine {
   }
 
   sendCursor(nx, ny) {
-    this.broadcast('WB_CURSOR', { nx, ny });
+    const now = Date.now();
+    if (this._lastCursorSend && now - this._lastCursorSend < 40) return;
+    this._lastCursorSend = now;
+    this.broadcast('WB_CURSOR', { nx, ny }, 0);
   }
 
   requestWhiteboardState() {

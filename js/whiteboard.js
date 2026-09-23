@@ -1,22 +1,29 @@
 /* ==========================================================================
    Thanu's WorkSpace - Interactive Multi-Slide Whiteboard
    Module: "Wish to Know" (Develop your knowledge)
-   Live collaboration (Zoom-like), tools, slide management
+   Live collaboration (Zoom-like), tools, slide management, high-precision drawing
    ========================================================================== */
 
 class InteractiveWhiteboard {
   constructor(syncEngine) {
     this.syncEngine = syncEngine;
     this.canvas = document.getElementById('whiteboard-canvas');
-    this.ctx = this.canvas ? this.canvas.getContext('2d', { willReadFrequently: true }) : null;
+    this.ctx = this.canvas ? this.canvas.getContext('2d', { willReadFrequently: true, alpha: true }) : null;
     this.viewport = document.querySelector('.canvas-viewport');
 
     // Drawing state
     this.isDrawing = false;
+    this.activePointerId = null;
     this.currentTool = 'pen'; // 'pen' or 'eraser'
     this.currentColor = '#6d28d9'; // Default regal purple
     this.currentSize = 4;
     this.currentStroke = null;
+    this.lastPoint = null;
+    this.lastMidPoint = null;
+
+    // Viewport dimensions in CSS pixels
+    this.width = 0;
+    this.height = 0;
 
     // Multi-slides state
     this.slides = [
@@ -26,6 +33,7 @@ class InteractiveWhiteboard {
 
     // Remote peer cursor container
     this.remoteCursorEl = null;
+    this.cursorHideTimeout = null;
 
     this.initCanvasSize();
     this.initEventListeners();
@@ -34,23 +42,28 @@ class InteractiveWhiteboard {
     this.redrawActiveSlide();
   }
 
+  /* --------------------------------------------------------------------------
+     Canvas Sizing & High-DPI Resolution
+     -------------------------------------------------------------------------- */
   initCanvasSize() {
     if (!this.canvas || !this.viewport) return;
-    const rect = this.viewport.getBoundingClientRect();
-    
-    // Set actual canvas resolution (support Retina/high-DPI)
-    const dpr = window.devicePixelRatio || 1;
-    this.width = rect.width;
-    this.height = rect.height;
 
-    this.canvas.width = this.width * dpr;
-    this.canvas.height = this.height * dpr;
-    this.canvas.style.width = `${this.width}px`;
-    this.canvas.style.height = `${this.height}px`;
+    // Responsive ResizeObserver to automatically size canvas when view unlocks/resizes
+    if (window.ResizeObserver && this.viewport) {
+      this.resizeObserver = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          const cr = entry.contentRect;
+          if (cr.width > 0 && cr.height > 0) {
+            if (Math.abs(cr.width - (this.width || 0)) > 1 || Math.abs(cr.height - (this.height || 0)) > 1) {
+              this.handleResize();
+            }
+          }
+        }
+      });
+      this.resizeObserver.observe(this.viewport);
+    }
 
-    this.ctx.scale(dpr, dpr);
-    this.ctx.lineCap = 'round';
-    this.ctx.lineJoin = 'round';
+    this.handleResize();
 
     window.addEventListener('resize', () => {
       this.handleResize();
@@ -58,34 +71,39 @@ class InteractiveWhiteboard {
   }
 
   handleResize() {
-    if (!this.canvas || !this.viewport) return;
+    if (!this.canvas || !this.viewport || !this.ctx) return;
     const rect = this.viewport.getBoundingClientRect();
     if (rect.width === 0 || rect.height === 0) return;
+
     const dpr = window.devicePixelRatio || 1;
     this.width = rect.width;
     this.height = rect.height;
 
-    this.canvas.width = this.width * dpr;
-    this.canvas.height = this.height * dpr;
+    // Set physical backing buffer resolution (crisp on Retina & high-DPI Windows)
+    this.canvas.width = Math.round(this.width * dpr);
+    this.canvas.height = Math.round(this.height * dpr);
     this.canvas.style.width = `${this.width}px`;
     this.canvas.style.height = `${this.height}px`;
 
-    this.ctx.scale(dpr, dpr);
+    // Explicitly set transform matrix (never multiply or accumulate scales!)
+    this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     this.ctx.lineCap = 'round';
     this.ctx.lineJoin = 'round';
 
     this.redrawActiveSlide();
   }
 
+  /* --------------------------------------------------------------------------
+     Event Listeners
+     -------------------------------------------------------------------------- */
   initEventListeners() {
     if (!this.canvas) return;
 
-    // Drawing events (Mouse & Touch via PointerEvents)
+    // Pointer events with pointer capture for flawless, uninterrupted drawing
     this.canvas.addEventListener('pointerdown', (e) => this.startDrawing(e));
     this.canvas.addEventListener('pointermove', (e) => this.draw(e));
-    this.canvas.addEventListener('pointerup', () => this.stopDrawing());
-    this.canvas.addEventListener('pointerleave', () => this.stopDrawing());
-    this.canvas.addEventListener('pointercancel', () => this.stopDrawing());
+    this.canvas.addEventListener('pointerup', (e) => this.stopDrawing(e));
+    this.canvas.addEventListener('pointercancel', (e) => this.stopDrawing(e));
 
     // Tools Buttons
     const penBtn = document.getElementById('tool-pen-btn');
@@ -175,6 +193,9 @@ class InteractiveWhiteboard {
     }
   }
 
+  /* --------------------------------------------------------------------------
+     Live Collaboration / Sync Handlers
+     -------------------------------------------------------------------------- */
   initSyncHandlers() {
     if (!this.syncEngine) return;
 
@@ -184,7 +205,7 @@ class InteractiveWhiteboard {
     };
 
     // Remote clear board
-    this.syncEngine.onRemoteClear = (data) => {
+    this.syncEngine.onRemoteClear = () => {
       const slide = this.slides[this.activeSlideIndex];
       if (slide) {
         slide.strokes = [];
@@ -254,24 +275,56 @@ class InteractiveWhiteboard {
     this.currentColor = color;
   }
 
+  /* --------------------------------------------------------------------------
+     Pointer Coordinate Helpers
+     -------------------------------------------------------------------------- */
   getPointerPos(e) {
     const rect = this.canvas.getBoundingClientRect();
-    const w = this.width || rect.width || 1;
-    const h = this.height || rect.height || 1;
+    const w = rect.width || this.width || 1;
+    const h = rect.height || this.height || 1;
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
     return {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-      // Normalized coordinates (0.0 - 1.0) for resolution-independent sync
-      nx: (e.clientX - rect.left) / w,
-      ny: (e.clientY - rect.top) / h
+      x: x,
+      y: y,
+      nx: x / w,
+      ny: y / h
     };
   }
 
+  applyToolStyles(tool, color, size) {
+    if (!this.ctx) return;
+    this.ctx.lineCap = 'round';
+    this.ctx.lineJoin = 'round';
+
+    if (tool === 'eraser') {
+      this.ctx.globalCompositeOperation = 'destination-out';
+      this.ctx.lineWidth = (size || 4) * 2.5;
+    } else {
+      this.ctx.globalCompositeOperation = 'source-over';
+      this.ctx.strokeStyle = color || '#6d28d9';
+      this.ctx.lineWidth = size || 4;
+    }
+  }
+
+  /* --------------------------------------------------------------------------
+     High-Precision, Butter-Smooth Drawing Engine
+     -------------------------------------------------------------------------- */
   startDrawing(e) {
-    if (!this.width || this.width === 0) {
+    if (!this.canvas || !this.ctx) return;
+
+    if (!this.width || this.width <= 0) {
       this.handleResize();
     }
+
     this.isDrawing = true;
+    this.activePointerId = e.pointerId;
+
+    // Capture pointer events so drawing stays smooth even if moving across toolbars
+    try {
+      this.canvas.setPointerCapture(e.pointerId);
+    } catch (err) {}
+
     const pos = this.getPointerPos(e);
 
     this.currentStroke = {
@@ -281,12 +334,22 @@ class InteractiveWhiteboard {
       points: [pos]
     };
 
-    // Setup canvas styles for this stroke
     this.applyToolStyles(this.currentTool, this.currentColor, this.currentSize);
-    this.ctx.beginPath();
-    this.ctx.moveTo(pos.x, pos.y);
 
-    // Broadcast cursor position
+    // Draw immediate crisp circle for single taps/dots
+    const dotRadius = (this.currentTool === 'eraser' ? this.currentSize * 2.5 : this.currentSize) / 2;
+    this.ctx.beginPath();
+    this.ctx.arc(pos.x, pos.y, Math.max(dotRadius, 1), 0, Math.PI * 2);
+    if (this.currentTool === 'eraser') {
+      this.ctx.fill();
+    } else {
+      this.ctx.fillStyle = this.currentColor;
+      this.ctx.fill();
+    }
+
+    this.lastPoint = pos;
+    this.lastMidPoint = pos;
+
     if (this.syncEngine) {
       this.syncEngine.sendCursor(pos.nx, pos.ny);
     }
@@ -294,7 +357,6 @@ class InteractiveWhiteboard {
 
   draw(e) {
     if (!this.isDrawing || !this.currentStroke) {
-      // Send cursor update even when hovering
       const pos = this.getPointerPos(e);
       if (this.syncEngine) {
         this.syncEngine.sendCursor(pos.nx, pos.ny);
@@ -302,27 +364,70 @@ class InteractiveWhiteboard {
       return;
     }
 
-    const pos = this.getPointerPos(e);
-    this.currentStroke.points.push(pos);
+    // High polling rate support (gaming mouse, stylus, touch)
+    const events = (e.getCoalescedEvents && typeof e.getCoalescedEvents === 'function') 
+      ? e.getCoalescedEvents() 
+      : [e];
 
-    // Draw line to current position
-    this.ctx.lineTo(pos.x, pos.y);
-    this.ctx.stroke();
+    this.applyToolStyles(this.currentTool, this.currentColor, this.currentSize);
 
-    // Stream stroke point to connected peers in real time!
-    if (this.syncEngine) {
-      this.syncEngine.sendCursor(pos.nx, pos.ny);
+    for (const ev of events) {
+      const pos = this.getPointerPos(ev);
+
+      // Distance filtering to eliminate zero-delta jitter
+      const dx = pos.x - this.lastPoint.x;
+      const dy = pos.y - this.lastPoint.y;
+      if (dx * dx + dy * dy < 0.6) continue;
+
+      this.currentStroke.points.push(pos);
+
+      // Quadratic Bézier curve to midpoint for studio-smooth curves
+      const newMidPoint = {
+        x: (this.lastPoint.x + pos.x) / 2,
+        y: (this.lastPoint.y + pos.y) / 2
+      };
+
+      this.ctx.beginPath();
+      this.ctx.moveTo(this.lastMidPoint.x, this.lastMidPoint.y);
+      this.ctx.quadraticCurveTo(this.lastPoint.x, this.lastPoint.y, newMidPoint.x, newMidPoint.y);
+      this.ctx.stroke();
+
+      this.lastPoint = pos;
+      this.lastMidPoint = newMidPoint;
+    }
+
+    const lastPos = this.currentStroke.points[this.currentStroke.points.length - 1];
+    if (lastPos && this.syncEngine) {
+      this.syncEngine.sendCursor(lastPos.nx, lastPos.ny);
     }
   }
 
-  stopDrawing() {
+  stopDrawing(e) {
     if (!this.isDrawing) return;
     this.isDrawing = false;
 
+    if (this.activePointerId !== null && this.canvas) {
+      try {
+        this.canvas.releasePointerCapture(this.activePointerId);
+      } catch (err) {}
+      this.activePointerId = null;
+    }
+
     if (this.currentStroke && this.currentStroke.points.length > 0) {
+      // Connect to final point if multiple points exist
+      if (this.currentStroke.points.length > 1 && this.lastPoint && this.lastMidPoint) {
+        this.applyToolStyles(this.currentTool, this.currentColor, this.currentSize);
+        this.ctx.beginPath();
+        this.ctx.moveTo(this.lastMidPoint.x, this.lastMidPoint.y);
+        this.ctx.lineTo(this.lastPoint.x, this.lastPoint.y);
+        this.ctx.stroke();
+      }
+
       const activeSlide = this.slides[this.activeSlideIndex];
-      activeSlide.strokes.push(this.currentStroke);
-      activeSlide.redoStack = []; // Clear redo stack on new action
+      if (activeSlide) {
+        activeSlide.strokes.push(this.currentStroke);
+        activeSlide.redoStack = []; // Clear redo stack on new action
+      }
 
       // Broadcast completed stroke to all peers / tabs
       if (this.syncEngine) {
@@ -332,64 +437,98 @@ class InteractiveWhiteboard {
         });
       }
     }
+
     this.currentStroke = null;
+    this.lastPoint = null;
+    this.lastMidPoint = null;
   }
 
-  applyToolStyles(tool, color, size) {
-    if (tool === 'eraser') {
-      this.ctx.globalCompositeOperation = 'destination-out';
-      this.ctx.lineWidth = size * 2.5;
-    } else {
-      this.ctx.globalCompositeOperation = 'source-over';
-      this.ctx.strokeStyle = color;
-      this.ctx.lineWidth = size;
-    }
-  }
-
-  redrawActiveSlide() {
-    if (!this.ctx) return;
-
-    // Clear canvas
-    this.ctx.save();
-    this.ctx.setTransform(1, 0, 0, 1, 0, 0);
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    this.ctx.restore();
-
-    const dpr = window.devicePixelRatio || 1;
-    this.ctx.save();
-    this.ctx.scale(dpr, dpr);
-
-    const activeSlide = this.slides[this.activeSlideIndex];
-    if (activeSlide && activeSlide.strokes) {
-      activeSlide.strokes.forEach(stroke => {
-        this.renderStroke(stroke);
-      });
-    }
-
-    this.ctx.restore();
-  }
-
+  /* --------------------------------------------------------------------------
+     Stroke Rendering & Redraw
+     -------------------------------------------------------------------------- */
   renderStroke(stroke) {
-    if (!stroke || !stroke.points || stroke.points.length === 0) return;
-
+    if (!stroke || !stroke.points || stroke.points.length === 0 || !this.ctx) return;
+    const points = stroke.points;
     this.applyToolStyles(stroke.tool, stroke.color, stroke.size);
-    this.ctx.beginPath();
 
-    const firstPt = stroke.points[0];
-    const startX = firstPt.nx !== undefined ? firstPt.nx * this.width : firstPt.x;
-    const startY = firstPt.ny !== undefined ? firstPt.ny * this.height : firstPt.y;
-    this.ctx.moveTo(startX, startY);
+    const getPt = (p) => ({
+      x: p.nx !== undefined ? p.nx * this.width : p.x,
+      y: p.ny !== undefined ? p.ny * this.height : p.y
+    });
 
-    for (let i = 1; i < stroke.points.length; i++) {
-      const pt = stroke.points[i];
-      const x = pt.nx !== undefined ? pt.nx * this.width : pt.x;
-      const y = pt.ny !== undefined ? pt.ny * this.height : pt.y;
-      this.ctx.lineTo(x, y);
+    if (points.length === 1) {
+      const pt = getPt(points[0]);
+      const dotRadius = (stroke.tool === 'eraser' ? (stroke.size || 4) * 2.5 : (stroke.size || 4)) / 2;
+      this.ctx.beginPath();
+      this.ctx.arc(pt.x, pt.y, Math.max(dotRadius, 1), 0, Math.PI * 2);
+      if (stroke.tool === 'eraser') {
+        this.ctx.fill();
+      } else {
+        this.ctx.fillStyle = stroke.color || this.currentColor;
+        this.ctx.fill();
+      }
+      return;
     }
+
+    const p0 = getPt(points[0]);
+    const p1 = getPt(points[1]);
+
+    if (points.length === 2) {
+      this.ctx.beginPath();
+      this.ctx.moveTo(p0.x, p0.y);
+      this.ctx.lineTo(p1.x, p1.y);
+      this.ctx.stroke();
+      return;
+    }
+
+    this.ctx.beginPath();
+    this.ctx.moveTo(p0.x, p0.y);
+
+    let lastMid = {
+      x: (p0.x + p1.x) / 2,
+      y: (p0.y + p1.y) / 2
+    };
+    this.ctx.lineTo(lastMid.x, lastMid.y);
+
+    for (let i = 1; i < points.length - 1; i++) {
+      const cur = getPt(points[i]);
+      const next = getPt(points[i + 1]);
+      const nextMid = {
+        x: (cur.x + next.x) / 2,
+        y: (cur.y + next.y) / 2
+      };
+      this.ctx.quadraticCurveTo(cur.x, cur.y, nextMid.x, nextMid.y);
+      lastMid = nextMid;
+    }
+
+    const pLast = getPt(points[points.length - 1]);
+    this.ctx.lineTo(pLast.x, pLast.y);
     this.ctx.stroke();
   }
 
-  /* Remote Collaboration Handlers */
+  redrawActiveSlide() {
+    if (!this.ctx || !this.canvas) return;
+
+    const dpr = window.devicePixelRatio || 1;
+
+    // Reset transform to identity and clear physical pixel buffer
+    this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+    // Apply exact DPR transform
+    this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const activeSlide = this.slides[this.activeSlideIndex];
+    if (activeSlide && activeSlide.strokes) {
+      for (const stroke of activeSlide.strokes) {
+        this.renderStroke(stroke);
+      }
+    }
+  }
+
+  /* --------------------------------------------------------------------------
+     Remote Collaboration Handlers
+     -------------------------------------------------------------------------- */
   handleRemoteStroke(data) {
     if (!data || !data.stroke) return;
     const targetSlide = this.slides[data.slideIndex];
@@ -419,8 +558,8 @@ class InteractiveWhiteboard {
       if (lbl) lbl.textContent = partnerName;
     }
 
-    const x = nx * this.width;
-    const y = ny * this.height;
+    const x = nx * (this.width || this.viewport.clientWidth);
+    const y = ny * (this.height || this.viewport.clientHeight);
     this.remoteCursorEl.style.transform = `translate(${x}px, ${y}px)`;
     this.remoteCursorEl.style.display = 'flex';
 
@@ -432,7 +571,9 @@ class InteractiveWhiteboard {
     }, 3000);
   }
 
-  /* Undo & Redo */
+  /* --------------------------------------------------------------------------
+     Undo & Redo
+     -------------------------------------------------------------------------- */
   undo() {
     const slide = this.slides[this.activeSlideIndex];
     if (slide && slide.strokes.length > 0) {
@@ -454,17 +595,21 @@ class InteractiveWhiteboard {
   clearCurrentSlide() {
     if (confirm('Are you sure you want to clear this slide?')) {
       const slide = this.slides[this.activeSlideIndex];
-      slide.strokes = [];
-      slide.redoStack = [];
-      this.redrawActiveSlide();
+      if (slide) {
+        slide.strokes = [];
+        slide.redoStack = [];
+        this.redrawActiveSlide();
 
-      if (this.syncEngine) {
-        this.syncEngine.sendClear(slide.id);
+        if (this.syncEngine) {
+          this.syncEngine.sendClear(slide.id);
+        }
       }
     }
   }
 
-  /* Slide Management */
+  /* --------------------------------------------------------------------------
+     Slide Management
+     -------------------------------------------------------------------------- */
   addNewSlide() {
     const newId = this.slides.length + 1;
     const newSlide = {
@@ -527,14 +672,16 @@ class InteractiveWhiteboard {
     }
   }
 
-  /* Save Snapshot to Saved Modules */
+  /* --------------------------------------------------------------------------
+     Save Snapshot to Saved Modules
+     -------------------------------------------------------------------------- */
   saveToSavedModules() {
     if (!this.canvas) return;
     const currentSlide = this.slides[this.activeSlideIndex];
     const dataUrl = this.canvas.toDataURL('image/png');
 
     if (window.savedModulesManager) {
-      const saved = window.savedModulesManager.saveSlide({
+      window.savedModulesManager.saveSlide({
         title: `${currentSlide.name} - Knowledge Note`,
         imageData: dataUrl,
         strokesCount: currentSlide.strokes.length
