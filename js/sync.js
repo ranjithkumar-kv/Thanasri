@@ -460,6 +460,10 @@ class WorkspaceSyncEngine {
     this.broadcast('XO_SYNC', state);
   }
 
+  sendXOTheme(theme) {
+    this.broadcast('XO_THEME', { theme });
+  }
+
   /* --------------------------------------------------------------------------
      Module 3: Word Bridge Game Sync Helpers
      -------------------------------------------------------------------------- */

@@ -18,12 +18,12 @@
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 
   <!-- Application Stylesheets (80% Purple, 20% White Theme) -->
-  <link rel="stylesheet" href="css/main.css?v=2">
-  <link rel="stylesheet" href="css/birthday.css?v=2">
-  <link rel="stylesheet" href="css/whiteboard.css?v=10">
-  <link rel="stylesheet" href="css/games.css?v=2">
-  <link rel="stylesheet" href="css/japanese.css?v=2">
-  <link rel="stylesheet" href="css/saved-modules.css?v=2">
+  <link rel="stylesheet" href="css/main.css?v=11">
+  <link rel="stylesheet" href="css/birthday.css?v=11">
+  <link rel="stylesheet" href="css/whiteboard.css?v=11">
+  <link rel="stylesheet" href="css/games.css?v=11">
+  <link rel="stylesheet" href="css/japanese.css?v=11">
+  <link rel="stylesheet" href="css/saved-modules.css?v=11">
 </head>
 
 <body>
@@ -150,18 +150,6 @@
           <button id="top-sync-pill" class="top-sync-pill waiting" title="Two-Device Sync Settings (Click to configure)">
             <span class="top-sync-dot" id="top-sync-dot"></span>
             <span id="top-sync-status-text">Connecting...</span>
-          </button>
-
-          <!-- Floating Calculator Quick Toggle -->
-          <button class="calc-toggle-btn" onclick="if(window.miniCalc){window.miniCalc.toggle();}"
-            title="Open Mini Calculator">
-            🧮
-          </button>
-
-          <!-- Floating Quick Notepad Toggle -->
-          <button id="top-notepad-btn" class="notepad-toggle-btn calc-toggle-btn"
-            title="Open Quick Notepad">
-            📝
           </button>
         </div>
       </header>
@@ -362,9 +350,10 @@
 
                 <div class="tool-divider"></div>
 
-                <!-- Quick Notepad Toggle on Whiteboard -->
+                <!-- Quick Notepad & Calculator Toggle on Whiteboard -->
                 <div class="tool-group">
                   <button id="tool-notepad-btn" class="tool-btn notepad-toggle-btn" title="Open Quick Notepad (Type Notes)">📝</button>
+                  <button id="tool-calc-btn" class="tool-btn calc-toggle-btn" title="Open Mini Calculator">🧮</button>
                 </div>
 
                 <div class="tool-divider"></div>
@@ -423,12 +412,18 @@
                     <button id="xo-mode-pvp" class="mode-btn">Pass & Play</button>
                     <button id="xo-mode-ai" class="mode-btn">vs Bot 💜</button>
                   </div>
-                  <button id="xo-reset-btn" class="btn btn-secondary btn-sm">🔄 New Round</button>
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <button id="xo-theme-btn" class="xo-theme-btn" title="Switch symbols between Hearts (💙💜) and Classic (❌⭕)">
+                      <span id="xo-theme-icon">💙💜</span>
+                      <span id="xo-theme-label">Hearts</span>
+                    </button>
+                    <button id="xo-reset-btn" class="btn btn-secondary btn-sm">🔄 New Round</button>
+                  </div>
                 </div>
 
                 <div class="xo-scoreboard">
                   <div class="score-box">
-                    <h4>💙 RK (X)</h4>
+                    <h4 id="xo-score-label-x">💙 RK</h4>
                     <span id="xo-score-x">0</span>
                   </div>
                   <div class="score-box">
@@ -436,7 +431,7 @@
                     <span id="xo-score-ties">0</span>
                   </div>
                   <div class="score-box">
-                    <h4>💜 Thanu (O)</h4>
+                    <h4 id="xo-score-label-o">💜 Thanu</h4>
                     <span id="xo-score-o">0</span>
                   </div>
                 </div>
@@ -1068,16 +1063,16 @@
   <!-- Application Scripts -->
   <script src="js/vendor/mqtt.min.js"></script>
   <script src="https://unpkg.com/mqtt@5.3.5/dist/mqtt.min.js"></script>
-  <script src="js/sync.js?v=10"></script>
-  <script src="js/calculator.js?v=10"></script>
-  <script src="js/notepad.js?v=10"></script>
-  <script src="js/whiteboard.js?v=10"></script>
-  <script src="js/wordlist.js?v=10"></script>
-  <script src="js/games.js?v=10"></script>
-  <script src="js/japanese.js?v=10"></script>
-  <script src="js/savedModules.js?v=10"></script>
-  <script src="js/birthday.js?v=10"></script>
-  <script src="js/app.js?v=10"></script>
+  <script src="js/sync.js?v=11"></script>
+  <script src="js/calculator.js?v=11"></script>
+  <script src="js/notepad.js?v=11"></script>
+  <script src="js/whiteboard.js?v=11"></script>
+  <script src="js/wordlist.js?v=11"></script>
+  <script src="js/games.js?v=11"></script>
+  <script src="js/japanese.js?v=11"></script>
+  <script src="js/savedModules.js?v=11"></script>
+  <script src="js/birthday.js?v=11"></script>
+  <script src="js/app.js?v=11"></script>
 
 </body>
 

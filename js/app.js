@@ -297,6 +297,12 @@ class AppController {
     } else if (viewName !== 'birthday' && window.birthdayApp) {
       window.birthdayApp.stopCelebration();
     }
+
+    if (viewName !== 'workspace') {
+      if (window.miniCalc && window.miniCalc.hide) window.miniCalc.hide();
+      if (window.quickNotepad && window.quickNotepad.hide) window.quickNotepad.hide();
+    }
+
     window.scrollTo({ top: 0, behavior: 'instant' });
     this.updateBackButtons();
   }
@@ -349,10 +355,16 @@ class AppController {
     }
 
     // Specific resize trigger for whiteboard canvas if entering Wish to Know
-    if (moduleName === 'wish-to-know' && window.whiteboard) {
-      setTimeout(() => {
-        window.whiteboard.handleResize();
-      }, 50);
+    if (moduleName === 'wish-to-know') {
+      if (window.whiteboard) {
+        setTimeout(() => {
+          window.whiteboard.handleResize();
+        }, 50);
+      }
+    } else {
+      // Auto-hide calculator and notepad when leaving whiteboard
+      if (window.miniCalc && window.miniCalc.hide) window.miniCalc.hide();
+      if (window.quickNotepad && window.quickNotepad.hide) window.quickNotepad.hide();
     }
 
     this.updateBackButtons();

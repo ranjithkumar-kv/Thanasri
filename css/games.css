@@ -169,15 +169,45 @@
   min-height: 28px;
 }
 
-/* 3x3 Grid */
+/* Theme Toggle Button */
+.xo-theme-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.38rem 0.8rem;
+  background: var(--purple-100);
+  border: 1.5px solid var(--purple-300);
+  border-radius: var(--radius-full);
+  color: var(--purple-900);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.xo-theme-btn:hover {
+  background: var(--purple-200);
+  border-color: var(--purple-500);
+  transform: translateY(-1px);
+}
+
+.xo-theme-btn:active {
+  transform: scale(0.96);
+}
+
+/* 3x3 Grid - Rigid, Locked Box Dimensions (Boxes can NEVER change size) */
 .xo-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: repeat(3, minmax(0, 1fr));
   gap: 12px;
   width: 100%;
   max-width: 340px;
+  height: 340px;
   aspect-ratio: 1 / 1;
   margin-bottom: 1.75rem;
+  box-sizing: border-box;
 }
 
 .xo-cell {
@@ -187,16 +217,21 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2.8rem;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 1 / 1;
+  box-sizing: border-box;
+  overflow: hidden;
+  font-size: 2.3rem;
+  line-height: 1;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: background var(--transition-fast), border-color var(--transition-fast);
   user-select: none;
 }
 
 .xo-cell:hover:not(.taken) {
   background: var(--purple-100);
   border-color: var(--purple-500);
-  transform: scale(1.02);
 }
 
 .xo-cell.taken {
@@ -206,23 +241,43 @@
 .xo-cell.winner-cell {
   background: linear-gradient(135deg, var(--purple-200), var(--purple-300));
   border-color: var(--purple-600);
-  animation: winPulse 1s infinite alternate;
+  box-shadow: inset 0 0 12px rgba(109, 40, 217, 0.35);
 }
 
-@keyframes winPulse {
-  from { transform: scale(1); }
-  to { transform: scale(1.06); }
+.xo-cell span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  line-height: 1;
+  font-size: 2.4rem;
+  pointer-events: none;
 }
 
 .xo-marker-x {
   color: var(--purple-700);
   font-weight: 900;
-  text-shadow: 0 2px 10px rgba(109, 40, 217, 0.4);
+  text-shadow: 0 2px 8px rgba(109, 40, 217, 0.3);
 }
 
 .xo-marker-o {
   color: #a855f7;
-  filter: drop-shadow(0 2px 8px rgba(168, 85, 247, 0.5));
+  filter: drop-shadow(0 2px 8px rgba(168, 85, 247, 0.4));
+}
+
+@media (max-width: 480px) {
+  .xo-grid {
+    max-width: 290px;
+    height: 290px;
+    gap: 8px;
+  }
+  .xo-cell {
+    font-size: 1.85rem;
+  }
+  .xo-cell span {
+    font-size: 1.9rem;
+  }
 }
 
 /* ==========================================================================

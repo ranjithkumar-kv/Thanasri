@@ -39,10 +39,11 @@ class GamesHub {
      ========================================================================== */
   initXOGame() {
     this.xoBoard = Array(9).fill(null);
-    this.xoCurrentPlayer = 'X'; // X: ✨ Sparkle, O: 💜 Heart
+    this.xoCurrentPlayer = 'X'; // X: Blue Heart / Classic X, O: Purple Heart / Classic O
     this.xoMode = 'online'; // 'online', 'pvp', or 'ai'
     this.xoGameActive = true;
     this.scores = { x: 0, o: 0, ties: 0 };
+    this.xoSymbolTheme = 'hearts'; // 'hearts' (💙 & 💜) or 'classic' (❌ & ⭕)
 
     this.winningCombos = [
       [0, 1, 2], [3, 4, 5], [6, 7, 8],
@@ -61,6 +62,14 @@ class GamesHub {
     const resetBtn = document.getElementById('xo-reset-btn');
     if (resetBtn) {
       resetBtn.addEventListener('click', () => this.resetXORound(true));
+    }
+
+    // Symbol Theme Toggle Button (Hearts 💙💜 vs Classic ❌⭕)
+    const themeBtn = document.getElementById('xo-theme-btn');
+    if (themeBtn) {
+      themeBtn.addEventListener('click', () => {
+        this.toggleXOSymbolTheme(true);
+      });
     }
 
     // Mode toggle buttons
@@ -99,15 +108,85 @@ class GamesHub {
       });
     }
 
+    this.setXOSymbolTheme(this.xoSymbolTheme, false);
     this.updateXOTurnIndicator();
   }
 
   getMyXOPiece() {
     const sync = window.workspaceSync || window.wbSyncEngine;
     if (sync && sync.userRole === 'thanu') {
-      return 'O'; // Thanu plays as Purple Heart (O)
+      return 'O'; // Thanu plays as Purple Heart / Classic O
     }
-    return 'X'; // RK plays as Blue Heart (X)
+    return 'X'; // RK plays as Blue Heart / Classic X
+  }
+
+  getXOSymbol(player) {
+    if (this.xoSymbolTheme === 'classic') {
+      return player === 'X' ? '❌' : '⭕';
+    }
+    return player === 'X' ? '💙' : '💜';
+  }
+
+  toggleXOSymbolTheme(broadcast = true) {
+    const nextTheme = this.xoSymbolTheme === 'hearts' ? 'classic' : 'hearts';
+    this.setXOSymbolTheme(nextTheme, broadcast);
+  }
+
+  setXOSymbolTheme(theme, broadcast = true) {
+    this.xoSymbolTheme = (theme === 'classic') ? 'classic' : 'hearts';
+
+    // Update Theme Toggle Button UI
+    const iconEl = document.getElementById('xo-theme-icon');
+    const labelEl = document.getElementById('xo-theme-label');
+    if (iconEl && labelEl) {
+      if (this.xoSymbolTheme === 'classic') {
+        iconEl.textContent = '❌⭕';
+        labelEl.textContent = 'Classic XO';
+      } else {
+        iconEl.textContent = '💙💜';
+        labelEl.textContent = 'Hearts';
+      }
+    }
+
+    // Update Scoreboard player labels
+    const scoreLabelX = document.getElementById('xo-score-label-x');
+    const scoreLabelO = document.getElementById('xo-score-label-o');
+    if (scoreLabelX) {
+      scoreLabelX.textContent = this.xoSymbolTheme === 'classic' ? '❌ RK' : '💙 RK';
+    }
+    if (scoreLabelO) {
+      scoreLabelO.textContent = this.xoSymbolTheme === 'classic' ? '⭕ Thanu' : '💜 Thanu';
+    }
+
+    // Refresh existing moves on the board
+    if (this.xoBoard) {
+      this.xoBoard.forEach((player, idx) => {
+        if (player) {
+          const cell = document.querySelector(`.xo-cell[data-index="${idx}"]`);
+          if (cell) {
+            const sym = this.getXOSymbol(player);
+            const markerClass = player === 'X' ? 'xo-marker-x' : 'xo-marker-o';
+            cell.innerHTML = `<span class="${markerClass}">${sym}</span>`;
+          }
+        }
+      });
+    }
+
+    // Update turn indicator
+    this.updateXOTurnIndicator();
+
+    // Sync theme change across devices in online mode
+    if (broadcast && this.xoMode === 'online') {
+      const sync = window.workspaceSync || window.wbSyncEngine;
+      if (sync && sync.sendXOTheme) {
+        sync.sendXOTheme(this.xoSymbolTheme);
+      }
+    }
+
+    if (window.app && broadcast) {
+      const modeName = this.xoSymbolTheme === 'classic' ? 'Classic (❌ & ⭕)' : 'Hearts (💙 & 💜)';
+      window.app.showToast(`Switched XO symbols to ${modeName}! ✨`);
+    }
   }
 
   handleXOMove(index) {
@@ -192,11 +271,9 @@ class GamesHub {
     const cell = document.querySelector(`.xo-cell[data-index="${index}"]`);
     if (cell) {
       cell.classList.add('taken');
-      if (player === 'X') {
-        cell.innerHTML = '<span class="xo-marker-x">✨</span>';
-      } else {
-        cell.innerHTML = '<span class="xo-marker-o">💜</span>';
-      }
+      const symbol = this.getXOSymbol(player);
+      const markerClass = player === 'X' ? 'xo-marker-x' : 'xo-marker-o';
+      cell.innerHTML = `<span class="${markerClass}">${symbol}</span>`;
     }
   }
 
@@ -272,13 +349,16 @@ class GamesHub {
     });
 
     const indicator = document.getElementById('xo-turn-indicator');
+    const xSym = this.getXOSymbol('X');
+    const oSym = this.getXOSymbol('O');
+
     if (winData.winner === 'X') {
       this.scores.x++;
-      const name = this.xoMode === 'online' ? (window.workspaceSync?.userRole === 'thanu' ? 'RK 💙' : 'You (RK 💙)') : 'RK 💙';
+      const name = this.xoMode === 'online' ? (window.workspaceSync?.userRole === 'thanu' ? `RK ${xSym}` : `You (RK ${xSym})`) : `RK ${xSym}`;
       if (indicator) indicator.innerHTML = `🎉 <b style="color:#0284c7">${name} Wins!</b>`;
     } else {
       this.scores.o++;
-      const name = this.xoMode === 'ai' ? 'Bot 💜' : (this.xoMode === 'online' ? (window.workspaceSync?.userRole === 'thanu' ? 'You (Thanu 💜)' : 'Thanu 💜') : 'Thanu 💜');
+      const name = this.xoMode === 'ai' ? `Bot ${oSym}` : (this.xoMode === 'online' ? (window.workspaceSync?.userRole === 'thanu' ? `You (Thanu ${oSym})` : `Thanu ${oSym}`) : `Thanu ${oSym}`);
       if (indicator) indicator.innerHTML = `🎉 <b style="color:var(--purple-600)">${name} Wins!</b>`;
     }
 
@@ -302,6 +382,9 @@ class GamesHub {
     const indicator = document.getElementById('xo-turn-indicator');
     if (!indicator || !this.xoGameActive) return;
 
+    const xSym = this.getXOSymbol('X');
+    const oSym = this.getXOSymbol('O');
+
     if (this.xoMode === 'online') {
       const myPiece = this.getMyXOPiece();
       const isMyTurn = this.xoCurrentPlayer === myPiece;
@@ -309,7 +392,9 @@ class GamesHub {
       const partner = sync ? sync.getPartnerDisplayName() : 'Partner';
 
       if (isMyTurn) {
-        indicator.innerHTML = `✨ <b>Your Turn!</b> Play with ${myPiece === 'X' ? 'RK 💙 (X)' : 'Thanu 💜 (O)'}`;
+        const mySym = this.getXOSymbol(myPiece);
+        const myName = myPiece === 'X' ? `RK ${mySym}` : `Thanu ${mySym}`;
+        indicator.innerHTML = `✨ <b>Your Turn!</b> Play with ${myName}`;
         indicator.style.background = 'var(--purple-100)';
         indicator.style.color = 'var(--purple-900)';
       } else {
@@ -321,10 +406,10 @@ class GamesHub {
       indicator.style.background = '';
       indicator.style.color = '';
       if (this.xoCurrentPlayer === 'X') {
-        indicator.innerHTML = '💙 RK\'s Turn (Player 1)';
+        indicator.innerHTML = `${xSym} RK's Turn (Player 1)`;
       } else {
-        const opp = this.xoMode === 'ai' ? 'Bot thinking...' : 'Thanu 💜';
-        indicator.innerHTML = `💜 Thanu\'s Turn (${opp})`;
+        const opp = this.xoMode === 'ai' ? 'Bot thinking...' : `Thanu ${oSym}`;
+        indicator.innerHTML = `${oSym} Thanu's Turn (${opp})`;
       }
     }
   }
@@ -855,6 +940,11 @@ class GamesHub {
       // XO Game Real-Time Listeners
       sync.on('XO_MOVE', (data) => this.handleRemoteXOMove(data));
       sync.on('XO_RESET', (data) => this.handleRemoteXOReset(data));
+      sync.on('XO_THEME', (data) => {
+        if (data && data.theme) {
+          this.setXOSymbolTheme(data.theme, false);
+        }
+      });
 
       // Word Bridge Real-Time Listeners
       sync.on('WORD_PAIR', (data) => this.handleRemoteWordPair(data));
