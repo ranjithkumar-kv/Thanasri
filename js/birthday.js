@@ -256,6 +256,8 @@ class BirthdayCelebration {
 class BirthdayQuiz {
   constructor() {
     this.storageKey = 'thanu_bday_quiz_answers';
+    this.latestKey = 'thanu_bday_quiz_answers_latest';
+    this.sessionKey = 'thanu_active_session_answers';
     this.answers = this.loadSavedAnswers();
     this.allAnsweredUnlocked = false;
 
@@ -268,10 +270,12 @@ class BirthdayQuiz {
   }
 
   loadSavedAnswers() {
+    // Only load in-progress answers from current active session (for page reload retention)
     try {
-      const saved = localStorage.getItem(this.storageKey);
+      const saved = sessionStorage.getItem(this.sessionKey);
       if (saved) return JSON.parse(saved);
     } catch (e) {}
+
     return {
       q1: '',
       q2: '',
@@ -284,8 +288,61 @@ class BirthdayQuiz {
     };
   }
 
+  resetQuizForNewLogin() {
+    this.answers = {
+      q1: '',
+      q2: '',
+      q3: '',
+      q4: '',
+      q5: '',
+      q6: '',
+      q7: '',
+      q8: ''
+    };
+
+    try {
+      sessionStorage.removeItem(this.sessionKey);
+    } catch (e) {}
+
+    // Reset UI form inputs
+    const q1Input = document.getElementById('quiz-q1-input');
+    if (q1Input) q1Input.value = '';
+
+    const q4Input = document.getElementById('quiz-q4-input');
+    if (q4Input) q4Input.value = '';
+
+    const q5Input = document.getElementById('quiz-q5-input');
+    if (q5Input) q5Input.value = '';
+
+    const q6Input = document.getElementById('quiz-q6-input');
+    if (q6Input) q6Input.value = '';
+
+    // Clear active states on choice buttons
+    document.querySelectorAll('.quiz-choice-btn').forEach(btn => btn.classList.remove('active'));
+
+    // Clear reaction messages
+    document.querySelectorAll('.quiz-reaction-msg').forEach(msg => {
+      msg.style.display = 'none';
+      msg.textContent = '';
+    });
+
+    // Reset runaway button for Q8
+    const noBtn = document.getElementById('quiz-q8-no-btn');
+    if (noBtn) {
+      noBtn.style.transform = 'translate(0px, 0px)';
+    }
+
+    this.allAnsweredUnlocked = false;
+    this.updateProgress(false);
+  }
+
   saveAnswers() {
     try {
+      // 1. Save in active session (for page reload retention)
+      sessionStorage.setItem(this.sessionKey, JSON.stringify(this.answers));
+
+      // 2. Save in persistent storage so RK (thanu2596) can ALWAYS view latest submitted answers
+      localStorage.setItem(this.latestKey, JSON.stringify(this.answers));
       localStorage.setItem(this.storageKey, JSON.stringify(this.answers));
       localStorage.setItem('thanu_bday_quiz_answers_timestamp', String(Date.now()));
     } catch (e) {}
@@ -702,7 +759,24 @@ class BirthdayQuiz {
     const unlockMsg = document.getElementById('quiz-unlock-msg');
     const welcomeBtn = document.getElementById('btn-welcome-workspace');
 
-    if (answered === 8) {
+    const isRK = (window.app && window.app.currentUser === 'rk') || (window.workspaceSync && window.workspaceSync.userRole === 'rk');
+
+    if (isRK) {
+      if (badgeEl) {
+        badgeEl.textContent = answered === 8 ? 'Completed 🎉' : `${answered}/8 Answered`;
+        badgeEl.className = 'quiz-progress-badge' + (answered === 8 ? ' ready' : '');
+      }
+      if (lockIcon) lockIcon.textContent = '👑';
+      if (unlockMsg) {
+        unlockMsg.innerHTML = `👑 <b>Logged in as RK</b> 💙 • Thanasri answered <b>${answered} of 8</b> questions. Full workspace access ready!`;
+      }
+      if (welcomeBtn) {
+        welcomeBtn.style.display = 'inline-flex';
+        welcomeBtn.classList.add('pulse-glow');
+        const btnText = welcomeBtn.querySelector('span');
+        if (btnText) btnText.textContent = '🚀 Enter Workspace as RK';
+      }
+    } else if (answered === 8) {
       if (badgeEl) {
         badgeEl.textContent = 'Completed 🎉';
         badgeEl.className = 'quiz-progress-badge ready';
@@ -714,6 +788,8 @@ class BirthdayQuiz {
       if (welcomeBtn) {
         welcomeBtn.style.display = 'inline-flex';
         welcomeBtn.classList.add('pulse-glow');
+        const btnText = welcomeBtn.querySelector('span');
+        if (btnText) btnText.textContent = '🚀 Welcome to the Workspace';
       }
 
       if (!this.allAnsweredUnlocked && celebrateIfNew) {
@@ -794,6 +870,12 @@ class BirthdayQuiz {
   }
 
   openAnswersModal() {
+    const isRK = (window.app && window.app.currentUser === 'rk') || (window.workspaceSync && window.workspaceSync.userRole === 'rk');
+    if (!isRK) {
+      if (window.app) window.app.showToast('Access restricted 💜');
+      return;
+    }
+
     const modal = document.getElementById('quiz-answers-modal');
     if (!modal) return;
     this.renderAnswersModalContent();
@@ -822,7 +904,7 @@ class BirthdayQuiz {
     } catch (e) {}
 
     try {
-      const l = localStorage.getItem(this.storageKey);
+      const l = localStorage.getItem(this.latestKey) || localStorage.getItem(this.storageKey);
       if (l) localAnswers = JSON.parse(l);
     } catch (e) {}
 
@@ -831,7 +913,7 @@ class BirthdayQuiz {
     } catch (e) {}
 
     const sync = window.workspaceSync || window.wbSyncEngine;
-    const isRK = !sync || sync.userRole !== 'thanu';
+    const isRK = (window.app && window.app.currentUser === 'rk') || (sync && sync.userRole === 'rk');
 
     let target = isRK ? (partnerAnswers || localAnswers || {}) : (localAnswers || partnerAnswers || {});
     let source = partnerAnswers ? 'partner' : (localAnswers ? 'local' : 'none');
@@ -849,7 +931,25 @@ class BirthdayQuiz {
     const data = this.getAnswersData();
     const badge = document.getElementById('quiz-answers-pill-badge');
     const headerBtn = document.getElementById('btn-view-quiz-answers');
-    if (!badge || !headerBtn) return;
+    const hubLink = document.getElementById('btn-hub-answers-link');
+
+    // ONLY show Thanu's answered questions for the user who entered "thanu2596" (RK)
+    const isRK = (window.app && window.app.currentUser === 'rk') || (window.workspaceSync && window.workspaceSync.userRole === 'rk');
+
+    const hubBdayLink = document.getElementById('btn-hub-birthday-link');
+
+    if (!isRK) {
+      if (headerBtn) headerBtn.style.display = 'none';
+      if (hubLink) hubLink.style.display = 'none';
+      if (hubBdayLink) hubBdayLink.style.display = 'inline-flex';
+      return;
+    }
+
+    if (headerBtn) headerBtn.style.display = 'inline-flex';
+    if (hubLink) hubLink.style.display = 'inline-flex';
+    if (hubBdayLink) hubBdayLink.style.display = 'none';
+
+    if (!badge) return;
 
     if (data.count > 0) {
       badge.style.display = 'inline-block';

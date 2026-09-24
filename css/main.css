@@ -320,6 +320,62 @@ html, body {
   border-radius: var(--radius-full);
 }
 
+/* Header Active User Profile Pill */
+.header-user-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--white);
+  border: 1.5px solid var(--purple-200);
+  padding: 0.35rem 0.65rem 0.35rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--purple-900);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
+}
+
+.header-user-pill:hover {
+  border-color: var(--purple-400);
+}
+
+.header-user-pill.user-rk {
+  border-color: #93c5fd;
+  background: #eff6ff;
+  color: #1e40af;
+}
+
+.header-user-pill.user-thanasri {
+  border-color: var(--purple-300);
+  background: var(--purple-50);
+  color: var(--purple-900);
+}
+
+.btn-header-lock {
+  background: rgba(124, 58, 237, 0.1);
+  border: 1px solid var(--purple-200);
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  cursor: pointer;
+  color: var(--purple-700);
+  transition: all var(--transition-fast);
+  margin-left: 0.2rem;
+  padding: 0;
+}
+
+.btn-header-lock:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #dc2626;
+  transform: scale(1.1);
+}
+
 /* Navigation Breadcrumb / Active Bar */
 .workspace-subnav {
   background: var(--purple-100);
@@ -452,6 +508,12 @@ html, body {
   box-shadow: 0 10px 25px rgba(109, 40, 217, 0.35);
   border: 3px solid var(--white);
   animation: gentleBounce 3s ease-in-out infinite;
+  transition: all var(--transition-normal);
+}
+
+.passcode-avatar.rk-theme {
+  background: linear-gradient(135deg, #2563eb, #1e40af);
+  box-shadow: 0 10px 25px rgba(37, 99, 235, 0.35);
 }
 
 @keyframes gentleBounce {
@@ -469,12 +531,83 @@ html, body {
 .passcode-box p {
   font-size: 0.95rem;
   color: var(--purple-700);
-  margin-bottom: 1.75rem;
+  margin-bottom: 1.25rem;
+}
+
+/* User Selection Pills */
+.user-select-pills {
+  display: flex;
+  gap: 0.65rem;
+  margin-bottom: 1.15rem;
+}
+
+.user-pill-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.6rem 0.85rem;
+  background: var(--purple-50);
+  border: 2px solid var(--purple-200);
+  border-radius: var(--radius-lg);
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--purple-800);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.user-pill-btn:hover {
+  background: var(--purple-100);
+  border-color: var(--purple-300);
+  transform: translateY(-1px);
+}
+
+.user-pill-btn.active#pill-user-rk {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  border-color: #1e40af;
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+}
+
+.user-pill-btn.active#pill-user-thanasri {
+  background: linear-gradient(135deg, var(--purple-600), var(--purple-800));
+  border-color: var(--purple-700);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
+}
+
+.user-pill-btn .pill-avatar {
+  font-size: 1.15rem;
+}
+
+.login-input-group {
+  position: relative;
+  margin-bottom: 0.85rem;
+}
+
+.login-input-group .input-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.05rem;
+  color: var(--purple-600);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.login-field {
+  padding-left: 2.75rem !important;
+  text-align: left !important;
+  font-size: 1rem !important;
 }
 
 .passcode-input-group {
   position: relative;
-  margin-bottom: 1rem;
+  margin-bottom: 0.85rem;
 }
 
 .passcode-input {

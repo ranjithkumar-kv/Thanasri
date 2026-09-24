@@ -40,9 +40,9 @@
       </div>
 
       <div class="passcode-box card-glass">
-        <div class="passcode-avatar">💜</div>
-        <h2>Thanu's WorkSpace</h2>
-        <p>A personalized haven crafted specially for you. Please enter your secret passcode to unlock!</p>
+        <div class="passcode-avatar" id="login-avatar">💜</div>
+        <h2 id="login-title">Thanu's WorkSpace</h2>
+        <p id="login-subtitle">A personalized haven crafted specially for you. Please enter your secret passcode to unlock!</p>
 
         <div class="passcode-input-group">
           <input type="password" id="passcode-input" class="passcode-input" placeholder="Enter secret passcode..."
@@ -59,7 +59,7 @@
           Unlock WorkSpace ➔
         </button>
 
-        <div class="passcode-hint" id="passcode-hint-btn" title="Hint: your hotspot password 😊">
+        <div class="passcode-hint" id="passcode-hint-btn" title="Hint: secret passcode">
           <span>💡 Need a hint? Click here</span>
         </div>
       </div>
@@ -254,8 +254,18 @@
         </div>
 
         <div class="header-actions">
-          <!-- Thanu's Birthday Quiz Answers Pill for RK -->
-          <button id="btn-view-quiz-answers" class="answers-pill-btn"
+          <!-- Active Logged In User Pill -->
+          <div id="header-user-pill" class="header-user-pill user-thanasri" title="Logged in user - Click lock to switch user">
+            <span id="header-user-avatar">💜</span>
+            <span id="header-user-name">Thanasri</span>
+            <button type="button" id="btn-header-lock" class="btn-header-lock"
+              onclick="if(window.app){window.app.lockWorkspace();}" title="Lock & Switch User">
+              🔒
+            </button>
+          </div>
+
+          <!-- Thanu's Birthday Quiz Answers Pill for RK (Only shown for thanu2596) -->
+          <button id="btn-view-quiz-answers" class="answers-pill-btn" style="display: none;"
             onclick="if(window.birthdayQuiz){window.birthdayQuiz.openAnswersModal();}" title="View Thanu's Birthday Answers">
             <span>💌 Thanu's Answers</span>
             <span class="pill-badge" id="quiz-answers-pill-badge" style="display: none;">0/8</span>
@@ -304,7 +314,7 @@
             <div class="hub-hero">
               <div class="hub-hero-badge-row">
                 <div class="hub-badge">💜 Thanu's Creative Hub</div>
-                <button type="button" id="btn-hub-answers-link" class="btn-hub-answers-link"
+                <button type="button" id="btn-hub-answers-link" class="btn-hub-answers-link" style="display: none;"
                   onclick="if(window.birthdayQuiz){window.birthdayQuiz.openAnswersModal();}"
                   title="View Thanu's Birthday Quiz Answers">
                   💌 Thanu's Answers
@@ -1170,7 +1180,7 @@
             </label>
             <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer; font-weight: 600; color: var(--purple-900);">
               <input type="radio" name="sync-user-role" id="role-thanu-radio" value="thanu" />
-              <span>Thanu 💜 (Player 2)</span>
+              <span>Thanasri 💜 (Player 2)</span>
             </label>
           </div>
         </div>
@@ -1178,7 +1188,7 @@
         <div class="form-field" style="margin-bottom: 1.25rem;">
           <label for="sync-room-input" style="font-weight: 700; color: var(--purple-900); font-size: 0.9rem; display: block; margin-bottom: 0.4rem;">Shared Room Code (Must match on both devices):</label>
           <input type="text" id="sync-room-input" class="passcode-input" style="font-size: 0.95rem; padding: 0.6rem 0.8rem; text-align: left; width: 100%; border: 1.5px solid var(--purple-300); border-radius: var(--radius-md);" value="thanu-and-rk-forever" />
-          <p style="font-size: 0.78rem; color: var(--purple-600); margin-top: 0.35rem;">Both RK and Thanu will automatically connect as long as your room codes match.</p>
+          <p style="font-size: 0.78rem; color: var(--purple-600); margin-top: 0.35rem;">Both RK and Thanasri will automatically connect as long as your room codes match.</p>
         </div>
 
         <div style="display: flex; gap: 0.6rem; margin-top: 1.25rem;">

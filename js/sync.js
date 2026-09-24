@@ -76,35 +76,41 @@ class WorkspaceSyncEngine {
   }
 
   resolveUserRole() {
+    try {
+      const active = sessionStorage.getItem('thanu_active_user');
+      if (active === 'thanasri' || active === 'thanu') return 'thanu';
+      if (active === 'rk') return 'rk';
+    } catch (e) {}
+
     // URL param has highest priority: ?role=thanu or ?role=rk
     const urlParams = new URLSearchParams(window.location.search);
     let role = urlParams.get('role');
     if (!role && window.location.hash.includes('role=')) {
-      const match = window.location.hash.match(/role=(thanu|rk|me)/i);
+      const match = window.location.hash.match(/role=(thanasri|thanu|rk|me)/i);
       if (match) role = match[1];
     }
     if (!role) {
-      role = localStorage.getItem('thanu_sync_user_role') || 'rk';
+      role = localStorage.getItem('thanu_sync_user_role') || 'thanu';
     }
-    return role.toLowerCase() === 'thanu' ? 'thanu' : 'rk';
+    const norm = (role || '').toLowerCase();
+    return (norm === 'thanu' || norm === 'thanasri') ? 'thanu' : 'rk';
   }
 
   getUserDisplayName() {
-    return this.userRole === 'thanu' ? 'Thanu 💜' : 'RK 💙';
+    return this.userRole === 'thanu' ? 'Thanasri 💜' : 'RK 💙';
   }
 
   getPartnerDisplayName() {
-    return this.userRole === 'thanu' ? 'RK 💙' : 'Thanu 💜';
+    return this.userRole === 'thanu' ? 'RK 💙' : 'Thanasri 💜';
   }
 
   setRole(newRole) {
-    this.userRole = (newRole || '').toLowerCase() === 'thanu' ? 'thanu' : 'rk';
+    const norm = (newRole || '').toLowerCase();
+    this.userRole = (norm === 'thanu' || norm === 'thanasri') ? 'thanu' : 'rk';
     localStorage.setItem('thanu_sync_user_role', this.userRole);
+    this.partnerName = this.getPartnerDisplayName();
     this.updateUiStatus();
     this.sendPresence(true);
-    if (window.app) {
-      window.app.showToast(`Set your profile as: ${this.getUserDisplayName()} 👤`);
-    }
   }
 
   setRoomCode(newRoom) {

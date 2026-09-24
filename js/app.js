@@ -6,8 +6,35 @@ class AppController {
   constructor() {
     this.currentView = 'passcode'; // 'passcode' | 'birthday' | 'workspace'
     this.currentWorkspaceModule = 'hub'; // 'hub' | 'wish-to-know' | 'pass-the-time' | 'learn-japanese' | 'saved-modules'
-    this.validPasscodes = ['12345678'];
     this.historyStack = [];
+
+    // Two authorized users configuration
+    this.users = {
+      'rk': {
+        username: 'rk',
+        password: 'thanu2596',
+        name: 'RK',
+        displayName: 'RK 💙',
+        role: 'rk',
+        avatar: '👨‍💻',
+        theme: 'rk-theme',
+        hint: 'thanu2596'
+      },
+      'thanasri': {
+        username: 'thanasri',
+        aliases: ['thanu'],
+        password: '12345678',
+        name: 'Thanasri',
+        displayName: 'Thanasri 💜',
+        role: 'thanu',
+        avatar: '💜',
+        theme: 'thanasri-theme',
+        hint: 'Your hotspot password 😊 (12345678)'
+      }
+    };
+
+    this.selectedUser = 'thanasri';
+    this.currentUser = null;
 
     this.initPasscode();
     this.initNavigation();
@@ -17,10 +44,6 @@ class AppController {
 
   /* History & Navigation Stack Management */
   initHistory() {
-    try {
-      window.history.replaceState({ view: 'passcode', module: 'hub' }, '');
-    } catch (e) {}
-
     window.addEventListener('popstate', (e) => {
       if (e.state && e.state.view) {
         this.navigateTo(e.state.view, e.state.module || 'hub', false);
@@ -28,6 +51,65 @@ class AppController {
         this.goBack();
       }
     });
+  }
+
+  saveSessionState() {
+    try {
+      if (this.currentUser) {
+        sessionStorage.setItem('thanu_active_user', this.currentUser);
+        sessionStorage.setItem('thanu_active_view', this.currentView);
+        sessionStorage.setItem('thanu_active_module', this.currentWorkspaceModule || 'hub');
+      } else {
+        sessionStorage.removeItem('thanu_active_user');
+        sessionStorage.removeItem('thanu_active_view');
+        sessionStorage.removeItem('thanu_active_module');
+      }
+    } catch (e) {}
+  }
+
+  restoreSessionState() {
+    try {
+      const savedUser = sessionStorage.getItem('thanu_active_user');
+      const savedView = sessionStorage.getItem('thanu_active_view');
+      const savedModule = sessionStorage.getItem('thanu_active_module') || 'hub';
+
+      if (savedUser && this.users[savedUser]) {
+        this.currentUser = savedUser;
+        const userObj = this.users[savedUser];
+
+        // Restore sync role
+        if (window.workspaceSync) {
+          window.workspaceSync.setRole(userObj.role);
+        } else {
+          localStorage.setItem('thanu_sync_user_role', userObj.role);
+        }
+
+        // Update header user pill
+        this.updateHeaderUserBadge();
+
+        // Update quiz badge and Thanu answers button visibility for RK
+        if (window.birthdayQuiz) {
+          window.birthdayQuiz.updateHeaderBadge();
+          window.birthdayQuiz.updateProgress(false);
+        }
+
+        // If user was on birthday or workspace, restore that exact view on reload!
+        if (savedView && savedView !== 'passcode') {
+          if (savedView === 'workspace') {
+            this.currentWorkspaceModule = savedModule;
+          }
+          this.switchView(savedView);
+          if (savedView === 'workspace') {
+            this.openWorkspaceModule(savedModule, false);
+          }
+          try {
+            window.history.replaceState({ view: savedView, module: savedModule }, '');
+          } catch (e) {}
+          return true;
+        }
+      }
+    } catch (e) {}
+    return false;
   }
 
   navigateTo(viewName, moduleName = 'hub', recordHistory = true) {
@@ -61,14 +143,25 @@ class AppController {
         if (this.currentWorkspaceModule !== 'hub') {
           target = { view: 'workspace', module: 'hub' };
         } else {
-          target = { view: 'birthday', module: 'hub' };
+          // If RK (thanu2596), going back from hub locks workspace since RK directly entered workspace
+          if (this.currentUser === 'rk') {
+            this.lockWorkspace();
+            return;
+          } else {
+            target = { view: 'birthday', module: 'hub' };
+          }
         }
       } else if (this.currentView === 'birthday') {
-        target = { view: 'passcode', module: 'hub' };
+        this.lockWorkspace();
+        return;
       }
     }
 
     if (target) {
+      if (target.view === 'passcode') {
+        this.lockWorkspace();
+        return;
+      }
       if (this.currentView !== target.view) {
         this.switchView(target.view);
       }
@@ -90,8 +183,13 @@ class AppController {
       if (this.currentView === 'workspace') {
         headerBackBtn.style.display = 'inline-flex';
         if (this.currentWorkspaceModule === 'hub') {
-          if (headerBackLabel) headerBackLabel.textContent = 'Birthday Card 🎂';
-          headerBackBtn.title = 'Go back to Birthday Greeting Card';
+          if (this.currentUser === 'rk') {
+            if (headerBackLabel) headerBackLabel.textContent = 'Lock 🔒';
+            headerBackBtn.title = 'Lock WorkSpace';
+          } else {
+            if (headerBackLabel) headerBackLabel.textContent = 'Birthday Card 🎂';
+            headerBackBtn.title = 'Go back to Birthday Greeting Card';
+          }
         } else {
           if (headerBackLabel) headerBackLabel.textContent = 'Hub';
           headerBackBtn.title = 'Go back to Workspace Hub';
@@ -111,9 +209,9 @@ class AppController {
     }
   }
 
-  /* 1. Passcode Authentication */
+  /* 1. Passcode Authentication (Auto-determines user from entered passcode) */
   initPasscode() {
-    const input = document.getElementById('passcode-input');
+    const pwdInput = document.getElementById('passcode-input');
     const submitBtn = document.getElementById('passcode-submit-btn');
     const togglePwdBtn = document.getElementById('toggle-pwd-btn');
     const hintBtn = document.getElementById('passcode-hint-btn');
@@ -122,19 +220,19 @@ class AppController {
       submitBtn.addEventListener('click', () => this.checkPasscode());
     }
 
-    if (input) {
-      input.addEventListener('keydown', (e) => {
+    if (pwdInput) {
+      pwdInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') this.checkPasscode();
       });
     }
 
-    if (togglePwdBtn && input) {
+    if (togglePwdBtn && pwdInput) {
       togglePwdBtn.addEventListener('click', () => {
-        if (input.type === 'password') {
-          input.type = 'text';
+        if (pwdInput.type === 'password') {
+          pwdInput.type = 'text';
           togglePwdBtn.textContent = '🔒';
         } else {
-          input.type = 'password';
+          pwdInput.type = 'password';
           togglePwdBtn.textContent = '👁️';
         }
       });
@@ -142,33 +240,149 @@ class AppController {
 
     if (hintBtn) {
       hintBtn.addEventListener('click', () => {
-        this.showToast("Hint: your hotspot password 😊");
+        this.showToast("💡 Hint: Enter your secret passcode to unlock! 😊", 4000);
       });
     }
   }
 
-  checkPasscode() {
-    const input = document.getElementById('passcode-input');
+  showLoginError(msg) {
     const errorEl = document.getElementById('passcode-error');
     const boxEl = document.querySelector('.passcode-box');
-
-    const val = (input ? input.value || '' : '').trim().toLowerCase();
-
-    if (this.validPasscodes.includes(val)) {
-      if (errorEl) errorEl.classList.remove('visible');
-      this.unlockToBirthdayView();
-    } else {
-      if (errorEl) {
-        errorEl.textContent = 'Incorrect passcode! Try again 💜';
-        errorEl.classList.add('visible');
-      }
-      if (boxEl) {
-        boxEl.classList.remove('shake');
-        void boxEl.offsetWidth;
-        boxEl.classList.add('shake');
-      }
-      if (input) input.select();
+    if (errorEl) {
+      errorEl.textContent = msg;
+      errorEl.classList.add('visible');
     }
+    if (boxEl) {
+      boxEl.classList.remove('shake');
+      void boxEl.offsetWidth;
+      boxEl.classList.add('shake');
+    }
+  }
+
+  checkPasscode() {
+    const pwdInput = document.getElementById('passcode-input');
+    const errorEl = document.getElementById('passcode-error');
+
+    const enteredPwd = (pwdInput ? pwdInput.value || '' : '').trim();
+
+    if (!enteredPwd) {
+      this.showLoginError('Please enter secret passcode 💜');
+      if (pwdInput) pwdInput.focus();
+      return;
+    }
+
+    // Determine user automatically based on the passcode entered:
+    // 1. "thanu2596" -> RK (directly moves to workspace, no questions provided)
+    // 2. "12345678"  -> Thanasri (shows questions first, unlocks workspace after answering)
+    let detectedUser = null;
+    if (enteredPwd === 'thanu2596') {
+      detectedUser = this.users['rk'];
+    } else if (enteredPwd === '12345678') {
+      detectedUser = this.users['thanasri'];
+      // Every time Thanasri logs in fresh with 12345678, reset the questions so she answers them again!
+      if (window.birthdayQuiz) {
+        window.birthdayQuiz.resetQuizForNewLogin();
+      }
+    }
+
+    if (detectedUser) {
+      if (errorEl) errorEl.classList.remove('visible');
+      this.loginAs(detectedUser);
+    } else {
+      this.showLoginError('Incorrect passcode! Try again 💜');
+      if (pwdInput) {
+        pwdInput.select();
+        pwdInput.focus();
+      }
+    }
+  }
+
+  loginAs(userObj) {
+    this.currentUser = userObj.username;
+    try {
+      sessionStorage.setItem('thanu_active_user', userObj.username);
+      localStorage.setItem('thanu_sync_user_role', userObj.role);
+    } catch (e) {}
+
+    // Update real-time sync role
+    if (window.workspaceSync) {
+      window.workspaceSync.setRole(userObj.role);
+    }
+
+    // Update header pill
+    this.updateHeaderUserBadge();
+
+    // Update quiz badge and visibility of Thanu's answers button
+    if (window.birthdayQuiz) {
+      window.birthdayQuiz.updateHeaderBadge();
+      window.birthdayQuiz.updateProgress(false);
+    }
+
+    this.showToast(`Welcome, ${userObj.displayName}! ✨`);
+
+    // Clear password field for next lock
+    const pwdInput = document.getElementById('passcode-input');
+    if (pwdInput) pwdInput.value = '';
+
+    // Route based on user:
+    // - "thanu2596" (RK): questions will NOT be provided, directly moves to workspace!
+    // - "12345678" (Thanasri): shows questions, then after answering unlocks workspace
+    if (userObj.username === 'rk') {
+      this.enterWorkspace();
+    } else {
+      this.unlockToBirthdayView();
+    }
+
+    this.saveSessionState();
+  }
+
+  lockWorkspace() {
+    this.currentUser = null;
+    try {
+      sessionStorage.removeItem('thanu_active_user');
+      sessionStorage.removeItem('thanu_active_view');
+      sessionStorage.removeItem('thanu_active_module');
+      sessionStorage.removeItem('thanu_active_session_answers');
+    } catch (e) {}
+
+    const pwdInput = document.getElementById('passcode-input');
+    if (pwdInput) {
+      pwdInput.value = '';
+    }
+
+    // Hide answers buttons on lock
+    if (window.birthdayQuiz) {
+      window.birthdayQuiz.updateHeaderBadge();
+    }
+
+    this.switchToPasscodeView();
+    this.saveSessionState();
+    this.showToast('Workspace locked 🔒');
+  }
+
+  switchToPasscodeView() {
+    this.switchView('passcode');
+    const pwdInput = document.getElementById('passcode-input');
+    if (pwdInput) {
+      setTimeout(() => pwdInput.focus(), 150);
+    }
+  }
+
+  updateHeaderUserBadge() {
+    const pill = document.getElementById('header-user-pill');
+    const avatarEl = document.getElementById('header-user-avatar');
+    const nameEl = document.getElementById('header-user-name');
+
+    if (!pill || !avatarEl || !nameEl) return;
+
+    const u = this.currentUser || this.selectedUser || 'thanasri';
+    const userObj = this.users[u] || this.users['thanasri'];
+
+    avatarEl.textContent = userObj.avatar;
+    nameEl.textContent = userObj.name;
+
+    pill.className = `header-user-pill user-${userObj.username}`;
+    pill.title = `Logged in as ${userObj.displayName} • Click 🔒 to lock or switch`;
   }
 
   unlockToBirthdayView() {
@@ -188,6 +402,16 @@ class AppController {
         e.preventDefault();
         e.stopPropagation();
         this.enterWorkspace();
+      });
+    }
+
+    // Header Lock button
+    const headerLockBtn = document.getElementById('btn-header-lock');
+    if (headerLockBtn) {
+      headerLockBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.lockWorkspace();
       });
     }
 
@@ -305,6 +529,7 @@ class AppController {
 
     window.scrollTo({ top: 0, behavior: 'instant' });
     this.updateBackButtons();
+    this.saveSessionState();
   }
 
   openWorkspaceModule(moduleName, recordHistory = true) {
@@ -321,6 +546,7 @@ class AppController {
 
     this.currentView = 'workspace';
     this.currentWorkspaceModule = moduleName;
+    this.saveSessionState();
 
     // Sub-views inside workspace
     const subviews = document.querySelectorAll('.workspace-subview');
@@ -428,6 +654,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Saved Modules Manager
   window.savedModulesManager = new SavedModulesManager();
+
+  // Initialize active user header badge & restore session view on reload
+  if (window.app) {
+    window.app.updateHeaderUserBadge();
+  }
+  if (window.birthdayQuiz) {
+    window.birthdayQuiz.updateHeaderBadge();
+  }
+  if (window.app) {
+    window.app.restoreSessionState();
+  }
 
   // Ensure Purple Heart Tab Favicon is set
   try {
