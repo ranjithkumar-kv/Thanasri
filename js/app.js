@@ -4,7 +4,7 @@
 
 class AppController {
   constructor() {
-    this.currentView = 'passcode'; // 'passcode' | 'birthday' | 'workspace'
+    this.currentView = 'passcode'; // 'passcode' | 'workspace'
     this.currentWorkspaceModule = 'hub'; // 'hub' | 'wish-to-know' | 'pass-the-time' | 'learn-japanese' | 'saved-modules'
     this.historyStack = [];
 
@@ -23,13 +23,13 @@ class AppController {
       'thanasri': {
         username: 'thanasri',
         aliases: ['thanu'],
-        password: '12345678',
+        password: 'thanu@47',
         name: 'Thanasri',
         displayName: 'Thanasri 💜',
         role: 'thanu',
         avatar: '💜',
         theme: 'thanasri-theme',
-        hint: 'Your hotspot password 😊 (12345678)'
+        hint: 'thanu@47'
       }
     };
 
@@ -93,17 +93,14 @@ class AppController {
           window.birthdayQuiz.updateProgress(false);
         }
 
-        // If user was on birthday or workspace, restore that exact view on reload!
+        // If user was on workspace, restore that exact view on reload!
         if (savedView && savedView !== 'passcode') {
-          if (savedView === 'workspace') {
-            this.currentWorkspaceModule = savedModule;
-          }
-          this.switchView(savedView);
-          if (savedView === 'workspace') {
-            this.openWorkspaceModule(savedModule, false);
-          }
+          const effectiveView = 'workspace';
+          this.currentWorkspaceModule = savedModule;
+          this.switchView(effectiveView);
+          this.openWorkspaceModule(savedModule, false);
           try {
-            window.history.replaceState({ view: savedView, module: savedModule }, '');
+            window.history.replaceState({ view: effectiveView, module: savedModule }, '');
           } catch (e) {}
           return true;
         }
@@ -143,15 +140,10 @@ class AppController {
         if (this.currentWorkspaceModule !== 'hub') {
           target = { view: 'workspace', module: 'hub' };
         } else {
-          // If RK (thanu2596), going back from hub locks workspace since RK directly entered workspace
-          if (this.currentUser === 'rk') {
-            this.lockWorkspace();
-            return;
-          } else {
-            target = { view: 'birthday', module: 'hub' };
-          }
+          this.lockWorkspace();
+          return;
         }
-      } else if (this.currentView === 'birthday') {
+      } else {
         this.lockWorkspace();
         return;
       }
@@ -183,13 +175,8 @@ class AppController {
       if (this.currentView === 'workspace') {
         headerBackBtn.style.display = 'inline-flex';
         if (this.currentWorkspaceModule === 'hub') {
-          if (this.currentUser === 'rk') {
-            if (headerBackLabel) headerBackLabel.textContent = 'Lock 🔒';
-            headerBackBtn.title = 'Lock WorkSpace';
-          } else {
-            if (headerBackLabel) headerBackLabel.textContent = 'Birthday Card 🎂';
-            headerBackBtn.title = 'Go back to Birthday Greeting Card';
-          }
+          if (headerBackLabel) headerBackLabel.textContent = 'Lock 🔒';
+          headerBackBtn.title = 'Lock WorkSpace';
         } else {
           if (headerBackLabel) headerBackLabel.textContent = 'Hub';
           headerBackBtn.title = 'Go back to Workspace Hub';
@@ -272,14 +259,13 @@ class AppController {
     }
 
     // Determine user automatically based on the passcode entered:
-    // 1. "thanu2596" -> RK (directly moves to workspace, no questions provided)
-    // 2. "12345678"  -> Thanasri (shows questions first, unlocks workspace after answering)
+    // 1. "thanu2596" -> RK (directly moves to workspace)
+    // 2. "thanu@47"  -> Thanasri (directly moves to workspace)
     let detectedUser = null;
     if (enteredPwd === 'thanu2596') {
       detectedUser = this.users['rk'];
-    } else if (enteredPwd === '12345678') {
+    } else if (enteredPwd.toLowerCase() === 'thanu@47') {
       detectedUser = this.users['thanasri'];
-      // Every time Thanasri logs in fresh with 12345678, reset the questions so she answers them again!
       if (window.birthdayQuiz) {
         window.birthdayQuiz.resetQuizForNewLogin();
       }
@@ -324,14 +310,8 @@ class AppController {
     const pwdInput = document.getElementById('passcode-input');
     if (pwdInput) pwdInput.value = '';
 
-    // Route based on user:
-    // - "thanu2596" (RK): questions will NOT be provided, directly moves to workspace!
-    // - "12345678" (Thanasri): shows questions, then after answering unlocks workspace
-    if (userObj.username === 'rk') {
-      this.enterWorkspace();
-    } else {
-      this.unlockToBirthdayView();
-    }
+    // Both users directly enter workspace now that birthday celebration has ended!
+    this.enterWorkspace();
 
     this.saveSessionState();
   }
@@ -386,25 +366,11 @@ class AppController {
   }
 
   unlockToBirthdayView() {
-    this.navigateTo('birthday', 'hub');
-
-    if (window.birthdayApp) {
-      window.birthdayApp.startCelebration();
-    }
+    this.enterWorkspace();
   }
 
   /* 2. Workspace Navigation */
   initNavigation() {
-    // "Welcome to the Workspace" button on birthday page
-    const welcomeBtn = document.getElementById('btn-welcome-workspace');
-    if (welcomeBtn) {
-      welcomeBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        this.enterWorkspace();
-      });
-    }
-
     // Header Lock button
     const headerLockBtn = document.getElementById('btn-header-lock');
     if (headerLockBtn) {
@@ -430,24 +396,6 @@ class AppController {
       subnavBackBtn.addEventListener('click', (e) => {
         e.preventDefault();
         this.goBack();
-      });
-    }
-
-    // Go Back button on Birthday view
-    const bdayBackBtn = document.getElementById('btn-birthday-back');
-    if (bdayBackBtn) {
-      bdayBackBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        this.goBack();
-      });
-    }
-
-    // Birthday card button on Hub Hero
-    const hubBdayLink = document.getElementById('btn-hub-birthday-link');
-    if (hubBdayLink) {
-      hubBdayLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        this.navigateTo('birthday', 'hub');
       });
     }
 
@@ -516,11 +464,7 @@ class AppController {
       this.currentView = viewName;
     }
 
-    if (viewName === 'birthday' && window.birthdayApp) {
-      window.birthdayApp.startCelebration();
-    } else if (viewName !== 'birthday' && window.birthdayApp) {
-      window.birthdayApp.stopCelebration();
-    }
+
 
     if (viewName !== 'workspace') {
       if (window.miniCalc && window.miniCalc.hide) window.miniCalc.hide();

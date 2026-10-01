@@ -524,7 +524,7 @@ class GamesHub {
      ========================================================================== */
   initTypingGame() {
     this.passages = [
-      "Happy Birthday Cuteuhhh! May your year be filled with boundless joy, purple blossoms, and all your sweetest dreams coming true.",
+      "Believe in yourself and all that you are. There is something inside you that is greater than any obstacle you encounter.",
       "Take a deep breath and let all stress melt away. You are resilient, brilliant, and deeply cherished by everyone who knows you.",
       "Learning a new language is opening a magical doorway to a whole new world. Every single day brings new steps of wisdom."
     ];

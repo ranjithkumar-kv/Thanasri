@@ -1,17 +1,10 @@
-# 💜 Thanu's Workspace & Birthday Celebration
+# 💜 Thanu's Workspace
 
-A personalized, interactive web workspace crafted with love for Thanasri's special birthday.
+A personalized, interactive web workspace crafted with love for Thanasri.
 
 ---
 
 ## ✨ Features
-
-- 🎂 **Birthday Celebration Suite**
-  - Interactive surprise box & celebratory confetti
-  - Digital birthday card with heartfelt wishes
-  - Photo memories gallery
-  - Background music player & ambient sounds
-  - Real-time countdown timer
 
 - 📚 **Study & Productivity Tools**
   - **Pomodoro Timer**: Customizable focus sessions & break intervals

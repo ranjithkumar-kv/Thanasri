@@ -43,7 +43,7 @@ class JapaneseLearningHub {
     };
 
     this.phrasesData = [
-      { jp: 'お誕生日おめでとう！', romaji: 'Otanjoubi omedetou!', en: 'Happy Birthday Cuteuhhh! 💜', special: true },
+      { jp: 'はじめまして', romaji: 'Hajimemashite', en: 'Nice to meet you / Pleased to meet you' },
       { jp: 'おはようございます', romaji: 'Ohayou gozaimasu', en: 'Good morning' },
       { jp: 'こんにちは', romaji: 'Konnichiwa', en: 'Hello / Good afternoon' },
       { jp: 'こんばんは', romaji: 'Konbanwa', en: 'Good evening' },

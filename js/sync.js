@@ -471,7 +471,7 @@ class WorkspaceSyncEngine {
   }
 
   /* --------------------------------------------------------------------------
-     Module: Birthday Quiz Sync Helpers
+     Module: Questionnaire Sync Helpers
      -------------------------------------------------------------------------- */
   sendQuizAnswers(answers) {
     this.broadcast('BDAY_QUIZ_ANSWERS', { answers });

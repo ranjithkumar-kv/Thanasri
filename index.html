@@ -4,9 +4,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Thanu's WorkSpace - Birthday Special</title>
+  <title>Thanu's WorkSpace</title>
   <meta name="description"
-    content="A personalized purple and white workspace gift for Thanu with multi-slide whiteboard, stress buster games, and Japanese learning.">
+    content="A personalized purple and white workspace for Thanu with multi-slide whiteboard, stress buster games, and Japanese learning.">
 
   <!-- Browser Tab Favicon (Purple Heart) -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.88em%22 font-size=%2288%22>💜</text></svg>">
@@ -66,171 +66,12 @@
     </section>
 
 
-    <!-- ====================================================================
-         VIEW 2: BIRTHDAY WISHING PAGE
-         "Wish you a Happy Birthday Cuteuhhh (purple heart)"
-         "Welcome to the Workspace"
-         ==================================================================== -->
-    <section id="birthday-view" class="view-section">
-      <canvas id="confetti-canvas"></canvas>
-      <div class="floating-hearts-container" id="floating-hearts-container"></div>
-
-      <button id="btn-birthday-back" class="btn-birthday-back" onclick="if(window.app){window.app.goBack();}"
-        title="Go back to passcode lock screen">
-        <span class="back-arrow">←</span> Lock / Go Back
-      </button>
-
-      <button id="music-toggle-btn" class="music-toggle-btn" title="Play celebration melody">
-        🎶 Play Birthday Chime
-      </button>
-
-      <div class="birthday-card">
-        <div class="birthday-badge-icon">🎂</div>
-        <div class="birthday-ribbon">✨ A Very Special Day ✨</div>
-
-        <h1 class="birthday-title">
-          Wish you a Happy Birthday Cuteuhhh <span class="purple-heart">💜</span>
-        </h1>
-
-        <p class="birthday-subtitle">
-          May this new chapter bring you endless reasons to smile, total peace of mind, and the success you deserve in
-          everything you pursue. Enjoy every second of your day!.
-        </p>
-
-        <div class="surprise-presents">
-          <div class="present-box">🎁 Sweet Note 1</div>
-          <div class="present-box">🎁 Secret Wish 2</div>
-          <div class="present-box">🎁 Special Blessing 3</div>
-        </div>
-
-        <!-- ================================================================
-             INTERACTIVE BIRTHDAY QUESTIONNAIRE FOR THANU
-             ================================================================ -->
-        <div class="birthday-quiz-container" id="birthday-quiz-container">
-          <div class="quiz-header-ribbon">
-            <span class="quiz-ribbon-icon">💌</span>
-            <span>A Special Birthday Quiz for Cuteuhhh</span>
-            <span class="quiz-ribbon-sparkle">✨</span>
-          </div>
-          <p class="quiz-desc">
-            Answer these 8 cute questions to unlock your personal workspace! 💜
-          </p>
-
-          <!-- Progress Bar & Counter -->
-          <div class="quiz-progress-wrapper">
-            <div class="quiz-progress-track">
-              <div class="quiz-progress-bar" id="quiz-progress-bar" style="width: 0%;"></div>
-            </div>
-            <div class="quiz-progress-info">
-              <span id="quiz-progress-count">0 of 8 answered</span>
-              <span id="quiz-progress-badge" class="quiz-progress-badge">In Progress ⏳</span>
-            </div>
-          </div>
-
-          <div class="quiz-questions-list">
-
-            <!-- Question 1: Hotspot Password -->
-            <div class="quiz-card-item" id="quiz-item-1" data-q="1">
-              <div class="quiz-q-num">Question 1</div>
-              <h3 class="quiz-q-title">1. What's your hotspot password? 📶</h3>
-              <div class="quiz-input-wrapper">
-                <input type="text" id="quiz-q1-input" class="quiz-text-input" placeholder="Type your hotspot password here... 😊" autocomplete="off">
-              </div>
-            </div>
-
-            <!-- Question 2: Mom or Dad -->
-            <div class="quiz-card-item" id="quiz-item-2" data-q="2">
-              <div class="quiz-q-num">Question 2</div>
-              <h3 class="quiz-q-title">2. Who do you love more—Mom or Dad? 👨‍👩‍👧</h3>
-              <div class="quiz-options-group">
-                <button type="button" class="quiz-choice-btn" data-q="2" data-val="Mom">👩 Mom 💖</button>
-                <button type="button" class="quiz-choice-btn" data-q="2" data-val="Dad">👨 Dad 💙</button>
-              </div>
-              <div id="quiz-q2-reaction" class="quiz-reaction-msg" style="display:none;"></div>
-            </div>
-
-            <!-- Question 3: Gill or Me -->
-            <div class="quiz-card-item" id="quiz-item-3" data-q="3">
-              <div class="quiz-q-num">Question 3</div>
-              <h3 class="quiz-q-title">3. Who do you like the most—Gill or Me? 🏏🙋‍♂️</h3>
-              <div class="quiz-options-group">
-                <button type="button" class="quiz-choice-btn" data-q="3" data-val="Gill">🏏 Gill</button>
-                <button type="button" class="quiz-choice-btn" data-q="3" data-val="Me">🙋‍♂️ Me (RK)</button>
-              </div>
-              <div id="quiz-q3-reaction" class="quiz-reaction-msg" style="display:none;"></div>
-            </div>
-
-            <!-- Question 4: One thing you like about me -->
-            <div class="quiz-card-item" id="quiz-item-4" data-q="4">
-              <div class="quiz-q-num">Question 4</div>
-              <h3 class="quiz-q-title">4. What is one thing you like about me? 😊</h3>
-              <div class="quiz-input-wrapper">
-                <textarea id="quiz-q4-input" class="quiz-textarea" rows="2" placeholder="Tell me what you like about me... 💜"></textarea>
-              </div>
-            </div>
-
-            <!-- Question 5: One thing you don't like about me -->
-            <div class="quiz-card-item" id="quiz-item-5" data-q="5">
-              <div class="quiz-q-num">Question 5</div>
-              <h3 class="quiz-q-title">5. What is one thing you don't like about me? 🙈</h3>
-              <div class="quiz-input-wrapper">
-                <textarea id="quiz-q5-input" class="quiz-textarea" rows="2" placeholder="Be 100% honest... What don't you like? 😉"></textarea>
-              </div>
-            </div>
-
-            <!-- Question 6: Most memorable moment -->
-            <div class="quiz-card-item" id="quiz-item-6" data-q="6">
-              <div class="quiz-q-num">Question 6</div>
-              <h3 class="quiz-q-title">6. What is the most memorable moment you've had with me? 💭</h3>
-              <div class="quiz-input-wrapper">
-                <textarea id="quiz-q6-input" class="quiz-textarea" rows="2" placeholder="Share our most memorable moment... ✨"></textarea>
-              </div>
-            </div>
-
-            <!-- Question 7: Younger brother or friend -->
-            <div class="quiz-card-item" id="quiz-item-7" data-q="7">
-              <div class="quiz-q-num">Question 7</div>
-              <h3 class="quiz-q-title">7. Who am I to you—a younger brother or a friend? 🤔</h3>
-              <div class="quiz-options-group">
-                <button type="button" class="quiz-choice-btn" id="quiz-q7-brother-btn" data-q="7" data-val="Younger Brother">👦 A Younger Brother</button>
-                <button type="button" class="quiz-choice-btn" id="quiz-q7-friend-btn" data-q="7" data-val="A Friend">👫 A Friend ✨</button>
-              </div>
-              <div id="quiz-q7-reaction" class="quiz-reaction-msg" style="display:none;"></div>
-            </div>
-
-            <!-- Question 8: Birthday pic with runaway 'No' button -->
-            <div class="quiz-card-item" id="quiz-item-8" data-q="8">
-              <div class="quiz-q-num">Question 8</div>
-              <h3 class="quiz-q-title">8. Will you send me your birthday pic? 📸✨</h3>
-              <div class="quiz-runaway-arena" id="quiz-runaway-arena">
-                <button type="button" class="quiz-choice-btn quiz-yes-btn" id="quiz-q8-yes-btn" data-q="8" data-val="Yes">📸 Yes, Of Course! 🥰</button>
-                <button type="button" class="quiz-choice-btn quiz-no-btn runaway-btn" id="quiz-q8-no-btn" data-q="8" data-val="No">🙅‍♀️ No</button>
-              </div>
-              <div id="quiz-q8-reaction" class="quiz-reaction-msg" style="display:none;"></div>
-            </div>
-
-          </div>
-
-          <!-- Unlock Workspace Completion Box -->
-          <div class="quiz-unlock-box" id="quiz-unlock-box">
-            <div class="quiz-unlock-status" id="quiz-unlock-status">
-              <span class="quiz-lock-icon" id="quiz-lock-icon">🔒</span>
-              <span id="quiz-unlock-msg">Answer all 8 questions above to unlock your workspace!</span>
-            </div>
-            <button id="btn-welcome-workspace" class="btn-welcome-workspace" style="display: none;"
-              onclick="if(window.app){window.app.enterWorkspace();}">
-              <span>🚀 Welcome to the Workspace</span>
-              <span class="arrow-icon">➔</span>
-            </button>
-          </div>
-
-        </div>
-      </div>
-    </section>
+    <!-- Global Celebratory Confetti Canvas for Games & Achievements -->
+    <canvas id="confetti-canvas"></canvas>
 
 
     <!-- ====================================================================
-         VIEW 3: MAIN WORKSPACE CONTAINER
+         VIEW 2: MAIN WORKSPACE CONTAINER
          ==================================================================== -->
     <section id="workspace-view" class="view-section">
 
@@ -264,9 +105,9 @@
             </button>
           </div>
 
-          <!-- Thanu's Birthday Quiz Answers Pill for RK (Only shown for thanu2596) -->
+          <!-- Thanu's Answers Pill for RK (Only shown for thanu2596) -->
           <button id="btn-view-quiz-answers" class="answers-pill-btn" style="display: none;"
-            onclick="if(window.birthdayQuiz){window.birthdayQuiz.openAnswersModal();}" title="View Thanu's Birthday Answers">
+            onclick="if(window.birthdayQuiz){window.birthdayQuiz.openAnswersModal();}" title="View Thanu's Answers">
             <span>💌 Thanu's Answers</span>
             <span class="pill-badge" id="quiz-answers-pill-badge" style="display: none;">0/8</span>
           </button>
@@ -316,13 +157,8 @@
                 <div class="hub-badge">💜 Thanu's Creative Hub</div>
                 <button type="button" id="btn-hub-answers-link" class="btn-hub-answers-link" style="display: none;"
                   onclick="if(window.birthdayQuiz){window.birthdayQuiz.openAnswersModal();}"
-                  title="View Thanu's Birthday Quiz Answers">
+                  title="View Thanu's Answers">
                   💌 Thanu's Answers
-                </button>
-                <button type="button" id="btn-hub-birthday-link" class="btn-hub-birthday-link"
-                  onclick="if(window.app){window.app.navigateTo('birthday', 'hub');}"
-                  title="View birthday greeting card again">
-                  🎂 View Birthday Card
                 </button>
               </div>
               <h2>Welcome to Your Workspace</h2>
@@ -772,7 +608,7 @@
                 <span>🔤</span> Kana Syllabary
               </button>
               <button class="jp-tab-btn" data-target="phrases">
-                <span>💬</span> Daily Phrases & Birthday
+                <span>💬</span> Daily Phrases & Greetings
               </button>
               <button class="jp-tab-btn" data-target="numbers">
                 <span>🔢</span> Numbers & Counting
@@ -1203,14 +1039,14 @@
     </div>
   </div>
 
-  <!-- Modal 4: Birthday Quiz Answers Viewer for RK -->
+  <!-- Modal 4: Answers Viewer for RK -->
   <div id="quiz-answers-modal" class="modal-overlay">
     <div class="modal-card" style="max-width: 680px; max-height: 88vh; display: flex; flex-direction: column;">
       <div class="modal-header" style="background: linear-gradient(135deg, var(--purple-800), var(--purple-950)); color: white; border-bottom: 2px solid var(--purple-700);">
         <div style="display: flex; align-items: center; gap: 0.65rem;">
           <span style="font-size: 1.5rem;">💌</span>
           <div>
-            <h3 style="margin: 0; color: white; font-size: 1.2rem; font-weight: 800;">Thanu's Birthday Answers</h3>
+            <h3 style="margin: 0; color: white; font-size: 1.2rem; font-weight: 800;">Thanu's Answers</h3>
             <span id="quiz-modal-subtitle" style="font-size: 0.8rem; color: #e9d5ff; font-weight: 500;">Live sync & saved responses from Thanu</span>
           </div>
         </div>
