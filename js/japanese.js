@@ -402,17 +402,6 @@ class JapaneseLearningHub {
       });
     }
 
-    // Kana Sound Type Toggle (Basic, Voiced, Combos)
-    const soundBtns = document.querySelectorAll('.kana-sound-btn');
-    soundBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        soundBtns.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        this.activeKanaSound = btn.dataset.sound;
-        this.renderKanaGrid();
-      });
-    });
-
     // Kanji Category Filters
     const kanjiFilterBtns = document.querySelectorAll('#kanji-filter-group .kanji-filter-btn');
     kanjiFilterBtns.forEach(btn => {
@@ -504,20 +493,72 @@ class JapaneseLearningHub {
     if (!grid) return;
 
     grid.innerHTML = '';
-    const pool = this.kanaData[this.activeKanaType][this.activeKanaSound] || [];
+    const currentKana = this.kanaData[this.activeKanaType];
+    if (!currentKana) return;
 
-    pool.forEach(item => {
-      const card = document.createElement('div');
-      card.className = 'kana-card';
-      card.innerHTML = `
-        <div class="kana-char">${item.char}</div>
-        <div class="kana-romaji">${item.romaji}</div>
-        <div class="kana-audio-hint">🔊 play</div>
+    const isHiragana = this.activeKanaType === 'hiragana';
+    const typeLabel = isHiragana ? 'Hiragana (ひらがな)' : 'Katakana (カタカナ)';
+
+    const sections = [
+      {
+        key: 'basic',
+        title: `Basic ${typeLabel} — 46 Characters`,
+        jpTitle: '五十音 (Gojuon)',
+        subtitle: 'Foundational 46 primary vowel & consonant sounds',
+        items: currentKana.basic || []
+      },
+      {
+        key: 'voiced',
+        title: `Voiced & Semi-Voiced ${typeLabel} — 25 Characters`,
+        jpTitle: '濁音・半濁音 (Dakuon & Handakuon)',
+        subtitle: 'Sounds modified with dakuten (゛) & handakuten (゜) like G, Z, D, B, P',
+        items: currentKana.voiced || []
+      },
+      {
+        key: 'combos',
+        title: `Combination ${typeLabel} — 33 Compounds`,
+        jpTitle: '拗音 (Yōon)',
+        subtitle: isHiragana
+          ? 'Contracted sounds paired with small ゃ, ゅ, ょ (kya, sha, cha...)'
+          : 'Contracted sounds paired with small ャ, ュ, ョ (kya, sha, cha...)',
+        items: currentKana.combos || []
+      }
+    ];
+
+    sections.forEach(sec => {
+      if (!sec.items.length) return;
+
+      const secEl = document.createElement('div');
+      secEl.className = 'kana-section';
+
+      secEl.innerHTML = `
+        <div class="kana-section-header">
+          <div class="kana-section-title">
+            <span>🌸</span> ${sec.title}
+            <span style="font-size: 0.88rem; font-weight: 600; color: var(--purple-700); margin-left: 0.4rem;">• ${sec.jpTitle}</span>
+          </div>
+          <div class="kana-section-subtitle">${sec.subtitle}</div>
+        </div>
+        <div class="kana-cards-grid"></div>
       `;
-      card.addEventListener('click', () => {
-        this.speakJapanese(item.char);
+
+      const cardsContainer = secEl.querySelector('.kana-cards-grid');
+
+      sec.items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'kana-card';
+        card.innerHTML = `
+          <div class="kana-char">${item.char}</div>
+          <div class="kana-romaji">${item.romaji}</div>
+          <div class="kana-audio-hint">🔊 play</div>
+        `;
+        card.addEventListener('click', () => {
+          this.speakJapanese(item.char);
+        });
+        cardsContainer.appendChild(card);
       });
-      grid.appendChild(card);
+
+      grid.appendChild(secEl);
     });
   }
 

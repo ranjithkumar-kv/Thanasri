@@ -60,12 +60,14 @@ class MiniCalculator {
     if (!this.widgetEl) return;
     this.widgetEl.classList.add('active');
     this.isOpen = true;
+    document.querySelectorAll('.calc-toggle-btn').forEach(btn => btn.classList.add('active'));
   }
 
   hide() {
     if (!this.widgetEl) return;
     this.widgetEl.classList.remove('active');
     this.isOpen = false;
+    document.querySelectorAll('.calc-toggle-btn').forEach(btn => btn.classList.remove('active'));
   }
 
   appendDigit(digit) {

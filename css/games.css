@@ -103,24 +103,34 @@
 
 .xo-controls-bar {
   width: 100%;
+  max-width: 360px;
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
+  gap: 0.65rem;
+  margin-top: 0.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.xo-actions-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
   flex-wrap: wrap;
-  margin-bottom: 1.25rem;
-  gap: 0.75rem;
 }
 
 .mode-select-pill {
-  display: flex;
+  display: inline-flex;
   background: var(--purple-100);
   border-radius: var(--radius-full);
   padding: 3px;
   border: 1px solid var(--purple-200);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .mode-btn {
-  padding: 0.35rem 0.85rem;
+  padding: 0.32rem 0.85rem;
   border-radius: var(--radius-full);
   border: none;
   background: transparent;
@@ -128,11 +138,18 @@
   font-size: 0.82rem;
   font-weight: 700;
   cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.mode-btn:hover:not(.active) {
+  background: rgba(147, 51, 234, 0.1);
+  color: var(--purple-950);
 }
 
 .mode-btn.active {
   background: var(--purple-600);
   color: var(--white);
+  box-shadow: 0 2px 6px rgba(109, 40, 217, 0.25);
 }
 
 /* Scoreboard */
@@ -231,31 +248,86 @@
   }
 }
 
-/* Theme Toggle Button */
+/* Theme & Action Buttons */
 .xo-theme-btn {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.38rem 0.8rem;
+  padding: 0.38rem 0.85rem;
   background: var(--purple-100);
   border: 1.5px solid var(--purple-300);
   border-radius: var(--radius-full);
   color: var(--purple-900);
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   font-weight: 700;
   cursor: pointer;
   transition: all var(--transition-fast);
   white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .xo-theme-btn:hover {
   background: var(--purple-200);
   border-color: var(--purple-500);
   transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(109, 40, 217, 0.18);
 }
 
 .xo-theme-btn:active {
   transform: scale(0.96);
+}
+
+.xo-turn-lbl {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: lowercase;
+  color: var(--purple-800);
+}
+
+.xo-theme-opt {
+  display: inline-block;
+  transition: all var(--transition-fast);
+  opacity: 0.45;
+  font-weight: 600;
+}
+
+.xo-theme-opt.active {
+  opacity: 1;
+  font-weight: 800;
+}
+
+.xo-theme-sep {
+  opacity: 0.4;
+  margin: 0 0.1rem;
+  font-weight: 600;
+}
+
+.xo-reset-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  background: var(--purple-100);
+  border: 1.5px solid var(--purple-300);
+  border-radius: var(--radius-full);
+  color: var(--purple-900);
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  line-height: 1;
+}
+
+.xo-reset-icon-btn:hover {
+  background: var(--purple-200);
+  border-color: var(--purple-500);
+  transform: scale(1.1) rotate(45deg);
+  box-shadow: 0 3px 8px rgba(109, 40, 217, 0.2);
+}
+
+.xo-reset-icon-btn:active {
+  transform: scale(0.94) rotate(90deg);
 }
 
 /* 3x3 Grid - Rigid, Locked Box Dimensions (Boxes can NEVER change size) */
@@ -268,7 +340,7 @@
   max-width: 340px;
   height: 340px;
   aspect-ratio: 1 / 1;
-  margin-bottom: 1.75rem;
+  margin-bottom: 1.25rem;
   box-sizing: border-box;
 }
 

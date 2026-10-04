@@ -71,6 +71,7 @@ class QuickNotepad {
     if (!this.widgetEl) return;
     this.widgetEl.classList.add('active');
     this.isOpen = true;
+    document.querySelectorAll('.notepad-toggle-btn').forEach(btn => btn.classList.add('active'));
     if (this.textareaEl) {
       setTimeout(() => this.textareaEl.focus(), 80);
     }
@@ -80,6 +81,7 @@ class QuickNotepad {
     if (!this.widgetEl) return;
     this.widgetEl.classList.remove('active');
     this.isOpen = false;
+    document.querySelectorAll('.notepad-toggle-btn').forEach(btn => btn.classList.remove('active'));
   }
 
   loadNotes() {

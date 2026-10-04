@@ -144,6 +144,46 @@
 }
 
 .kana-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.kana-section {
+  background: white;
+  border: 1.5px solid var(--purple-200);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.25rem 1.5rem;
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.05);
+}
+
+.kana-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.15rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 2px solid var(--purple-100);
+}
+
+.kana-section-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--purple-950);
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.kana-section-subtitle {
+  font-size: 0.82rem;
+  color: var(--purple-600);
+  font-weight: 600;
+}
+
+.kana-cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(95px, 1fr));
   gap: 12px;

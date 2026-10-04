@@ -140,19 +140,19 @@ class GamesHub {
     const starterBtn = document.getElementById('xo-starter-btn');
     const starterIcon = document.getElementById('xo-starter-icon');
     const starterLabel = document.getElementById('xo-starter-label');
-    if (!starterBtn || !starterLabel) return;
+    if (!starterBtn) return;
 
     const isClassic = this.xoSymbolTheme === 'classic';
     const starter = this.xoRoundStarter || 'X';
 
     if (starter === 'X') {
       if (starterIcon) starterIcon.innerHTML = isClassic ? '<span style="color:#ef4444;font-weight:900;">X</span>' : '💙';
-      starterLabel.textContent = 'Starts: RK (Me)';
-      starterBtn.title = 'Round starter: RK 💙 (Click to let Thanu start)';
+      if (starterLabel) starterLabel.textContent = isClassic ? 'X' : '💙';
+      starterBtn.title = 'Turn: RK (Blue 💙) starts • Click to switch to Thanu (Purple 💜)';
     } else {
       if (starterIcon) starterIcon.innerHTML = isClassic ? '<span style="color:#2563eb;font-weight:900;">O</span>' : '💜';
-      starterLabel.textContent = 'Starts: Thanu (Her)';
-      starterBtn.title = 'Round starter: Thanasri 💜 (Click to let RK start)';
+      if (starterLabel) starterLabel.textContent = isClassic ? 'O' : '💜';
+      starterBtn.title = 'Turn: Thanu (Purple 💜) starts • Click to switch to RK (Blue 💙)';
     }
   }
 
@@ -213,7 +213,18 @@ class GamesHub {
   setXOSymbolTheme(theme, broadcast = true) {
     this.xoSymbolTheme = (theme === 'classic') ? 'classic' : 'hearts';
 
-    // Update Theme Toggle Button UI
+    // Update Theme Toggle Button UI (💙💜 / X O)
+    const themeHearts = document.getElementById('xo-theme-hearts');
+    const themeClassic = document.getElementById('xo-theme-classic');
+    if (themeHearts && themeClassic) {
+      if (this.xoSymbolTheme === 'classic') {
+        themeHearts.classList.remove('active');
+        themeClassic.classList.add('active');
+      } else {
+        themeHearts.classList.add('active');
+        themeClassic.classList.remove('active');
+      }
+    }
     const iconEl = document.getElementById('xo-theme-icon');
     const labelEl = document.getElementById('xo-theme-label');
     if (iconEl && labelEl) {

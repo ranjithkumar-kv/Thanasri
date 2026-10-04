@@ -188,11 +188,7 @@ class AppController {
 
     const subnav = document.getElementById('workspace-subnav');
     if (subnav) {
-      if (this.currentView === 'workspace' && this.currentWorkspaceModule !== 'hub') {
-        subnav.style.display = 'flex';
-      } else {
-        subnav.style.display = 'none';
-      }
+      subnav.style.display = 'none';
     }
   }
 
@@ -507,21 +503,8 @@ class AppController {
 
     // Subnav breadcrumb visibility
     const subnav = document.getElementById('workspace-subnav');
-    const currentBreadcrumb = document.getElementById('bc-current-page');
-
-    if (moduleName === 'hub') {
-      if (subnav) subnav.style.display = 'none';
-    } else {
-      if (subnav) subnav.style.display = 'flex';
-      const titles = {
-        'wish-to-know': 'Wish to Know (Develop your knowledge)',
-        'pass-the-time': 'Pass the Time (Stress Buster)',
-        'learn-japanese': '日本語を学ぶ (Learn Japanese)',
-        'saved-modules': 'Saved Modules Archive'
-      };
-      if (currentBreadcrumb) {
-        currentBreadcrumb.textContent = titles[moduleName] || moduleName;
-      }
+    if (subnav) {
+      subnav.style.display = 'none';
     }
 
     // Specific resize trigger for whiteboard canvas if entering Wish to Know

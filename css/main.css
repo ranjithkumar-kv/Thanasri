@@ -378,13 +378,7 @@ html, body {
 
 /* Navigation Breadcrumb / Active Bar */
 .workspace-subnav {
-  background: var(--purple-100);
-  padding: 0.5rem 1.75rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid var(--purple-200);
-  font-size: 0.88rem;
+  display: none !important;
 }
 .subnav-left {
   display: flex;

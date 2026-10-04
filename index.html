@@ -20,11 +20,11 @@
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 
   <!-- Application Stylesheets (80% Purple, 20% White Theme) -->
-  <link rel="stylesheet" href="css/main.css?v=15">
+  <link rel="stylesheet" href="css/main.css?v=20">
   <link rel="stylesheet" href="css/birthday.css?v=15">
-  <link rel="stylesheet" href="css/whiteboard.css?v=15">
-  <link rel="stylesheet" href="css/games.css?v=16">
-  <link rel="stylesheet" href="css/japanese.css?v=17">
+  <link rel="stylesheet" href="css/whiteboard.css?v=19">
+  <link rel="stylesheet" href="css/games.css?v=21">
+  <link rel="stylesheet" href="css/japanese.css?v=18">
   <link rel="stylesheet" href="css/saved-modules.css?v=15">
 </head>
 
@@ -132,21 +132,6 @@
         </div>
       </header>
 
-      <!-- Subnav Navigation Bar (Shown when inside a module) -->
-      <div id="workspace-subnav" class="workspace-subnav" style="display: none;">
-        <div class="subnav-left">
-          <button type="button" id="btn-subnav-back" class="btn-go-back" onclick="if(window.app){window.app.goBack();}"
-            title="Go back to previous page">
-            <span class="back-arrow">←</span>
-            <span>Go Back</span>
-          </button>
-          <div class="nav-breadcrumbs">
-            <a href="#" id="bc-home-link">🏠 Hub</a>
-            <span>/</span>
-            <span id="bc-current-page">Module</span>
-          </div>
-        </div>
-      </div>
 
       <!-- MAIN CONTENT SUBVIEWS -->
       <main style="flex-grow: 1; display: flex; flex-direction: column;">
@@ -247,17 +232,14 @@
               </div>
 
               <div class="wb-header-actions">
-                <button id="btn-send-art" class="btn-send-art" title="Send this artwork to partner's device">
-                  🚀 Send to Partner
+                <button id="wb-notepad-btn" class="notepad-toggle-btn btn btn-white btn-sm" title="Open Quick Notes">
+                  📝 Notes
                 </button>
-                <button id="wb-notepad-btn" class="notepad-toggle-btn btn btn-white btn-sm" title="Open Quick Notepad">
-                  📝 Notepad
+                <button id="wb-calc-btn" class="calc-toggle-btn btn btn-white btn-sm" title="Toggle Mini Calculator">
+                  🧮 Calculator
                 </button>
-                <button id="btn-save-slide" class="btn btn-primary btn-sm">
-                  💾 Save to Saved Modules
-                </button>
-                <button class="calc-toggle-btn" title="Toggle Mini Calculator">
-                  🧮
+                <button id="btn-save-slide" class="btn btn-primary btn-sm" title="Save slide to saved modules">
+                  💾 Save modules
                 </button>
               </div>
             </div>
@@ -328,14 +310,6 @@
 
                 <div class="tool-divider"></div>
 
-                <!-- Quick Notepad & Calculator Toggle on Whiteboard -->
-                <div class="tool-group">
-                  <button id="tool-notepad-btn" class="tool-btn notepad-toggle-btn"
-                    title="Open Quick Notepad (Type Notes)">📝</button>
-                  <button id="tool-calc-btn" class="tool-btn calc-toggle-btn" title="Open Mini Calculator">🧮</button>
-                </div>
-
-                <div class="tool-divider"></div>
 
                 <!-- Send Art to Partner Button -->
                 <div class="tool-group">
@@ -385,27 +359,6 @@
             <div id="game-xo" class="game-panel active">
               <div class="xo-layout">
 
-                <div class="xo-controls-bar">
-                  <div class="mode-select-pill">
-                    <button id="xo-mode-online" class="mode-btn active">👫 2 Devices Online</button>
-                    <button id="xo-mode-pvp" class="mode-btn">Pass & Play</button>
-                    <button id="xo-mode-ai" class="mode-btn">vs Bot 💜</button>
-                  </div>
-                  <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-                    <button id="xo-starter-btn" class="xo-theme-btn"
-                      title="Toggle who starts the round (Alternates automatically: RK 💙 ⇄ Thanu 💜)">
-                      <span id="xo-starter-icon">💙</span>
-                      <span id="xo-starter-label">Starts: RK (Me)</span>
-                    </button>
-                    <button id="xo-theme-btn" class="xo-theme-btn"
-                      title="Switch symbols between Hearts (💙💜) and Classic (❌⭕)">
-                      <span id="xo-theme-icon">💙💜</span>
-                      <span id="xo-theme-label">Hearts</span>
-                    </button>
-                    <button id="xo-reset-btn" class="btn btn-secondary btn-sm">🔄 New Round</button>
-                  </div>
-                </div>
-
                 <div class="xo-scoreboard">
                   <div class="score-box" id="xo-score-box-x">
                     <h4 id="xo-score-label-x">💙 RK</h4>
@@ -446,6 +399,30 @@
                     onclick="if(window.gamesHub){window.gamesHub.resetXORound(true);}">
                     🔄 Play Next Round
                   </button>
+                </div>
+
+                <!-- XO CONTROLS BAR (BELOW THE XO GAME) -->
+                <div class="xo-controls-bar">
+                  <div class="mode-select-pill">
+                    <button id="xo-mode-online" class="mode-btn active"
+                      title="Online 2 Devices (Partner)">Partner</button>
+                    <button id="xo-mode-pvp" class="mode-btn" title="Pass & Play (Local 2-Player)">Pass</button>
+                    <button id="xo-mode-ai" class="mode-btn" title="Play vs Bot">Bot</button>
+                  </div>
+                  <div class="xo-actions-row">
+                    <button id="xo-starter-btn" class="xo-theme-btn"
+                      title="Toggle who starts: RK (Blue 💙) / Thanu (Purple 💜)">
+                      <span class="xo-turn-lbl">Turn:</span>
+                      <span id="xo-starter-icon">💙</span>
+                    </button>
+                    <button id="xo-theme-btn" class="xo-theme-btn"
+                      title="Switch symbols between Hearts (💙💜) and Classic (X O)">
+                      <span id="xo-theme-hearts" class="xo-theme-opt active">💙💜</span>
+                      <span class="xo-theme-sep">/</span>
+                      <span id="xo-theme-classic" class="xo-theme-opt">X O</span>
+                    </button>
+                    <button id="xo-reset-btn" class="xo-reset-icon-btn" title="New Round">🔄</button>
+                  </div>
                 </div>
 
               </div>
@@ -674,11 +651,6 @@
                     <button id="btn-show-hiragana" class="kana-toggle-btn active">Hiragana (ひらがな)</button>
                     <button id="btn-show-katakana" class="kana-toggle-btn">Katakana (カタカナ)</button>
                   </div>
-                  <div class="kana-toggle-row">
-                    <button class="kana-sound-btn active" data-sound="basic">Basic (46)</button>
-                    <button class="kana-sound-btn" data-sound="voiced">Voiced (25)</button>
-                    <button class="kana-sound-btn" data-sound="combos">Combos (33)</button>
-                  </div>
                 </div>
               </div>
 
@@ -736,7 +708,8 @@
                     <span class="pillar-tag">Pillar 4: Compounds</span>
                     <h5>Jukugo (熟語)</h5>
                     <p>Combining 2 or more Kanji creates rich vocabulary. E.g., <b>日</b> (Sun) + <b>本</b> (Origin) =
-                      <b>日本</b> (Japan: "The Origin of the Sun").</p>
+                      <b>日本</b> (Japan: "The Origin of the Sun").
+                    </p>
                   </div>
                 </div>
               </div>
@@ -907,7 +880,8 @@
                   <h4>1. The 3 Writing Systems in Harmony</h4>
                   <p>Japanese uses 3 scripts together: <b>Hiragana</b> for grammatical glue & native endings,
                     <b>Katakana</b> for modern loanwords & foreign names (e.g., コーヒー, パソコン), and <b>Kanji</b> for the
-                    core concept and root meaning.</p>
+                    core concept and root meaning.
+                  </p>
                 </div>
 
                 <div class="guide-tip-card">
@@ -1030,7 +1004,7 @@
               <div id="saved-slides-empty" class="empty-state-box" style="display: none;">
                 <div class="empty-state-icon">🎨</div>
                 <h3>No Saved Slides Yet</h3>
-                <p>Open "Wish to Know", draw anything, and click "Save to Saved Modules" to archive your slides here.
+                <p>Open "Wish to Know", draw anything, and click "Save modules" to archive your slides here.
                 </p>
               </div>
 
@@ -1341,15 +1315,15 @@
   <script src="js/vendor/mqtt.min.js"></script>
   <script src="https://unpkg.com/mqtt@5.3.5/dist/mqtt.min.js"></script>
   <script src="js/sync.js?v=16"></script>
-  <script src="js/calculator.js?v=15"></script>
-  <script src="js/notepad.js?v=15"></script>
-  <script src="js/whiteboard.js?v=15"></script>
+  <script src="js/calculator.js?v=19"></script>
+  <script src="js/notepad.js?v=19"></script>
+  <script src="js/whiteboard.js?v=19"></script>
   <script src="js/wordlist.js?v=15"></script>
-  <script src="js/games.js?v=16"></script>
-  <script src="js/japanese.js?v=17"></script>
+  <script src="js/games.js?v=21"></script>
+  <script src="js/japanese.js?v=18"></script>
   <script src="js/savedModules.js?v=15"></script>
   <script src="js/birthday.js?v=15"></script>
-  <script src="js/app.js?v=15"></script>
+  <script src="js/app.js?v=20"></script>
 
 </body>
 
