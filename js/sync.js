@@ -471,6 +471,29 @@ class WorkspaceSyncEngine {
   }
 
   /* --------------------------------------------------------------------------
+     Module 3: Word Bridge Game Sync Helpers
+     -------------------------------------------------------------------------- */
+  sendWordPair(startChar, endChar, pairKey, roundNumber) {
+    this.broadcast('WORD_PAIR', { startChar, endChar, pairKey, roundNumber });
+  }
+
+  sendWordRoundWin(word, winnerName, winnerRole, points, roundNumber) {
+    this.broadcast('WORD_ROUND_WIN', { word, winnerName, winnerRole, points, roundNumber });
+  }
+
+  sendWordReset() {
+    this.broadcast('WORD_RESET', {});
+  }
+
+  requestWordBridgeState() {
+    this.broadcast('WORD_REQ_STATE', {});
+  }
+
+  sendWordBridgeState(state) {
+    this.broadcast('WORD_RES_STATE', state);
+  }
+
+  /* --------------------------------------------------------------------------
      Module: Questionnaire Sync Helpers
      -------------------------------------------------------------------------- */
   sendQuizAnswers(answers) {

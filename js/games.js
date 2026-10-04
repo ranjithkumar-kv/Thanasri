@@ -39,11 +39,26 @@ class GamesHub {
      ========================================================================== */
   initXOGame() {
     this.xoBoard = Array(9).fill(null);
-    this.xoCurrentPlayer = 'X'; // X: Blue Heart / Classic X, O: Purple Heart / Classic O
+    this.xoRoundNumber = 1;
+    this.xoRoundStarter = 'X'; // Tracks starting player: 'X' (RK / Me) or 'O' (Thanu / Her)
+    this.xoCurrentPlayer = 'X'; // Active turn
     this.xoMode = 'online'; // 'online', 'pvp', or 'ai'
     this.xoGameActive = true;
     this.scores = { x: 0, o: 0, ties: 0 };
     this.xoSymbolTheme = 'hearts'; // 'hearts' (💙 & 💜) or 'classic' (❌ & ⭕)
+
+    // Restore saved starter & round number from session if available
+    try {
+      const savedStarter = sessionStorage.getItem('thanu_xo_round_starter');
+      if (savedStarter === 'X' || savedStarter === 'O') {
+        this.xoRoundStarter = savedStarter;
+        this.xoCurrentPlayer = savedStarter;
+      }
+      const savedRound = parseInt(sessionStorage.getItem('thanu_xo_round_num'), 10);
+      if (!isNaN(savedRound) && savedRound > 0) {
+        this.xoRoundNumber = savedRound;
+      }
+    } catch (e) {}
 
     this.winningCombos = [
       [0, 1, 2], [3, 4, 5], [6, 7, 8],
@@ -62,6 +77,14 @@ class GamesHub {
     const resetBtn = document.getElementById('xo-reset-btn');
     if (resetBtn) {
       resetBtn.addEventListener('click', () => this.resetXORound(true));
+    }
+
+    // Starter Toggle Button (Alternates automatically: RK 💙 ⇄ Thanu 💜)
+    const starterBtn = document.getElementById('xo-starter-btn');
+    if (starterBtn) {
+      starterBtn.addEventListener('click', () => {
+        this.toggleXOStarter(true);
+      });
     }
 
     // Symbol Theme Toggle Button (Hearts 💙💜 vs Classic ❌⭕)
@@ -83,7 +106,7 @@ class GamesHub {
         modeOnlineBtn.classList.add('active');
         if (modePvpBtn) modePvpBtn.classList.remove('active');
         if (modeAiBtn) modeAiBtn.classList.remove('active');
-        this.resetXORound(true);
+        this.resetXORound(true, this.xoRoundStarter);
         if (window.app) window.app.showToast('Online 2-Device Mode Active 👫💜');
       });
     }
@@ -94,7 +117,7 @@ class GamesHub {
         modePvpBtn.classList.add('active');
         if (modeOnlineBtn) modeOnlineBtn.classList.remove('active');
         if (modeAiBtn) modeAiBtn.classList.remove('active');
-        this.resetXORound(false);
+        this.resetXORound(false, this.xoRoundStarter);
       });
     }
 
@@ -104,12 +127,67 @@ class GamesHub {
         modeAiBtn.classList.add('active');
         if (modeOnlineBtn) modeOnlineBtn.classList.remove('active');
         if (modePvpBtn) modePvpBtn.classList.remove('active');
-        this.resetXORound(false);
+        this.resetXORound(false, this.xoRoundStarter);
       });
     }
 
     this.setXOSymbolTheme(this.xoSymbolTheme, false);
+    this.updateXOStarterUI();
     this.updateXOTurnIndicator();
+  }
+
+  updateXOStarterUI() {
+    const starterBtn = document.getElementById('xo-starter-btn');
+    const starterIcon = document.getElementById('xo-starter-icon');
+    const starterLabel = document.getElementById('xo-starter-label');
+    if (!starterBtn || !starterLabel) return;
+
+    const isClassic = this.xoSymbolTheme === 'classic';
+    const starter = this.xoRoundStarter || 'X';
+
+    if (starter === 'X') {
+      if (starterIcon) starterIcon.innerHTML = isClassic ? '<span style="color:#ef4444;font-weight:900;">X</span>' : '💙';
+      starterLabel.textContent = 'Starts: RK (Me)';
+      starterBtn.title = 'Round starter: RK 💙 (Click to let Thanu start)';
+    } else {
+      if (starterIcon) starterIcon.innerHTML = isClassic ? '<span style="color:#2563eb;font-weight:900;">O</span>' : '💜';
+      starterLabel.textContent = 'Starts: Thanu (Her)';
+      starterBtn.title = 'Round starter: Thanasri 💜 (Click to let RK start)';
+    }
+  }
+
+  toggleXOStarter(broadcast = true) {
+    const newStarter = (this.xoRoundStarter === 'X') ? 'O' : 'X';
+    this.xoRoundStarter = newStarter;
+
+    try {
+      sessionStorage.setItem('thanu_xo_round_starter', newStarter);
+    } catch (e) {}
+
+    // Check if the board is empty (no moves played yet in current round)
+    const isBoardEmpty = this.xoBoard.every(cell => cell === null);
+    if (isBoardEmpty && this.xoGameActive) {
+      this.xoCurrentPlayer = newStarter;
+      this.updateXOTurnIndicator();
+
+      if (this.xoMode === 'ai' && this.xoCurrentPlayer === 'O') {
+        setTimeout(() => this.makeAIMove(), 600);
+      }
+    }
+
+    this.updateXOStarterUI();
+
+    if (broadcast && this.xoMode === 'online') {
+      const sync = window.workspaceSync || window.wbSyncEngine;
+      if (sync && sync.broadcast) {
+        sync.broadcast('XO_STARTER_CHANGE', { starter: newStarter, applyImmediate: isBoardEmpty });
+      }
+    }
+
+    if (window.app && broadcast) {
+      const starterName = newStarter === 'X' ? 'RK 💙 (Me)' : 'Thanasri 💜 (Her)';
+      window.app.showToast(`Starting turn switched to ${starterName}! ✨`);
+    }
   }
 
   getMyXOPiece() {
@@ -177,7 +255,8 @@ class GamesHub {
       });
     }
 
-    // Update turn indicator
+    // Update turn indicator and starter UI
+    this.updateXOStarterUI();
     this.updateXOTurnIndicator();
 
     // Sync theme change across devices in online mode
@@ -267,8 +346,12 @@ class GamesHub {
   }
 
   handleRemoteXOReset(data) {
-    this.resetXORound(false);
-    if (window.app) window.app.showToast('Partner started a new XO round! 🔄✨');
+    const remoteStarter = (data && (data.starter === 'X' || data.starter === 'O'))
+      ? data.starter
+      : ((this.xoRoundStarter === 'X') ? 'O' : 'X');
+    this.resetXORound(false, remoteStarter);
+    const starterName = remoteStarter === 'X' ? 'RK 💙' : 'Thanasri 💜';
+    if (window.app) window.app.showToast(`Partner started new round! ${starterName} starts 🔄✨`);
   }
 
   makeMove(index, player) {
@@ -369,12 +452,18 @@ class GamesHub {
     if (winData.winner === 'X') {
       this.scores.x++;
       const name = this.xoMode === 'online' ? (window.workspaceSync?.userRole === 'thanu' ? winnerName : `You (${winnerName})`) : winnerName;
-      if (indicator) indicator.innerHTML = `🎉 <b>${name} Wins!</b>`;
+      if (indicator) {
+        indicator.innerHTML = `🎉 <b>${name} Wins!</b>`;
+        indicator.className = 'xo-turn-indicator turn-mine';
+      }
     } else {
       this.scores.o++;
       const botName = isClassic ? '<span style="color:#2563eb;font-weight:900;">O</span> Bot' : 'Bot 💜';
       const name = this.xoMode === 'ai' ? botName : (this.xoMode === 'online' ? (window.workspaceSync?.userRole === 'thanu' ? `You (${winnerName})` : winnerName) : winnerName);
-      if (indicator) indicator.innerHTML = `🎉 <b>${name} Wins!</b>`;
+      if (indicator) {
+        indicator.innerHTML = `🎉 <b>${name} Wins!</b>`;
+        indicator.className = 'xo-turn-indicator turn-mine';
+      }
     }
 
     this.updateXOScores();
@@ -389,13 +478,21 @@ class GamesHub {
       setTimeout(() => window.birthdayApp && window.birthdayApp.triggerBurstConfetti(85), 500);
     }
 
-    // 3. Victory Celebration Banner Overlay
+    // 3. Victory Celebration Banner Overlay with Next Starter info
+    const nextStarter = (this.xoRoundStarter === 'X') ? 'O' : 'X';
+    const nextStarterName = nextStarter === 'X' ? 'RK 💙 (Me)' : 'Thanasri 💜 (Her)';
+    const nextStarterShort = nextStarter === 'X' ? 'RK' : 'Thanu';
+
     const banner = document.getElementById('xo-victory-banner');
     const titleEl = document.getElementById('xo-vic-title');
     const subEl = document.getElementById('xo-vic-sub');
+    const vicBtn = document.getElementById('xo-vic-btn');
+    if (vicBtn) {
+      vicBtn.textContent = `🔄 Play Next Round (${nextStarterShort} starts)`;
+    }
     if (banner && titleEl && subEl) {
       titleEl.innerHTML = `🎉 ${winnerPlain} Won! 🏆`;
-      subEl.textContent = `Three in a row! Amazing match! ✨`;
+      subEl.innerHTML = `Magnificent round! ✨<br><span style="font-size:0.86rem;font-weight:700;color:#7e22ce;">Next round starts with: <b>${nextStarterName}</b></span>`;
       banner.classList.add('active');
       clearTimeout(this._vicBannerTimeout);
       this._vicBannerTimeout = setTimeout(() => {
@@ -407,43 +504,84 @@ class GamesHub {
   handleXOTie() {
     this.xoGameActive = false;
     this.scores.ties++;
+    const nextStarter = (this.xoRoundStarter === 'X') ? 'O' : 'X';
+    const nextStarterName = nextStarter === 'X' ? 'RK 💙' : 'Thanasri 💜';
+
     const indicator = document.getElementById('xo-turn-indicator');
-    if (indicator) indicator.innerHTML = '🤝 <b>It\'s a Cute Tie! Well played!</b>';
+    if (indicator) {
+      indicator.innerHTML = `🤝 <b>Cute Tie!</b> Next round: <b>${nextStarterName}</b> starts`;
+      indicator.className = 'xo-turn-indicator';
+      indicator.style.background = '#f8fafc';
+      indicator.style.borderColor = '#cbd5e1';
+      indicator.style.color = '#334155';
+    }
     this.updateXOScores();
   }
 
   updateXOTurnIndicator() {
     const indicator = document.getElementById('xo-turn-indicator');
-    if (!indicator || !this.xoGameActive) return;
+    if (!indicator) return;
+
+    // Highlight active turn score-box
+    const boxX = document.getElementById('xo-score-box-x');
+    const boxO = document.getElementById('xo-score-box-o');
+    if (boxX && boxO) {
+      if (this.xoGameActive) {
+        if (this.xoCurrentPlayer === 'X') {
+          boxX.classList.add('active-turn');
+          boxO.classList.remove('active-turn');
+        } else {
+          boxO.classList.add('active-turn');
+          boxX.classList.remove('active-turn');
+        }
+      } else {
+        boxX.classList.remove('active-turn');
+        boxO.classList.remove('active-turn');
+      }
+    }
+
+    if (!this.xoGameActive) return;
 
     const isClassic = this.xoSymbolTheme === 'classic';
     const xSym = isClassic ? '<span style="color:#ef4444;font-weight:900;">X</span>' : '💙';
     const oSym = isClassic ? '<span style="color:#2563eb;font-weight:900;">O</span>' : '💜';
+    const roundBadge = `<span style="font-size:0.82rem;font-weight:700;opacity:0.85;margin-left:4px;">(Round ${this.xoRoundNumber || 1})</span>`;
+
+    indicator.style.background = '';
+    indicator.style.color = '';
+    indicator.style.borderColor = '';
 
     if (this.xoMode === 'online') {
       const myPiece = this.getMyXOPiece();
       const isMyTurn = this.xoCurrentPlayer === myPiece;
       const sync = window.workspaceSync || window.wbSyncEngine;
-      const partner = sync ? sync.getPartnerDisplayName() : 'Partner';
+      const partner = sync ? sync.getPartnerDisplayName() : (myPiece === 'X' ? 'Thanasri 💜' : 'RK 💙');
+      const myName = myPiece === 'X' ? `${xSym} RK` : `${oSym} Thanu`;
+      const partnerSym = myPiece === 'X' ? oSym : xSym;
 
       if (isMyTurn) {
-        const myName = myPiece === 'X' ? `${xSym} RK` : `${oSym} Thanu`;
-        indicator.innerHTML = `✨ <b>Your Turn!</b> Play with ${myName}`;
-        indicator.style.background = 'var(--purple-100)';
-        indicator.style.color = 'var(--purple-900)';
+        indicator.innerHTML = `✨ <b>Your Turn!</b> Play with ${myName} ${roundBadge}`;
+        indicator.className = 'xo-turn-indicator turn-mine';
       } else {
-        indicator.innerHTML = `⏳ <b>${partner}'s Turn</b> (Waiting for move...)`;
-        indicator.style.background = '#fefce8';
-        indicator.style.color = '#854d0e';
+        indicator.innerHTML = `⏳ <b>${partner}'s Turn</b> (${partnerSym} Waiting...) ${roundBadge}`;
+        indicator.className = 'xo-turn-indicator turn-partner';
+      }
+    } else if (this.xoMode === 'pvp') {
+      if (this.xoCurrentPlayer === 'X') {
+        indicator.innerHTML = `${xSym} <b>RK's Turn</b> (Player 1) ${roundBadge}`;
+        indicator.className = 'xo-turn-indicator turn-x';
+      } else {
+        indicator.innerHTML = `${oSym} <b>Thanasri's Turn</b> (Player 2) ${roundBadge}`;
+        indicator.className = 'xo-turn-indicator turn-o';
       }
     } else {
-      indicator.style.background = '';
-      indicator.style.color = '';
+      // AI Mode
       if (this.xoCurrentPlayer === 'X') {
-        indicator.innerHTML = `${xSym} RK's Turn (Player 1)`;
+        indicator.innerHTML = `${xSym} <b>RK's Turn</b> (You) ${roundBadge}`;
+        indicator.className = 'xo-turn-indicator turn-x';
       } else {
-        const opp = this.xoMode === 'ai' ? 'Bot thinking...' : `${oSym} Thanu`;
-        indicator.innerHTML = `${oSym} Thanu's Turn (${opp})`;
+        indicator.innerHTML = `${oSym} <b>Bot's Turn</b> (Thinking...) ${roundBadge}`;
+        indicator.className = 'xo-turn-indicator turn-o';
       }
     }
   }
@@ -458,10 +596,28 @@ class GamesHub {
     if (scoreTiesEl) scoreTiesEl.textContent = this.scores.ties;
   }
 
-  resetXORound(broadcast = true) {
+  resetXORound(broadcast = true, explicitStarter = null) {
     this.xoBoard = Array(9).fill(null);
-    this.xoCurrentPlayer = 'X';
     this.xoGameActive = true;
+
+    // Alternating starter logic:
+    // If explicitStarter provided, use it.
+    // Otherwise, alternate: one time Me ('X'), one time Her ('O')!
+    let nextStarter;
+    if (explicitStarter === 'X' || explicitStarter === 'O') {
+      nextStarter = explicitStarter;
+    } else {
+      nextStarter = (this.xoRoundStarter === 'X') ? 'O' : 'X';
+      this.xoRoundNumber = (this.xoRoundNumber || 1) + 1;
+    }
+
+    this.xoRoundStarter = nextStarter;
+    this.xoCurrentPlayer = nextStarter;
+
+    try {
+      sessionStorage.setItem('thanu_xo_round_starter', this.xoRoundStarter);
+      sessionStorage.setItem('thanu_xo_round_num', this.xoRoundNumber);
+    } catch (e) {}
 
     const banner = document.getElementById('xo-victory-banner');
     if (banner) banner.classList.remove('active');
@@ -473,11 +629,17 @@ class GamesHub {
       cell.innerHTML = '';
     });
 
+    this.updateXOStarterUI();
     this.updateXOTurnIndicator();
 
     if (broadcast && this.xoMode === 'online') {
       const sync = window.workspaceSync || window.wbSyncEngine;
-      if (sync) sync.sendXOReset('X');
+      if (sync) sync.sendXOReset(nextStarter);
+    }
+
+    // If AI mode and Bot ('O') starts
+    if (this.xoMode === 'ai' && this.xoCurrentPlayer === 'O' && this.xoGameActive) {
+      setTimeout(() => this.makeAIMove(), 600);
     }
   }
 
@@ -666,7 +828,8 @@ class GamesHub {
       'dream', 'diagram', 'drum', 'domain'
     ]);
 
-    this.wbPairs = window.WORD_PAIRS || {
+    // Curated rich set of popular, solvable English word bridge pairs
+    const defaultPairs = {
       's-t': ['start', 'smart', 'sweet', 'sunset', 'street', 'secret', 'sport', 'sight', 'shirt', 'suit'],
       'p-e': ['purple', 'peace', 'promise', 'phone', 'price', 'please', 'profile', 'praise', 'pride'],
       'c-e': ['cute', 'cake', 'circle', 'care', 'choice', 'coffee', 'candle', 'change', 'code'],
@@ -674,13 +837,35 @@ class GamesHub {
       'l-e': ['love', 'life', 'little', 'lake', 'line', 'language', 'large', 'late', 'live'],
       'h-t': ['heart', 'hat', 'heat', 'height', 'honest', 'habit', 'hunt'],
       's-e': ['smile', 'style', 'scale', 'scene', 'shore', 'share', 'stone', 'space', 'score'],
-      'd-m': ['dream', 'diagram', 'drum', 'domain']
+      'd-m': ['dream', 'diagram', 'drum', 'domain'],
+      'm-e': ['magic', 'make', 'minute', 'movie', 'muscle', 'message', 'middle'],
+      'f-t': ['first', 'fast', 'flight', 'forest', 'fruit', 'front', 'foot', 'fact'],
+      'p-t': ['point', 'plant', 'pilot', 'post', 'part', 'past', 'paint', 'pocket'],
+      'b-k': ['book', 'back', 'bank', 'black', 'brick', 'blank', 'bark', 'block'],
+      't-n': ['train', 'town', 'twin', 'turn', 'token', 'tension', 'tuition'],
+      'w-d': ['world', 'word', 'wind', 'wood', 'wild', 'weird', 'wizard'],
+      'g-t': ['great', 'giant', 'gift', 'guest', 'ghost', 'guilt', 'gate'],
+      'r-d': ['read', 'road', 'red', 'round', 'reward', 'record', 'rapid']
     };
 
+    const combinedPairs = Object.assign({}, defaultPairs, window.WORD_PAIRS || {});
+    const filteredPairs = {};
+    for (const [k, words] of Object.entries(combinedPairs)) {
+      if (Array.isArray(words) && words.length >= 3 && k.includes('-')) {
+        filteredPairs[k] = words;
+      }
+    }
+    this.wbPairs = Object.keys(filteredPairs).length > 0 ? filteredPairs : defaultPairs;
     this.wbPairKeys = Object.keys(this.wbPairs);
+
     this.wbCurrentKey = '';
     this.wbStartChar = '';
     this.wbEndChar = '';
+    this.wbRoundNumber = 1;
+    this.wbWinsRk = 0;
+    this.wbWinsThanu = 0;
+    this.wbRoundActive = true;
+    this.wbRoundWinner = null;
     this.wbFoundWordsForPair = new Map(); // word -> finder name
     this.wbAllFoundWords = [];
     this.wbScore = 0;
@@ -698,10 +883,24 @@ class GamesHub {
     this.wbFoundContainer = document.getElementById('wb-found-chips');
     this.wbPairTagEl = document.getElementById('wb-current-pair-tag');
     this.wbPairFoundCountEl = document.getElementById('wb-pair-found-count');
-    this.wbWordsCountEl = document.getElementById('wb-words-count');
     this.wbScoreEl = document.getElementById('wb-score');
-    this.wbStreakEl = document.getElementById('wb-streak');
-    this.wbBestStreakEl = document.getElementById('wb-best-streak');
+    this.wbWinsRkEl = document.getElementById('wb-wins-rk');
+    this.wbWinsThanuEl = document.getElementById('wb-wins-thanu');
+    this.wbRoundNumEl = document.getElementById('wb-round-num');
+    this.wbRaceStatusEl = document.getElementById('wb-race-status');
+
+    this.wbVicBanner = document.getElementById('wb-victory-banner');
+    this.wbVicTitle = document.getElementById('wb-vic-title');
+    this.wbVicWordTag = document.getElementById('wb-vic-word-tag');
+    this.wbVicSub = document.getElementById('wb-vic-sub');
+    this.wbVicNextBtn = document.getElementById('wb-vic-next-btn');
+
+    // 10s Countdown elements
+    this.wbCountdownSecEl = document.getElementById('wb-countdown-seconds');
+    this.wbCountdownBarEl = document.getElementById('wb-countdown-progress');
+    this.wbVicBtnTextEl = document.getElementById('wb-vic-btn-text');
+    this._wbCountdownTimer = null;
+    this._wbCountdownSec = 10;
 
     if (!this.wbInputEl) return;
 
@@ -715,6 +914,15 @@ class GamesHub {
 
     if (this.wbNextBtn) {
       this.wbNextBtn.addEventListener('click', () => {
+        this.clearWordBridgeCountdown();
+        this.newWordBridgePair(true);
+      });
+    }
+
+    if (this.wbVicNextBtn) {
+      this.wbVicNextBtn.addEventListener('click', () => {
+        this.clearWordBridgeCountdown();
+        if (this.wbVicBanner) this.wbVicBanner.classList.remove('active');
         this.newWordBridgePair(true);
       });
     }
@@ -727,6 +935,7 @@ class GamesHub {
 
     if (this.wbResetBtn) {
       this.wbResetBtn.addEventListener('click', () => {
+        this.clearWordBridgeCountdown();
         this.resetWordBridgeGame(false);
       });
     }
@@ -736,25 +945,33 @@ class GamesHub {
       this.wbInputEl.value = this.wbInputEl.value.replace(/[^a-zA-Z]/g, '').toUpperCase();
     });
 
-    // Start first round
+    // Start first synchronized round
     this.newWordBridgePair(false);
   }
 
+  getPairKeyForRound(roundNum) {
+    if (!this.wbPairKeys || this.wbPairKeys.length === 0) return 's-t';
+    const idx = (Math.max(1, roundNum || 1) - 1) % this.wbPairKeys.length;
+    return this.wbPairKeys[idx];
+  }
+
   newWordBridgePair(userInitiated = false, isRemote = false, remoteData = null) {
+    this.clearWordBridgeCountdown();
+    clearTimeout(this._wbVicTimeout);
+    if (this.wbVicBanner) this.wbVicBanner.classList.remove('active');
+
     if (isRemote && remoteData) {
       this.wbStartChar = remoteData.startChar.toUpperCase();
       this.wbEndChar = remoteData.endChar.toUpperCase();
       this.wbCurrentKey = remoteData.pairKey;
-    } else {
-      if (!this.wbPairKeys || this.wbPairKeys.length === 0) return;
-
-      let nextKey = this.wbCurrentKey;
-      let attempts = 0;
-      while ((nextKey === this.wbCurrentKey || !nextKey) && attempts < 20) {
-        nextKey = this.wbPairKeys[Math.floor(Math.random() * this.wbPairKeys.length)];
-        attempts++;
+      if (remoteData.roundNumber) {
+        this.wbRoundNumber = remoteData.roundNumber;
       }
-
+    } else {
+      if (userInitiated) {
+        this.wbRoundNumber = (this.wbRoundNumber || 1) + 1;
+      }
+      const nextKey = this.getPairKeyForRound(this.wbRoundNumber);
       this.wbCurrentKey = nextKey;
       const parts = nextKey.split('-');
       this.wbStartChar = parts[0].toUpperCase();
@@ -763,40 +980,99 @@ class GamesHub {
       if (userInitiated) {
         const sync = window.workspaceSync || window.wbSyncEngine;
         if (sync && sync.sendWordPair) {
-          sync.sendWordPair(this.wbStartChar, this.wbEndChar, this.wbCurrentKey);
+          sync.sendWordPair(this.wbStartChar, this.wbEndChar, this.wbCurrentKey, this.wbRoundNumber);
         }
       }
     }
 
+    this.wbRoundActive = true;
+    this.wbRoundWinner = null;
+
     if (this.wbStartEl) this.wbStartEl.textContent = this.wbStartChar;
     if (this.wbEndEl) this.wbEndEl.textContent = this.wbEndChar;
     if (this.wbPairTagEl) this.wbPairTagEl.textContent = `${this.wbStartChar} ... ${this.wbEndChar}`;
+    if (this.wbRoundNumEl) this.wbRoundNumEl.textContent = `#${this.wbRoundNumber}`;
+    if (this.wbRaceStatusEl) {
+      this.wbRaceStatusEl.textContent = '⚡ Race Open!';
+      this.wbRaceStatusEl.style.color = 'var(--purple-600)';
+    }
 
     this.wbFoundWordsForPair.clear();
     this.renderWordBridgeChips();
 
     if (this.wbInputEl) {
       this.wbInputEl.value = '';
-      this.wbInputEl.placeholder = `Word starting with "${this.wbStartChar}" and ending with "${this.wbEndChar}"...`;
+      this.wbInputEl.disabled = false;
+      this.wbInputEl.placeholder = `Type an English word starting with "${this.wbStartChar}" and ending with "${this.wbEndChar}"...`;
       this.wbInputEl.focus();
     }
 
     if (this.wbFeedbackEl) {
       if (userInitiated) {
-        this.setWordBridgeFeedback(`🔀 New letter pair: ${this.wbStartChar} ... ${this.wbEndChar}! What word can you think of?`, 'info');
+        this.setWordBridgeFeedback(`🔀 Round #${this.wbRoundNumber}: Letters are ${this.wbStartChar} ... ${this.wbEndChar}! First to type wins! ⚡`, 'info');
       } else if (isRemote) {
         const sync = window.workspaceSync || window.wbSyncEngine;
         const partner = sync ? sync.getPartnerDisplayName() : 'Partner';
-        this.setWordBridgeFeedback(`🔀 ${partner} loaded a new letter pair: ${this.wbStartChar} ... ${this.wbEndChar}!`, 'info');
+        this.setWordBridgeFeedback(`🔀 ${partner} started Round #${this.wbRoundNumber} with ${this.wbStartChar} ... ${this.wbEndChar}! First to type wins! ⚡`, 'info');
       } else {
-        this.wbFeedbackEl.className = 'wb-feedback-box';
-        this.wbFeedbackEl.textContent = '';
+        this.setWordBridgeFeedback(`Round #${this.wbRoundNumber}: First one to type a real English word starting with "${this.wbStartChar}" and ending with "${this.wbEndChar}" wins! ⚡`, 'info');
       }
     }
   }
 
+  /* 10-Second Live Countdown Timer (10 to 0) & Continuous Letter Refresh */
+  startWordBridgeCountdown(duration = 10) {
+    this.clearWordBridgeCountdown();
+    this._wbCountdownSec = duration;
+
+    const updateUI = (sec) => {
+      if (this.wbCountdownSecEl) {
+        this.wbCountdownSecEl.textContent = sec;
+      }
+      if (this.wbCountdownBarEl) {
+        const pct = Math.max(0, (sec / duration) * 100);
+        this.wbCountdownBarEl.style.width = `${pct}%`;
+      }
+      if (this.wbVicBtnTextEl) {
+        this.wbVicBtnTextEl.textContent = `🔀 Next Round Challenge ➔ (${sec}s)`;
+      }
+    };
+
+    updateUI(this._wbCountdownSec);
+
+    this._wbCountdownTimer = setInterval(() => {
+      this._wbCountdownSec--;
+      if (this._wbCountdownSec >= 0) {
+        updateUI(this._wbCountdownSec);
+      }
+
+      if (this._wbCountdownSec <= 0) {
+        this.clearWordBridgeCountdown();
+        if (this.wbVicBanner) {
+          this.wbVicBanner.classList.remove('active');
+        }
+        // Continuous flow: auto-provide new letters if this round was completed
+        if (!this.wbRoundActive) {
+          this.newWordBridgePair(true);
+        }
+      }
+    }, 1000);
+  }
+
+  clearWordBridgeCountdown() {
+    if (this._wbCountdownTimer) {
+      clearInterval(this._wbCountdownTimer);
+      this._wbCountdownTimer = null;
+    }
+    this._wbCountdownSec = 10;
+    if (this.wbCountdownSecEl) this.wbCountdownSecEl.textContent = '10';
+    if (this.wbCountdownBarEl) this.wbCountdownBarEl.style.width = '100%';
+    if (this.wbVicBtnTextEl) this.wbVicBtnTextEl.textContent = '🔀 Next Round Challenge ➔ (10s)';
+  }
+
   handleRemoteWordPair(data) {
     if (!data || !data.startChar || !data.endChar) return;
+    this.clearWordBridgeCountdown();
     this.newWordBridgePair(false, true, data);
   }
 
@@ -807,6 +1083,11 @@ class GamesHub {
     if (!rawVal) {
       this.setWordBridgeFeedback('Please type a word first! 😊', 'warning');
       this.shakeWordBridgeInput();
+      return;
+    }
+
+    if (!this.wbRoundActive) {
+      this.setWordBridgeFeedback(`Round #${this.wbRoundNumber} was already won by ${this.wbRoundWinner}! Click "Next Letter Pair" for the next race! 🏆`, 'info');
       return;
     }
 
@@ -834,98 +1115,154 @@ class GamesHub {
       return;
     }
 
-    // 4. Duplicate check for this pair
-    if (this.wbFoundWordsForPair.has(rawVal)) {
-      const finder = this.wbFoundWordsForPair.get(rawVal);
-      this.setWordBridgeFeedback(`"${rawVal.toUpperCase()}" was already found by ${finder}! Can you think of another? 💡`, 'info');
-      this.wbInputEl.select();
-      return;
-    }
-
-    // 5. Dictionary validity check
-    let isValid = this.wbDict.has(rawVal);
-
-    if (!isValid && this.wbPairs[this.wbCurrentKey] && this.wbPairs[this.wbCurrentKey].includes(rawVal)) {
-      isValid = true;
-    }
-
-    if (!isValid) {
-      try {
-        const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(rawVal)}`);
-        if (res.status === 200) {
-          isValid = true;
-          this.wbDict.add(rawVal);
-        }
-      } catch (err) {
-        if (/^[a-z]{3,12}$/.test(rawVal) && /[aeiouy]/.test(rawVal)) {
-          isValid = true;
-          this.wbDict.add(rawVal);
-        }
-      }
-    }
-
-    if (!isValid) {
-      this.setWordBridgeFeedback(`"${rawVal.toUpperCase()}" was not found in our English dictionary. Try another one! 🤔`, 'warning');
+    // 4. Must be only English alphabetic letters
+    if (!/^[a-z]+$/.test(rawVal)) {
+      this.setWordBridgeFeedback('Only English alphabetic letters (A-Z) allowed! 🔤', 'warning');
       this.shakeWordBridgeInput();
       return;
     }
 
-    this.acceptWordBridgeAnswer(rawVal);
+    // 5. Strict English dictionary validity check
+    let isValid = false;
+
+    if (this.wbDict.has(rawVal)) {
+      isValid = true;
+    } else if (this.wbPairs[this.wbCurrentKey] && this.wbPairs[this.wbCurrentKey].includes(rawVal)) {
+      isValid = true;
+    } else {
+      // Check official English dictionary API
+      try {
+        this.setWordBridgeFeedback(`Validating "${rawVal.toUpperCase()}" with English dictionary... ⏳`, 'info');
+        const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(rawVal)}`);
+        if (res.status === 200) {
+          const json = await res.json();
+          if (Array.isArray(json) && json.length > 0 && json[0].word) {
+            isValid = true;
+            this.wbDict.add(rawVal);
+          }
+        }
+      } catch (err) {
+        // Fallback: If offline or API fails, only accept words in preloaded dictionary
+        isValid = false;
+      }
+    }
+
+    if (!isValid) {
+      this.setWordBridgeFeedback(`"${rawVal.toUpperCase()}" is not a recognized English word! Please type a real English word. 🤔`, 'warning');
+      this.shakeWordBridgeInput();
+      return;
+    }
+
+    // 6. Valid English word accepted: This player types it first and WINS!
+    this.handleWordRoundWin(rawVal, false);
   }
 
-  acceptWordBridgeAnswer(word, isRemote = false, remoteFinder = null, remotePoints = null) {
+  handleWordRoundWin(word, isRemote = false, remoteData = null) {
+    if (!this.wbRoundActive && !isRemote) return;
+
+    this.wbRoundActive = false;
+
     const sync = window.workspaceSync || window.wbSyncEngine;
-    const finderName = isRemote ? (remoteFinder || 'Partner 💜') : (sync ? sync.getUserDisplayName() : 'RK 💙');
+    const userRole = isRemote ? (remoteData?.winnerRole || 'partner') : (sync?.userRole || 'rk');
+    const isRK = userRole === 'rk';
+    const winnerDisplayName = isRemote
+      ? (remoteData?.winnerName || (isRK ? 'RK 💙' : 'Thanasri 💜'))
+      : (sync ? sync.getUserDisplayName() : (isRK ? 'RK 💙' : 'Thanasri 💜'));
 
-    this.wbFoundWordsForPair.set(word, finderName);
-    this.wbAllFoundWords.push(word);
+    this.wbRoundWinner = winnerDisplayName;
 
+    // Calculate score points
     const lenBonus = Math.max(0, (word.length - 4) * 3);
-    this.wbStreak++;
-    if (this.wbStreak > this.wbBestStreak) {
-      this.wbBestStreak = this.wbStreak;
-    }
-
-    const streakBonus = Math.min(this.wbStreak * 2, 20);
-    const earned = remotePoints !== null ? remotePoints : (10 + lenBonus + streakBonus);
+    const earned = isRemote ? (remoteData?.points || 25) : (20 + lenBonus);
     this.wbScore += earned;
 
+    // Increment head-to-head round win score
+    if (isRK) {
+      this.wbWinsRk++;
+    } else {
+      this.wbWinsThanu++;
+    }
+
+    // Update scoreboard elements
+    if (this.wbWinsRkEl) this.wbWinsRkEl.textContent = this.wbWinsRk;
+    if (this.wbWinsThanuEl) this.wbWinsThanuEl.textContent = this.wbWinsThanu;
     if (this.wbScoreEl) this.wbScoreEl.textContent = `${this.wbScore} pts`;
-    if (this.wbWordsCountEl) this.wbWordsCountEl.textContent = this.wbAllFoundWords.length;
-    if (this.wbStreakEl) this.wbStreakEl.textContent = `🔥 ${this.wbStreak}`;
-    if (this.wbBestStreakEl) this.wbBestStreakEl.textContent = `🏆 ${this.wbBestStreak}`;
-
-    if (!isRemote && sync && sync.sendWordFound) {
-      sync.sendWordFound(word, earned, finderName);
+    if (this.wbRaceStatusEl) {
+      this.wbRaceStatusEl.textContent = `🏆 ${winnerDisplayName} Won!`;
+      this.wbRaceStatusEl.style.color = '#16a34a';
     }
 
-    if ((this.wbStreak >= 3 || earned >= 18) && window.birthdayApp) {
-      window.birthdayApp.triggerBurstConfetti(35);
+    // Record word in pair history
+    this.wbFoundWordsForPair.set(word, winnerDisplayName);
+    this.wbAllFoundWords.push(word);
+    this.renderWordBridgeChips();
+
+    // Broadcast round win to other player in real-time
+    if (!isRemote && sync && sync.sendWordRoundWin) {
+      sync.sendWordRoundWin(word, winnerDisplayName, userRole, earned, this.wbRoundNumber);
     }
 
-    let praise = isRemote ? `🎉 ${finderName} found` : '🎉 Excellent! You found';
-    if (word.length >= 7) praise = isRemote ? `🌟 ${finderName} found a magnificent long word:` : '🌟 Magnificent long word!';
-    else if (this.wbStreak >= 5) praise = isRemote ? `🔥 ${finderName} extended the streak with:` : '🔥 Incredible streak!';
+    // TRIGGER POPUP WIN EFFECT ONLY ON CORRECT WORD!
+    this.playVictoryFanfare();
+    if (window.birthdayApp) {
+      window.birthdayApp.triggerBurstConfetti(95);
+      setTimeout(() => window.birthdayApp && window.birthdayApp.triggerBurstConfetti(65), 250);
+      setTimeout(() => window.birthdayApp && window.birthdayApp.triggerBurstConfetti(75), 500);
+    }
+
+    // Show celebratory victory popup modal / banner with 10s Countdown
+    if (this.wbVicBanner && this.wbVicTitle && this.wbVicWordTag && this.wbVicSub) {
+      const isMe = !isRemote;
+      this.wbVicTitle.innerHTML = isMe ? `🎉 You Won Round #${this.wbRoundNumber}! 🏆` : `🎉 ${winnerDisplayName} Won Round #${this.wbRoundNumber}! 🏆`;
+      this.wbVicWordTag.textContent = `Word: "${word.toUpperCase()}" (+${earned} pts)`;
+      this.wbVicSub.innerHTML = `Valid English Word! ⚡ First one to bridge <b>${this.wbStartChar} ... ${this.wbEndChar}</b>!`;
+      this.wbVicBanner.classList.add('active');
+
+      // Start 10-to-0 countdown to continuously provide another letters
+      this.startWordBridgeCountdown(10);
+    }
 
     this.setWordBridgeFeedback(
-      `${praise} "${word.toUpperCase()}"! (+${earned} pts, Streak: ${this.wbStreak})`,
+      `🏆 ${winnerDisplayName} bridged it first with "${word.toUpperCase()}"! (+${earned} pts) ⏱️ Next challenge starting in 10s...`,
       'success'
     );
 
-    this.renderWordBridgeChips();
-
     if (!isRemote && this.wbInputEl) {
       this.wbInputEl.value = '';
-      this.wbInputEl.focus();
     }
   }
 
-  handleRemoteWordFound(data) {
+  handleRemoteWordRoundWin(data) {
     if (!data || !data.word) return;
     const word = data.word.toLowerCase();
-    if (this.wbFoundWordsForPair.has(word)) return;
-    this.acceptWordBridgeAnswer(word, true, data.finderName, data.points);
-    if (window.app) window.app.showToast(`✨ ${data.finderName || 'Partner'} found "${word.toUpperCase()}"! +${data.points || 15} pts 🔤💜`);
+    this.handleWordRoundWin(word, true, data);
+  }
+
+  handleWordBridgeStateRequest() {
+    const sync = window.workspaceSync || window.wbSyncEngine;
+    if (sync && sync.sendWordBridgeState) {
+      sync.sendWordBridgeState({
+        pairKey: this.wbCurrentKey,
+        startChar: this.wbStartChar,
+        endChar: this.wbEndChar,
+        roundNumber: this.wbRoundNumber,
+        winsRk: this.wbWinsRk,
+        winsThanu: this.wbWinsThanu,
+        roundActive: this.wbRoundActive,
+        score: this.wbScore
+      });
+    }
+  }
+
+  handleWordBridgeStateResponse(state) {
+    if (!state || !state.startChar || !state.endChar) return;
+    this.newWordBridgePair(false, true, state);
+    if (state.winsRk !== undefined) this.wbWinsRk = state.winsRk;
+    if (state.winsThanu !== undefined) this.wbWinsThanu = state.winsThanu;
+    if (state.score !== undefined) this.wbScore = state.score;
+    if (this.wbWinsRkEl) this.wbWinsRkEl.textContent = this.wbWinsRk;
+    if (this.wbWinsThanuEl) this.wbWinsThanuEl.textContent = this.wbWinsThanu;
+    if (this.wbScoreEl) this.wbScoreEl.textContent = `${this.wbScore} pts`;
   }
 
   giveWordBridgeHint() {
@@ -933,7 +1270,7 @@ class GamesHub {
     const available = list.filter(w => !this.wbFoundWordsForPair.has(w));
 
     if (available.length === 0) {
-      this.setWordBridgeFeedback('You found all standard words for this pair! Click "Next Letter Pair" for a new challenge! 🏆', 'success');
+      this.setWordBridgeFeedback('Click "Next Letter Pair" for a new challenge! 🏆', 'success');
       return;
     }
 
@@ -942,7 +1279,7 @@ class GamesHub {
     let masked = upper[0] + ' ' + upper.slice(1, -1).split('').map(() => '_').join(' ') + ' ' + upper[upper.length - 1];
     
     this.setWordBridgeFeedback(
-      `💡 Clue: A ${hintWord.length}-letter word exists: ${masked} (or try another!)`,
+      `💡 Clue: A ${hintWord.length}-letter word exists: ${masked} (or think of another!)`,
       'info'
     );
   }
@@ -984,14 +1321,25 @@ class GamesHub {
   }
 
   resetWordBridgeGame(isRemote = false) {
+    this.clearWordBridgeCountdown();
     this.wbScore = 0;
     this.wbStreak = 0;
+    this.wbWinsRk = 0;
+    this.wbWinsThanu = 0;
+    this.wbRoundNumber = 1;
+    this.wbRoundActive = true;
+    this.wbRoundWinner = null;
     this.wbFoundWordsForPair.clear();
     this.wbAllFoundWords = [];
 
+    if (this.wbWinsRkEl) this.wbWinsRkEl.textContent = '0';
+    if (this.wbWinsThanuEl) this.wbWinsThanuEl.textContent = '0';
+    if (this.wbRoundNumEl) this.wbRoundNumEl.textContent = '#1';
     if (this.wbScoreEl) this.wbScoreEl.textContent = '0 pts';
-    if (this.wbWordsCountEl) this.wbWordsCountEl.textContent = '0';
-    if (this.wbStreakEl) this.wbStreakEl.textContent = '🔥 0';
+    if (this.wbRaceStatusEl) {
+      this.wbRaceStatusEl.textContent = '⚡ Race Open!';
+      this.wbRaceStatusEl.style.color = 'var(--purple-600)';
+    }
 
     if (!isRemote) {
       const sync = window.workspaceSync || window.wbSyncEngine;
@@ -1016,6 +1364,22 @@ class GamesHub {
       // XO Game Real-Time Listeners
       sync.on('XO_MOVE', (data) => this.handleRemoteXOMove(data));
       sync.on('XO_RESET', (data) => this.handleRemoteXOReset(data));
+      sync.on('XO_STARTER_CHANGE', (data) => {
+        if (data && (data.starter === 'X' || data.starter === 'O')) {
+          this.xoRoundStarter = data.starter;
+          try {
+            sessionStorage.setItem('thanu_xo_round_starter', data.starter);
+          } catch (e) {}
+
+          if (data.applyImmediate && this.xoBoard.every(cell => cell === null) && this.xoGameActive) {
+            this.xoCurrentPlayer = data.starter;
+            this.updateXOTurnIndicator();
+          }
+          this.updateXOStarterUI();
+          const starterName = data.starter === 'X' ? 'RK 💙' : 'Thanasri 💜';
+          if (window.app) window.app.showToast(`Partner set starting turn to ${starterName}! ✨`);
+        }
+      });
       sync.on('XO_THEME', (data) => {
         if (data && data.theme) {
           this.setXOSymbolTheme(data.theme, false);
@@ -1024,8 +1388,32 @@ class GamesHub {
 
       // Word Bridge Real-Time Listeners
       sync.on('WORD_PAIR', (data) => this.handleRemoteWordPair(data));
+      sync.on('WORD_ROUND_WIN', (data) => this.handleRemoteWordRoundWin(data));
       sync.on('WORD_FOUND', (data) => this.handleRemoteWordFound(data));
+      sync.on('WORD_REQ_STATE', () => this.handleWordBridgeStateRequest());
+      sync.on('WORD_RES_STATE', (data) => this.handleWordBridgeStateResponse(data));
       sync.on('WORD_RESET', () => this.resetWordBridgeGame(true));
+
+      // Sync active Word Bridge state across devices
+      if (sync.requestWordBridgeState) {
+        setTimeout(() => sync.requestWordBridgeState(), 400);
+      }
+
+      // When partner joins or announces presence, ensure both have identical letter pairs
+      sync.on('PRESENCE', (data) => {
+        if (data && !data.isResponse && sync.sendWordBridgeState) {
+          sync.sendWordBridgeState({
+            pairKey: this.wbCurrentKey,
+            startChar: this.wbStartChar,
+            endChar: this.wbEndChar,
+            roundNumber: this.wbRoundNumber,
+            winsRk: this.wbWinsRk,
+            winsThanu: this.wbWinsThanu,
+            roundActive: this.wbRoundActive,
+            score: this.wbScore
+          });
+        }
+      });
     };
 
     attach();

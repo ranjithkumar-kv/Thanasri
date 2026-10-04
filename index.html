@@ -18,12 +18,12 @@
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 
   <!-- Application Stylesheets (80% Purple, 20% White Theme) -->
-  <link rel="stylesheet" href="css/main.css?v=14">
-  <link rel="stylesheet" href="css/birthday.css?v=14">
-  <link rel="stylesheet" href="css/whiteboard.css?v=14">
-  <link rel="stylesheet" href="css/games.css?v=14">
-  <link rel="stylesheet" href="css/japanese.css?v=14">
-  <link rel="stylesheet" href="css/saved-modules.css?v=14">
+  <link rel="stylesheet" href="css/main.css?v=15">
+  <link rel="stylesheet" href="css/birthday.css?v=15">
+  <link rel="stylesheet" href="css/whiteboard.css?v=15">
+  <link rel="stylesheet" href="css/games.css?v=16">
+  <link rel="stylesheet" href="css/japanese.css?v=17">
+  <link rel="stylesheet" href="css/saved-modules.css?v=15">
 </head>
 
 <body>
@@ -105,7 +105,7 @@
             </button>
           </div>
 
-          <!-- Thanu's Answers Pill for RK (Only shown for thanu2596) -->
+          <!-- Thanu's Answers Pill for RK (Only shown for thanu@47) -->
           <button id="btn-view-quiz-answers" class="answers-pill-btn" style="display: none;"
             onclick="if(window.birthdayQuiz){window.birthdayQuiz.openAnswersModal();}" title="View Thanu's Answers">
             <span>💌 Thanu's Answers</span>
@@ -207,8 +207,8 @@
                 <h3>日本語を学ぶ</h3>
                 <div class="module-desc">Learn Japanese</div>
                 <p class="module-detail">
-                  A structured Japanese curriculum starting from basics: full Hiragana & Katakana charts with audio
-                  speech pronunciation, greetings, numbers, and quizzes.
+                  A structured Japanese curriculum: Hiragana, Katakana, Kanji master hub with radicals & readings,
+                  themed vocabulary, real-life dialogues, verb conjugations, and audio quizzes.
                 </p>
                 <div class="card-action">
                   <span>Start Learning</span>
@@ -385,7 +385,11 @@
                     <button id="xo-mode-pvp" class="mode-btn">Pass & Play</button>
                     <button id="xo-mode-ai" class="mode-btn">vs Bot 💜</button>
                   </div>
-                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                  <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                    <button id="xo-starter-btn" class="xo-theme-btn" title="Toggle who starts the round (Alternates automatically: RK 💙 ⇄ Thanu 💜)">
+                      <span id="xo-starter-icon">💙</span>
+                      <span id="xo-starter-label">Starts: RK (Me)</span>
+                    </button>
                     <button id="xo-theme-btn" class="xo-theme-btn" title="Switch symbols between Hearts (💙💜) and Classic (❌⭕)">
                       <span id="xo-theme-icon">💙💜</span>
                       <span id="xo-theme-label">Hearts</span>
@@ -395,22 +399,22 @@
                 </div>
 
                 <div class="xo-scoreboard">
-                  <div class="score-box">
+                  <div class="score-box" id="xo-score-box-x">
                     <h4 id="xo-score-label-x">💙 RK</h4>
                     <span id="xo-score-x">0</span>
                   </div>
-                  <div class="score-box">
+                  <div class="score-box" id="xo-score-box-ties">
                     <h4>Ties</h4>
                     <span id="xo-score-ties">0</span>
                   </div>
-                  <div class="score-box">
+                  <div class="score-box" id="xo-score-box-o">
                     <h4 id="xo-score-label-o">💜 Thanu</h4>
                     <span id="xo-score-o">0</span>
                   </div>
                 </div>
 
-                <div id="xo-turn-indicator" class="xo-turn-indicator">
-                  💙 RK's Turn (Player 1)
+                <div id="xo-turn-indicator" class="xo-turn-indicator turn-mine">
+                  ✨ <b>RK's Turn</b> (Player 1) • Round 1
                 </div>
 
                 <div class="xo-grid" id="xo-grid">
@@ -477,30 +481,30 @@
             <div id="game-wordbridge" class="game-panel">
               <div class="wordbridge-layout">
 
-                <!-- Live Game Stats Bar -->
+                <!-- Live Game Stats Bar (Head-to-Head Speed Race) -->
                 <div class="wb-stats-bar">
-                  <div class="wb-stat-item">
-                    <span class="stat-lbl">WORDS FOUND</span>
-                    <span class="stat-val" id="wb-words-count">0</span>
+                  <div class="wb-stat-item wb-stat-rk">
+                    <span class="stat-lbl">💙 RK WINS</span>
+                    <span class="stat-val" id="wb-wins-rk">0</span>
+                  </div>
+                  <div class="wb-stat-item wb-stat-thanu">
+                    <span class="stat-lbl">💜 THANU WINS</span>
+                    <span class="stat-val" id="wb-wins-thanu">0</span>
                   </div>
                   <div class="wb-stat-item">
-                    <span class="stat-lbl">SCORE</span>
-                    <span class="stat-val" id="wb-score">0 pts</span>
+                    <span class="stat-lbl">ROUND</span>
+                    <span class="stat-val" id="wb-round-num">#1</span>
                   </div>
                   <div class="wb-stat-item">
-                    <span class="stat-lbl">STREAK</span>
-                    <span class="stat-val streak" id="wb-streak">🔥 0</span>
-                  </div>
-                  <div class="wb-stat-item">
-                    <span class="stat-lbl">BEST STREAK</span>
-                    <span class="stat-val" id="wb-best-streak">🏆 0</span>
+                    <span class="stat-lbl">RACE STATUS</span>
+                    <span class="stat-val streak" id="wb-race-status" style="font-size: 0.95rem; font-weight: 700;">⚡ Race Open!</span>
                   </div>
                 </div>
 
                 <!-- Main Challenge Bridge Card -->
                 <div class="wb-challenge-card card-glass">
-                  <div class="wb-card-tag">✨ Word Bridge Challenge ✨</div>
-                  <p class="wb-card-subtitle">Think of a word that starts and ends with the letters below!</p>
+                  <div class="wb-card-tag">✨ Word Bridge Race • Synchronized ✨</div>
+                  <p class="wb-card-subtitle">Same letters for both! First one to type a valid English word wins the round!</p>
                   
                   <div class="wb-letters-container">
                     <div class="wb-letter-card start-card">
@@ -534,7 +538,7 @@
                       type="text" 
                       id="wb-word-input" 
                       class="wb-word-input" 
-                      placeholder="Type a word starting with S and ending with T..." 
+                      placeholder="Type an English word starting with S and ending with T..." 
                       autocomplete="off"
                       spellcheck="false"
                     />
@@ -557,6 +561,27 @@
                     </button>
                     <button type="button" id="wb-reset-btn" class="btn btn-white btn-sm">
                       <span>🔄</span> Reset Game
+                    </button>
+                  </div>
+
+                  <!-- Round Win Celebration Popup Modal / Banner with 10s Countdown -->
+                  <div id="wb-victory-banner" class="wb-victory-banner">
+                    <div class="wb-vic-trophy">🏆</div>
+                    <h3 id="wb-vic-title" class="wb-vic-title">🎉 RK Won This Round! 🏆</h3>
+                    <div id="wb-vic-word-tag" class="wb-vic-word-tag">Word: "SMART" (+25 pts)</div>
+                    <p id="wb-vic-sub" class="wb-vic-sub">Valid English Word! First one to bridge the letters! ⚡</p>
+                    <div class="wb-countdown-container">
+                      <div class="wb-countdown-row">
+                        <span>⏱️ Next letters in</span>
+                        <span id="wb-countdown-seconds" class="wb-countdown-seconds">10</span>
+                        <span>seconds</span>
+                      </div>
+                      <div class="wb-countdown-bar-wrapper">
+                        <div id="wb-countdown-progress" class="wb-countdown-progress" style="width: 100%;"></div>
+                      </div>
+                    </div>
+                    <button type="button" id="wb-vic-next-btn" class="btn btn-primary btn-sm">
+                      <span id="wb-vic-btn-text">🔀 Next Round Challenge ➔ (10s)</span>
                     </button>
                   </div>
                 </div>
@@ -607,31 +632,44 @@
               <button class="jp-tab-btn active" data-target="kana">
                 <span>🔤</span> Kana Syllabary
               </button>
-              <button class="jp-tab-btn" data-target="phrases">
-                <span>💬</span> Daily Phrases & Greetings
+              <button class="jp-tab-btn" data-target="kanji">
+                <span>🈯</span> Kanji Master (漢字)
+              </button>
+              <button class="jp-tab-btn" data-target="vocabulary">
+                <span>🍱</span> Vocabulary & Dialogues
               </button>
               <button class="jp-tab-btn" data-target="numbers">
-                <span>🔢</span> Numbers & Counting
+                <span>🔢</span> Numbers & Time
               </button>
               <button class="jp-tab-btn" data-target="grammar">
-                <span>📐</span> Core Grammar Particles
+                <span>📐</span> Grammar & Verbs
+              </button>
+              <button class="jp-tab-btn" data-target="guide">
+                <span>💡</span> Learning Guide
               </button>
               <button class="jp-tab-btn" data-target="quiz">
                 <span>🎯</span> Interactive Quiz
               </button>
             </div>
 
-            <!-- TAB 1: KANA (Hiragana & Katakana) -->
+            <!-- TAB 1: KANA (Hiragana & Katakana with Basic, Voiced, & Combos) -->
             <div id="jp-kana" class="jp-panel active">
               <div class="jp-panel-header">
                 <div>
                   <h3>The Kana Writing Systems</h3>
-                  <p>Click any character to hear native audio pronunciation!</p>
+                  <p>Click any character to hear native audio speech pronunciation!</p>
                 </div>
 
-                <div class="kana-toggle-row">
-                  <button id="btn-show-hiragana" class="kana-toggle-btn active">Hiragana (ひらがな)</button>
-                  <button id="btn-show-katakana" class="kana-toggle-btn">Katakana (カタカナ)</button>
+                <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
+                  <div class="kana-toggle-row">
+                    <button id="btn-show-hiragana" class="kana-toggle-btn active">Hiragana (ひらがな)</button>
+                    <button id="btn-show-katakana" class="kana-toggle-btn">Katakana (カタカナ)</button>
+                  </div>
+                  <div class="kana-toggle-row">
+                    <button class="kana-sound-btn active" data-sound="basic">Basic (46)</button>
+                    <button class="kana-sound-btn" data-sound="voiced">Voiced (25)</button>
+                    <button class="kana-sound-btn" data-sound="combos">Combos (33)</button>
+                  </div>
                 </div>
               </div>
 
@@ -640,100 +678,255 @@
               </div>
             </div>
 
-            <!-- TAB 2: PHRASES -->
-            <div id="jp-phrases" class="jp-panel">
+            <!-- TAB 2: KANJI MASTER (漢字) -->
+            <div id="jp-kanji" class="jp-panel">
               <div class="jp-panel-header">
                 <div>
-                  <h3>Essential Greetings & Expressions</h3>
-                  <p>Click any card to listen to the Japanese pronunciation.</p>
+                  <h3>Kanji Master Hub (漢字)</h3>
+                  <p>Logographic characters expressing deep meanings. Click any Kanji for audio pronunciation!</p>
                 </div>
               </div>
 
-              <div class="phrases-grid" id="phrases-grid">
+              <!-- Knowledge & Foundation Banner -->
+              <div class="kanji-knowledge-card">
+                <div class="kanji-knowledge-header">
+                  <span style="font-size: 1.8rem;">💡</span>
+                  <div>
+                    <h4>Understanding Kanji: The 4 Golden Secrets</h4>
+                    <p style="margin: 0; font-size: 0.85rem; color: var(--purple-700);">Unlike Kana (which only represent sounds), Kanji represent concepts, objects, and ideas.</p>
+                  </div>
+                </div>
+
+                <div class="kanji-pillars-grid">
+                  <div class="kanji-pillar-item">
+                    <span class="pillar-tag">Pillar 1: Readings</span>
+                    <h5>Onyomi vs Kunyomi</h5>
+                    <p><b>Onyomi (音読み):</b> Chinese-derived reading, mostly used in multi-kanji compound words (e.g., <i>Nihon</i> 日本).<br>
+                    <b>Kunyomi (訓読み):</b> Native Japanese reading, used when kanji stands alone or with kana (e.g., <i>mizu</i> 水).</p>
+                  </div>
+
+                  <div class="kanji-pillar-item">
+                    <span class="pillar-tag">Pillar 2: Building Blocks</span>
+                    <h5>Radicals (部首 - Bushu)</h5>
+                    <p>Kanji are built from shared visual parts. E.g., <b>氵</b> means water (海, 泳, 湖), and <b>亻</b> means person (休, 体). Learn radicals to memorize 2,000+ Kanji easily!</p>
+                  </div>
+
+                  <div class="kanji-pillar-item">
+                    <span class="pillar-tag">Pillar 3: Flow</span>
+                    <h5>Stroke Order (筆順)</h5>
+                    <p>Always write from <b>Top to Bottom</b>, <b>Left to Right</b>, horizontal before vertical, and outside frame before filling and closing the bottom.</p>
+                  </div>
+
+                  <div class="kanji-pillar-item">
+                    <span class="pillar-tag">Pillar 4: Compounds</span>
+                    <h5>Jukugo (熟語)</h5>
+                    <p>Combining 2 or more Kanji creates rich vocabulary. E.g., <b>日</b> (Sun) + <b>本</b> (Origin) = <b>日本</b> (Japan: "The Origin of the Sun").</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Filter & Search Controls -->
+              <div class="kanji-controls-row">
+                <div class="kanji-filter-pills" id="kanji-filter-group">
+                  <button class="kanji-filter-btn active" data-cat="all">All JLPT N5 (50+)</button>
+                  <button class="kanji-filter-btn" data-cat="nature">🌲 Nature & Elements</button>
+                  <button class="kanji-filter-btn" data-cat="people">👤 People & Body</button>
+                  <button class="kanji-filter-btn" data-cat="time">⏳ Time & Numbers</button>
+                  <button class="kanji-filter-btn" data-cat="directions">🧭 Directions</button>
+                  <button class="kanji-filter-btn" data-cat="life">🍱 Everyday Life & Actions</button>
+                </div>
+
+                <div class="kanji-search-box">
+                  <span>🔍</span>
+                  <input type="text" id="kanji-search-input" placeholder="Search meaning or romaji..." autocomplete="off">
+                </div>
+              </div>
+
+              <!-- Kanji Cards Grid -->
+              <div class="kanji-cards-grid" id="kanji-grid">
                 <!-- Generated by JS -->
               </div>
             </div>
 
-            <!-- TAB 3: NUMBERS -->
+            <!-- TAB 3: THEMED VOCABULARY & SITUATIONAL DIALOGUES -->
+            <div id="jp-vocabulary" class="jp-panel">
+              <div class="jp-panel-header">
+                <div>
+                  <h3>Essential Vocabulary & Real-Life Dialogues</h3>
+                  <p>Master practical spoken Japanese with audio speech pronunciation.</p>
+                </div>
+
+                <div class="kana-toggle-row">
+                  <button id="btn-show-vocab" class="kana-toggle-btn active">Themed Words (語彙)</button>
+                  <button id="btn-show-dialogues" class="kana-toggle-btn">Real Dialogues (会話)</button>
+                </div>
+              </div>
+
+              <!-- Sub-view A: Vocabulary Grid -->
+              <div id="vocab-view-container">
+                <div class="kanji-controls-row" style="margin-bottom: 1.25rem;">
+                  <div class="kanji-filter-pills" id="vocab-filter-group">
+                    <button class="kanji-filter-btn active" data-vcat="all">All Categories</button>
+                    <button class="kanji-filter-btn" data-vcat="food">🍱 Food & Dining</button>
+                    <button class="kanji-filter-btn" data-vcat="family">👨‍👩‍👧 Family & People</button>
+                    <button class="kanji-filter-btn" data-vcat="emotions">💖 Emotions & Feelings</button>
+                    <button class="kanji-filter-btn" data-vcat="verbs">⚡ Common Action Verbs</button>
+                    <button class="kanji-filter-btn" data-vcat="places">🏠 Places & Travel</button>
+                  </div>
+                </div>
+
+                <div class="phrases-grid" id="vocab-grid">
+                  <!-- Generated by JS -->
+                </div>
+              </div>
+
+              <!-- Sub-view B: Situational Dialogues -->
+              <div id="dialogues-view-container" style="display: none;">
+                <div class="dialogues-stack" id="dialogues-list">
+                  <!-- Generated by JS -->
+                </div>
+              </div>
+            </div>
+
+            <!-- TAB 4: NUMBERS & TIME -->
             <div id="jp-numbers" class="jp-panel">
               <div class="jp-panel-header">
                 <div>
-                  <h3>Numbers & Counting</h3>
-                  <p>Learn how to count and tell dates in Japanese.</p>
+                  <h3>Numbers, Calendar & Telling Time</h3>
+                  <p>Learn how to count from 1 to 10,000, days of the week, and tell time.</p>
                 </div>
               </div>
 
-              <div class="phrases-grid" id="numbers-grid">
+              <div class="phrases-grid" id="numbers-grid" style="margin-bottom: 2rem;">
+                <!-- Generated by JS -->
+              </div>
+
+              <!-- Days of the week planetary Kanji connections -->
+              <h4 style="font-size: 1.25rem; font-weight: 800; color: var(--purple-950); margin-bottom: 1rem;">
+                🗓️ Days of the Week (The Elemental Kanji Connection)
+              </h4>
+              <div class="phrases-grid" id="days-grid">
                 <!-- Generated by JS -->
               </div>
             </div>
 
-            <!-- TAB 4: GRAMMAR -->
+            <!-- TAB 5: GRAMMAR & POLITE VERBS -->
             <div id="jp-grammar" class="jp-panel">
               <div class="jp-panel-header">
                 <div>
-                  <h3>Core Sentence Structure & Particles</h3>
-                  <p>Japanese basic word order is SOV (Subject - Object - Verb). Particles mark the role of each word.
-                  </p>
+                  <h3>Core Sentence Structure, Particles & Verb Conjugations</h3>
+                  <p>Japanese basic word order is SOV (Subject - Object - Verb). Particles mark the role of each word.</p>
                 </div>
               </div>
 
-              <div class="grammar-stack">
-                <div class="grammar-card">
-                  <div class="grammar-title">
-                    <span class="grammar-pill">は (wa)</span>
-                    <h4>Topic Marker</h4>
+              <!-- SOV Structure Card -->
+              <div class="kanji-knowledge-card" style="margin-bottom: 2rem;">
+                <h4 style="margin-bottom: 0.5rem; font-size: 1.2rem; color: var(--purple-950);">📐 The Golden SOV Formula</h4>
+                <p style="font-size: 0.9rem; color: var(--purple-800); margin-bottom: 1rem;">
+                  In English: <b>Subject + Verb + Object</b> ("I eat ramen").<br>
+                  In Japanese: <b>Subject (は) + Object (を) + Verb</b> (私はラーメンを食べます - <i>Watashi wa raamen o tabemasu</i>).
+                </p>
+                <div class="kanji-pillars-grid">
+                  <div class="kanji-pillar-item">
+                    <span class="pillar-tag">1. Subject (は)</span>
+                    <h5>私 は (Watashi wa)</h5>
+                    <p>"As for me..."</p>
                   </div>
-                  <p class="grammar-explanation">Written as 'ha' but pronounced 'wa'. It indicates the topic of the
-                    sentence ("As for...").</p>
-                  <div class="grammar-example">
-                    <div class="jp-eg">わたし は たの です。(Watashi wa Thanu desu.)</div>
-                    <div class="en-eg">I am Thanu.</div>
+                  <div class="kanji-pillar-item">
+                    <span class="pillar-tag">2. Object (を)</span>
+                    <h5>ご飯 を (Gohan o)</h5>
+                    <p>"Rice / meal (receiving action)"</p>
                   </div>
-                </div>
-
-                <div class="grammar-card">
-                  <div class="grammar-title">
-                    <span class="grammar-pill">を (o / wo)</span>
-                    <h4>Direct Object Marker</h4>
-                  </div>
-                  <p class="grammar-explanation">Indicates the object that is directly receiving the action of a verb.
-                  </p>
-                  <div class="grammar-example">
-                    <div class="jp-eg">ほん を よみます。(Hon o yomimasu.)</div>
-                    <div class="en-eg">I read a book.</div>
+                  <div class="kanji-pillar-item">
+                    <span class="pillar-tag">3. Verb</span>
+                    <h5>食べます (Tabemasu)</h5>
+                    <p>"Eat (polite present)"</p>
                   </div>
                 </div>
+              </div>
 
-                <div class="grammar-card">
-                  <div class="grammar-title">
-                    <span class="grammar-pill">に (ni)</span>
-                    <h4>Time & Destination Marker</h4>
+              <!-- Verb Conjugation Matrix (~ます Engine) -->
+              <div class="verb-matrix-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                  <div>
+                    <h4 style="font-size: 1.25rem; font-weight: 800; color: var(--purple-950);">⚡ Polite Verb Conjugation (~ます Form)</h4>
+                    <p style="font-size: 0.88rem; color: var(--purple-700); margin: 0;">Click any verb form to hear its pronunciation!</p>
                   </div>
-                  <p class="grammar-explanation">Marks a specific point in time or direction towards a goal/place.</p>
-                  <div class="grammar-example">
-                    <div class="jp-eg">にほん に いきます。(Nihon ni ikimasu.)</div>
-                    <div class="en-eg">I am going to Japan.</div>
-                  </div>
+                  <span class="pillar-tag" style="background: var(--purple-200); color: var(--purple-900);">Fundamental N5</span>
+                </div>
+                <div class="verb-matrix-grid" id="verb-conjugation-grid">
+                  <!-- Generated by JS -->
+                </div>
+              </div>
+
+              <!-- Particles Stack -->
+              <h4 style="font-size: 1.25rem; font-weight: 800; color: var(--purple-950); margin: 1.75rem 0 1rem;">
+                🧭 Essential Japanese Particles (助詞 - Joshi)
+              </h4>
+              <div class="grammar-stack" id="grammar-particles-stack">
+                <!-- Generated by JS / Static list -->
+              </div>
+            </div>
+
+            <!-- TAB 6: LEARNING GUIDE & STRATEGY -->
+            <div id="jp-guide" class="jp-panel">
+              <div class="jp-panel-header">
+                <div>
+                  <h3>Japanese Mastery Roadmap & Learning Secrets</h3>
+                  <p>Proven tips, psychological mnemonics, and daily habits to master Japanese effectively.</p>
+                </div>
+              </div>
+
+              <div class="learning-guide-grid">
+                <div class="guide-tip-card">
+                  <div class="guide-tip-icon">🌸</div>
+                  <h4>1. The 3 Writing Systems in Harmony</h4>
+                  <p>Japanese uses 3 scripts together: <b>Hiragana</b> for grammatical glue & native endings, <b>Katakana</b> for modern loanwords & foreign names (e.g., コーヒー, パソコン), and <b>Kanji</b> for the core concept and root meaning.</p>
                 </div>
 
-                <div class="grammar-card">
-                  <div class="grammar-title">
-                    <span class="grammar-pill">で (de)</span>
-                    <h4>Location of Action & Means</h4>
-                  </div>
-                  <p class="grammar-explanation">Specifies where an action takes place or the instrument/tool used.</p>
-                  <div class="grammar-example">
-                    <div class="jp-eg">としょかん で べんきょうします。(Toshokan de benkyoushimasu.)</div>
-                    <div class="en-eg">I study at the library.</div>
-                  </div>
+                <div class="guide-tip-card">
+                  <div class="guide-tip-icon">🧩</div>
+                  <h4>2. Radical Stories Over Rote Memorization</h4>
+                  <p>Never memorize Kanji stroke-by-stroke through repetitive copying alone. Break complex characters down into their <b>radicals (部首)</b> and create humorous visual stories. Your brain remembers vivid pictures 10x faster than abstract lines!</p>
+                </div>
+
+                <div class="guide-tip-card">
+                  <div class="guide-tip-icon">🎧</div>
+                  <h4>3. The Shadowing Technique</h4>
+                  <p>When clicking the audio speaker button on any word or phrase, repeat it aloud immediately (within 0.5s) mimicking native pitch and tone. This builds vocal muscle memory so words pop out naturally in conversation.</p>
+                </div>
+
+                <div class="guide-tip-card">
+                  <div class="guide-tip-icon">⏱️</div>
+                  <h4>4. Consistency Over Marathon Cramming</h4>
+                  <p>Studying 15 focused minutes every single day produces vastly superior fluency compared to studying 3 hours once a week. Spaced repetition cements memories in long-term cognitive storage.</p>
+                </div>
+
+                <div class="guide-tip-card">
+                  <div class="guide-tip-icon">🎌</div>
+                  <h4>5. High-Frequency JLPT N5 First</h4>
+                  <p>The top 100 Kanji and 800 basic vocabulary words account for over <b>65% of daily Japanese spoken communication</b>. Master the N5 core first to unlock huge conversational confidence!</p>
+                </div>
+
+                <div class="guide-tip-card">
+                  <div class="guide-tip-icon">💬</div>
+                  <h4>6. Don't Fear Mistakes</h4>
+                  <p>Japanese speakers are famously warm and encouraging when learners make an effort. Use simple ~です and ~ます polite forms, smile, and practice speaking fearlessly!</p>
                 </div>
               </div>
             </div>
 
-            <!-- TAB 5: QUIZ -->
+            <!-- TAB 7: INTERACTIVE QUIZ (Multi-Category) -->
             <div id="jp-quiz" class="jp-panel">
               <div class="quiz-container">
+                <!-- Mode Selector -->
+                <div class="quiz-modes-strip">
+                  <button class="quiz-mode-btn active" data-mode="kana">🔤 Kana Quiz</button>
+                  <button class="quiz-mode-btn" data-mode="kanji">🈯 Kanji Master Quiz</button>
+                  <button class="quiz-mode-btn" data-mode="vocab">💬 Vocabulary Quiz</button>
+                  <button class="quiz-mode-btn" data-mode="mixed">🎲 Mixed Challenge</button>
+                </div>
+
                 <div class="quiz-progress-bar">
                   <div class="quiz-progress-fill" id="quiz-progress-fill"></div>
                 </div>
@@ -742,8 +935,9 @@
                   <div class="quiz-question-box">
                     <div class="quiz-prompt-lbl" id="quiz-counter">Question 1 of 8</div>
                     <div class="quiz-main-char" id="quiz-current-char">あ</div>
-                    <p style="font-size:0.9rem; color:var(--purple-700);">What is the correct Romaji reading for this
-                      character?</p>
+                    <p id="quiz-question-subtitle" style="font-size:0.95rem; color:var(--purple-700); font-weight: 600;">
+                      What is the correct reading / meaning for this item?
+                    </p>
                   </div>
 
                   <div class="quiz-options-grid" id="quiz-options-grid">
@@ -753,12 +947,9 @@
 
                 <div id="quiz-result-area" style="display: none; text-align: center; padding: 2rem;">
                   <div style="font-size: 3.5rem; margin-bottom: 0.5rem;">🎉</div>
-                  <h3 style="font-size: 1.8rem; font-weight: 800; color: var(--purple-950); margin-bottom: 0.5rem;">Quiz
-                    Completed!</h3>
-                  <p style="color: var(--purple-700); margin-bottom: 1.25rem;">Great job practicing Japanese Cuteuhhh!
-                  </p>
-                  <div style="font-size: 2.2rem; font-weight: 900; color: var(--purple-600); margin-bottom: 1.5rem;"
-                    id="quiz-final-score">8 / 8</div>
+                  <h3 style="font-size: 1.8rem; font-weight: 800; color: var(--purple-950); margin-bottom: 0.5rem;">Quiz Completed!</h3>
+                  <p style="color: var(--purple-700); margin-bottom: 1.25rem;">Great job practicing Japanese Cuteuhhh!</p>
+                  <div style="font-size: 2.2rem; font-weight: 900; color: var(--purple-600); margin-bottom: 1.5rem;" id="quiz-final-score">8 / 8</div>
                   <button id="btn-restart-quiz" class="btn btn-primary">Take Another Quiz 🔄</button>
                 </div>
               </div>
@@ -1091,16 +1282,16 @@
   <!-- Application Scripts -->
   <script src="js/vendor/mqtt.min.js"></script>
   <script src="https://unpkg.com/mqtt@5.3.5/dist/mqtt.min.js"></script>
-  <script src="js/sync.js?v=14"></script>
-  <script src="js/calculator.js?v=14"></script>
-  <script src="js/notepad.js?v=14"></script>
-  <script src="js/whiteboard.js?v=14"></script>
-  <script src="js/wordlist.js?v=14"></script>
-  <script src="js/games.js?v=14"></script>
-  <script src="js/japanese.js?v=14"></script>
-  <script src="js/savedModules.js?v=14"></script>
-  <script src="js/birthday.js?v=14"></script>
-  <script src="js/app.js?v=14"></script>
+  <script src="js/sync.js?v=15"></script>
+  <script src="js/calculator.js?v=15"></script>
+  <script src="js/notepad.js?v=15"></script>
+  <script src="js/whiteboard.js?v=15"></script>
+  <script src="js/wordlist.js?v=15"></script>
+  <script src="js/games.js?v=16"></script>
+  <script src="js/japanese.js?v=17"></script>
+  <script src="js/savedModules.js?v=15"></script>
+  <script src="js/birthday.js?v=15"></script>
+  <script src="js/app.js?v=15"></script>
 
 </body>
 

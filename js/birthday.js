@@ -328,7 +328,7 @@ class BirthdayQuiz {
     const headerBtn = document.getElementById('btn-view-quiz-answers');
     const hubLink = document.getElementById('btn-hub-answers-link');
 
-    // ONLY show Thanu's answered questions for the user who entered "thanu2596" (RK)
+    // ONLY show Thanu's answered questions for the user who entered "thanu@47" (RK)
     const isRK = (window.app && window.app.currentUser === 'rk') || (window.workspaceSync && window.workspaceSync.userRole === 'rk');
 
     if (!isRK) {

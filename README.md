@@ -8,7 +8,7 @@ A personalized, interactive web workspace crafted with love for Thanasri.
 
 - 📚 **Study & Productivity Tools**
   - **Pomodoro Timer**: Customizable focus sessions & break intervals
-  - **Japanese Learning Station**: Hiragana, Katakana, Kanji, and vocabulary flashcards
+  - **Japanese Learning Station**: Full Hiragana & Katakana charts, comprehensive Kanji Master Hub with Onyomi/Kunyomi & Radicals, themed vocabulary, real-life dialogues, verb conjugation engine, learning roadmap guide, and multi-category quizzes with audio speech
   - **Interactive Whiteboard**: Freeform drawing, shapes, color palettes, and export
   - **Scientific Calculator**: Clean, full-featured calculation tool
   - **Quick Notepad & To-Do Tracker**: Local storage persistence for notes and daily tasks

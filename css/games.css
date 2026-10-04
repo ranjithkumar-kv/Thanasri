@@ -106,8 +106,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
-  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+  gap: 0.75rem;
 }
 
 .mode-select-pill {
@@ -142,9 +143,23 @@
   background: var(--purple-50);
   border: 1.5px solid var(--purple-200);
   border-radius: var(--radius-lg);
-  padding: 0.85rem 1.25rem;
-  margin-bottom: 1.5rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.25rem;
   text-align: center;
+}
+
+.score-box {
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--radius-md);
+  border: 1.5px solid transparent;
+  transition: all var(--transition-fast);
+}
+
+.score-box.active-turn {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: var(--purple-400);
+  box-shadow: 0 4px 14px rgba(147, 51, 234, 0.18);
+  transform: translateY(-2px);
 }
 
 .score-box h4 {
@@ -162,11 +177,58 @@
 }
 
 .xo-turn-indicator {
-  font-size: 1.1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 1rem;
   font-weight: 700;
-  color: var(--purple-800);
+  color: var(--purple-900);
+  background: var(--purple-50);
+  border: 1.5px solid var(--purple-200);
+  border-radius: var(--radius-full);
+  padding: 0.45rem 1.35rem;
   margin-bottom: 1.25rem;
-  min-height: 28px;
+  min-height: 40px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  transition: all var(--transition-fast);
+  text-align: center;
+}
+
+.xo-turn-indicator.turn-mine {
+  background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+  border-color: #a855f7;
+  color: #581c87;
+  box-shadow: 0 4px 14px rgba(168, 85, 247, 0.25);
+  animation: xoTurnPulse 2.4s infinite ease-in-out;
+}
+
+.xo-turn-indicator.turn-partner {
+  background: linear-gradient(135deg, #fefce8 0%, #fef9c3 100%);
+  border-color: #eab308;
+  color: #854d0e;
+  box-shadow: 0 3px 10px rgba(234, 179, 8, 0.18);
+}
+
+.xo-turn-indicator.turn-x {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border-color: #60a5fa;
+  color: #1e40af;
+}
+
+.xo-turn-indicator.turn-o {
+  background: linear-gradient(135deg, #fdf4ff 0%, #fae8ff 100%);
+  border-color: #e879f9;
+  color: #86198f;
+}
+
+@keyframes xoTurnPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
 }
 
 /* Theme Toggle Button */
@@ -518,6 +580,7 @@
 
 /* Main Challenge Bridge Card */
 .wb-challenge-card {
+  position: relative;
   text-align: center;
   padding: 2.25rem 2rem;
   display: flex;
@@ -526,6 +589,165 @@
   gap: 1.25rem;
   border: 2px solid var(--purple-200);
   box-shadow: 0 12px 32px rgba(109, 40, 217, 0.12);
+}
+
+/* Word Bridge Victory Popup Banner */
+.wb-victory-banner {
+  display: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.9);
+  background: rgba(25, 10, 50, 0.95);
+  border: 2px solid #facc15;
+  border-radius: var(--radius-2xl);
+  padding: 1.6rem 2.2rem;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55), 0 0 40px rgba(250, 204, 21, 0.65);
+  z-index: 50;
+  text-align: center;
+  backdrop-filter: blur(16px);
+  color: #ffffff;
+  animation: victoryPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  pointer-events: auto;
+  min-width: 290px;
+  max-width: 90%;
+}
+
+.wb-victory-banner.active {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.wb-vic-trophy {
+  font-size: 3.4rem;
+  animation: trophyFloat 1.2s infinite alternate ease-in-out;
+  line-height: 1;
+}
+
+.wb-vic-title {
+  font-size: 1.55rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, #fef08a, #f472b6, #c084fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+}
+
+.wb-vic-word-tag {
+  background: linear-gradient(135deg, rgba(234, 179, 8, 0.25), rgba(168, 85, 247, 0.35));
+  border: 1.5px solid #facc15;
+  color: #fef08a;
+  font-size: 1.25rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  padding: 0.35rem 1.2rem;
+  border-radius: var(--radius-full);
+  box-shadow: 0 0 16px rgba(234, 179, 8, 0.4);
+}
+
+.wb-vic-sub {
+  font-size: 0.88rem;
+  color: #e9d5ff;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Word Bridge 10s Countdown Bar & Live Seconds */
+.wb-countdown-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  margin: 0.4rem 0 0.2rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(250, 204, 21, 0.35);
+  border-radius: var(--radius-lg);
+  padding: 0.65rem 1rem;
+  backdrop-filter: blur(8px);
+}
+
+.wb-countdown-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #fef08a;
+  letter-spacing: 0.02em;
+}
+
+.wb-countdown-seconds {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.2rem;
+  height: 2.2rem;
+  background: #facc15;
+  color: #1e1b4b;
+  font-size: 1.15rem;
+  font-weight: 900;
+  border-radius: var(--radius-full);
+  box-shadow: 0 0 14px rgba(250, 204, 21, 0.8);
+  animation: wbCountdownPulse 1s infinite alternate ease-in-out;
+  line-height: 1;
+}
+
+@keyframes wbCountdownPulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 10px rgba(250, 204, 21, 0.6);
+  }
+  100% {
+    transform: scale(1.12);
+    box-shadow: 0 0 20px rgba(250, 204, 21, 1);
+  }
+}
+
+.wb-countdown-bar-wrapper {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+
+.wb-countdown-progress {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, #ec4899, #a855f7, #facc15);
+  border-radius: var(--radius-full);
+  transition: width 1s linear;
+}
+
+.wb-stat-rk {
+  border-color: #93c5fd !important;
+  background: #eff6ff !important;
+}
+
+.wb-stat-rk .stat-lbl {
+  color: #1e40af !important;
+}
+
+.wb-stat-rk .stat-val {
+  color: #1d4ed8 !important;
+}
+
+.wb-stat-thanu {
+  border-color: #f0abfc !important;
+  background: #fdf4ff !important;
+}
+
+.wb-stat-thanu .stat-lbl {
+  color: #86198f !important;
+}
+
+.wb-stat-thanu .stat-val {
+  color: #a21caf !important;
 }
 
 .wb-card-tag {

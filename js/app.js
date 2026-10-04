@@ -12,24 +12,24 @@ class AppController {
     this.users = {
       'rk': {
         username: 'rk',
-        password: 'thanu2596',
+        password: 'thanu@47',
         name: 'RK',
         displayName: 'RK 💙',
         role: 'rk',
         avatar: '👨‍💻',
         theme: 'rk-theme',
-        hint: 'thanu2596'
+        hint: 'thanu@47'
       },
       'thanasri': {
         username: 'thanasri',
         aliases: ['thanu'],
-        password: 'thanu@47',
+        password: '12345678',
         name: 'Thanasri',
         displayName: 'Thanasri 💜',
         role: 'thanu',
         avatar: '💜',
         theme: 'thanasri-theme',
-        hint: 'thanu@47'
+        hint: '12345678'
       }
     };
 
@@ -259,12 +259,12 @@ class AppController {
     }
 
     // Determine user automatically based on the passcode entered:
-    // 1. "thanu2596" -> RK (directly moves to workspace)
-    // 2. "thanu@47"  -> Thanasri (directly moves to workspace)
+    // 1. "thanu@47"  -> RK (directly moves to workspace)
+    // 2. "12345678"  -> Thanasri (directly moves to workspace)
     let detectedUser = null;
-    if (enteredPwd === 'thanu2596') {
+    if (enteredPwd.toLowerCase() === 'thanu@47') {
       detectedUser = this.users['rk'];
-    } else if (enteredPwd.toLowerCase() === 'thanu@47') {
+    } else if (enteredPwd === '12345678') {
       detectedUser = this.users['thanasri'];
       if (window.birthdayQuiz) {
         window.birthdayQuiz.resetQuizForNewLogin();
