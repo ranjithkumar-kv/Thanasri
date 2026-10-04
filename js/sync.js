@@ -70,9 +70,14 @@ class WorkspaceSyncEngine {
       if (match) code = match[1];
     }
     if (!code) {
-      code = localStorage.getItem('thanu_sync_room_code') || 'thanu-and-me-forever';
+      code = localStorage.getItem('thanu_sync_room_code');
+      // If code was previously empty or the old default, migrate to 'thanu-and-ranjith-forever'
+      if (!code || code === 'thanu-and-me-forever' || code === 'thanu-and-rk-forever' || code === 'thanuandmeforever') {
+        code = 'thanu-and-ranjith-forever';
+        try { localStorage.setItem('thanu_sync_room_code', code); } catch (e) {}
+      }
     }
-    return code.trim().toLowerCase();
+    return code.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9_-]/g, '');
   }
 
   resolveUserRole() {
@@ -114,7 +119,7 @@ class WorkspaceSyncEngine {
   }
 
   setRoomCode(newRoom) {
-    const cleaned = (newRoom || '').trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
+    const cleaned = (newRoom || '').trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9_-]/g, '');
     if (!cleaned) return;
     if (cleaned === this.roomCode) return;
 
