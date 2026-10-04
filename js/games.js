@@ -138,20 +138,19 @@ class GamesHub {
 
   updateXOStarterUI() {
     const starterBtn = document.getElementById('xo-starter-btn');
-    const starterIcon = document.getElementById('xo-starter-icon');
-    const starterLabel = document.getElementById('xo-starter-label');
     if (!starterBtn) return;
 
+    const displayEl = document.getElementById('xo-starter-display') || starterBtn;
     const isClassic = this.xoSymbolTheme === 'classic';
     const starter = this.xoRoundStarter || 'X';
 
     if (starter === 'X') {
-      if (starterIcon) starterIcon.innerHTML = isClassic ? '<span style="color:#ef4444;font-weight:900;">X</span>' : '💙';
-      if (starterLabel) starterLabel.textContent = isClassic ? 'X' : '💙';
+      const sym = isClassic ? '<span style="color:#ef4444;font-weight:900;">X</span>' : '💙';
+      displayEl.innerHTML = `Turn : RK  ${sym}`;
       starterBtn.title = 'Turn: RK (Blue 💙) starts • Click to switch to Thanu (Purple 💜)';
     } else {
-      if (starterIcon) starterIcon.innerHTML = isClassic ? '<span style="color:#2563eb;font-weight:900;">O</span>' : '💜';
-      if (starterLabel) starterLabel.textContent = isClassic ? 'O' : '💜';
+      const sym = isClassic ? '<span style="color:#2563eb;font-weight:900;">O</span>' : '💜';
+      displayEl.innerHTML = `Turn : Thanu ${sym}`;
       starterBtn.title = 'Turn: Thanu (Purple 💜) starts • Click to switch to RK (Blue 💙)';
     }
   }
