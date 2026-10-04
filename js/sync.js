@@ -70,14 +70,9 @@ class WorkspaceSyncEngine {
       if (match) code = match[1];
     }
     if (!code) {
-      code = localStorage.getItem('thanu_sync_room_code');
-      // If code was previously empty or the old default, migrate to 'thanu-and-ranjith-forever'
-      if (!code || code === 'thanu-and-me-forever' || code === 'thanu-and-rk-forever' || code === 'thanuandmeforever') {
-        code = 'thanu-and-ranjith-forever';
-        try { localStorage.setItem('thanu_sync_room_code', code); } catch (e) {}
-      }
+      code = localStorage.getItem('thanu_sync_room_code') || 'thanu-and-me-forever';
     }
-    return code.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9_-]/g, '');
+    return code.trim().toLowerCase();
   }
 
   resolveUserRole() {
@@ -85,7 +80,7 @@ class WorkspaceSyncEngine {
       const active = sessionStorage.getItem('thanu_active_user');
       if (active === 'thanasri' || active === 'thanu') return 'thanu';
       if (active === 'rk') return 'rk';
-    } catch (e) {}
+    } catch (e) { }
 
     // URL param has highest priority: ?role=thanu or ?role=rk
     const urlParams = new URLSearchParams(window.location.search);
@@ -119,7 +114,7 @@ class WorkspaceSyncEngine {
   }
 
   setRoomCode(newRoom) {
-    const cleaned = (newRoom || '').trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9_-]/g, '');
+    const cleaned = (newRoom || '').trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
     if (!cleaned) return;
     if (cleaned === this.roomCode) return;
 

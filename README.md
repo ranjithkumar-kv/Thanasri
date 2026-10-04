@@ -21,6 +21,12 @@ A personalized, interactive web workspace crafted with love for Thanasri.
   - 2048
   - Snake
 
+- 🎬 **MCU Watchlist (The Infinity Saga)**
+  - Comprehensive watch order for **Phase 1: Assemble** and **Phase 2: Age of Heroes**
+  - Interactive watch toggles with dual-user tracking (Thanu 💜 & Ranjith 💙)
+  - 1-5 Star personal ratings, Infinity Stone lore indicators, and direct Wikipedia references
+  - Real-time cloud sync & localStorage persistence
+
 - ⚡ **Real-time Live Sync**
   - Lightweight P2P/MQTT synchronization for shared presence and interactive surprises.
 

@@ -9,9 +9,11 @@
     content="A personalized purple and white workspace for Thanu with multi-slide whiteboard, stress buster games, and Japanese learning.">
 
   <!-- Browser Tab Favicon (Purple Heart) -->
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.88em%22 font-size=%2288%22>💜</text></svg>">
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.88em%22 font-size=%2288%22>💜</text></svg>">
   <link rel="alternate icon" type="image/svg+xml" href="favicon.svg">
-  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.88em%22 font-size=%2288%22>💜</text></svg>">
+  <link rel="apple-touch-icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.88em%22 font-size=%2288%22>💜</text></svg>">
 
 
   <!-- PeerJS for Real-Time WebRTC Whiteboard Collaboration -->
@@ -42,7 +44,8 @@
       <div class="passcode-box card-glass">
         <div class="passcode-avatar" id="login-avatar">💜</div>
         <h2 id="login-title">Thanu's WorkSpace</h2>
-        <p id="login-subtitle">A personalized haven crafted specially for you. Please enter your secret passcode to unlock!</p>
+        <p id="login-subtitle">A personalized haven crafted specially for you. Please enter your secret passcode to
+          unlock!</p>
 
         <div class="passcode-input-group">
           <input type="password" id="passcode-input" class="passcode-input" placeholder="Enter secret passcode..."
@@ -96,7 +99,8 @@
 
         <div class="header-actions">
           <!-- Active Logged In User Pill -->
-          <div id="header-user-pill" class="header-user-pill user-thanasri" title="Logged in user - Click lock to switch user">
+          <div id="header-user-pill" class="header-user-pill user-thanasri"
+            title="Logged in user - Click lock to switch user">
             <span id="header-user-avatar">💜</span>
             <span id="header-user-name">Thanasri</span>
             <button type="button" id="btn-header-lock" class="btn-header-lock"
@@ -120,7 +124,8 @@
           </button>
 
           <!-- Real-Time Two-Device Live Sync Pill -->
-          <button id="top-sync-pill" class="top-sync-pill waiting" title="Two-Device Sync Settings (Click to configure)">
+          <button id="top-sync-pill" class="top-sync-pill waiting"
+            title="Two-Device Sync Settings (Click to configure)">
             <span class="top-sync-dot" id="top-sync-dot"></span>
             <span id="top-sync-status-text">Connecting...</span>
           </button>
@@ -325,7 +330,8 @@
 
                 <!-- Quick Notepad & Calculator Toggle on Whiteboard -->
                 <div class="tool-group">
-                  <button id="tool-notepad-btn" class="tool-btn notepad-toggle-btn" title="Open Quick Notepad (Type Notes)">📝</button>
+                  <button id="tool-notepad-btn" class="tool-btn notepad-toggle-btn"
+                    title="Open Quick Notepad (Type Notes)">📝</button>
                   <button id="tool-calc-btn" class="tool-btn calc-toggle-btn" title="Open Mini Calculator">🧮</button>
                 </div>
 
@@ -386,11 +392,13 @@
                     <button id="xo-mode-ai" class="mode-btn">vs Bot 💜</button>
                   </div>
                   <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-                    <button id="xo-starter-btn" class="xo-theme-btn" title="Toggle who starts the round (Alternates automatically: RK 💙 ⇄ Thanu 💜)">
+                    <button id="xo-starter-btn" class="xo-theme-btn"
+                      title="Toggle who starts the round (Alternates automatically: RK 💙 ⇄ Thanu 💜)">
                       <span id="xo-starter-icon">💙</span>
                       <span id="xo-starter-label">Starts: RK (Me)</span>
                     </button>
-                    <button id="xo-theme-btn" class="xo-theme-btn" title="Switch symbols between Hearts (💙💜) and Classic (❌⭕)">
+                    <button id="xo-theme-btn" class="xo-theme-btn"
+                      title="Switch symbols between Hearts (💙💜) and Classic (❌⭕)">
                       <span id="xo-theme-icon">💙💜</span>
                       <span id="xo-theme-label">Hearts</span>
                     </button>
@@ -434,7 +442,8 @@
                   <div class="xo-vic-trophy">🏆</div>
                   <h3 id="xo-vic-title" class="xo-vic-title">🎉 WINNER! 🏆</h3>
                   <p id="xo-vic-sub" class="xo-vic-sub">Magnificent round! ✨</p>
-                  <button id="xo-vic-btn" class="btn btn-primary btn-sm" onclick="if(window.gamesHub){window.gamesHub.resetXORound(true);}">
+                  <button id="xo-vic-btn" class="btn btn-primary btn-sm"
+                    onclick="if(window.gamesHub){window.gamesHub.resetXORound(true);}">
                     🔄 Play Next Round
                   </button>
                 </div>
@@ -497,15 +506,17 @@
                   </div>
                   <div class="wb-stat-item">
                     <span class="stat-lbl">RACE STATUS</span>
-                    <span class="stat-val streak" id="wb-race-status" style="font-size: 0.95rem; font-weight: 700;">⚡ Race Open!</span>
+                    <span class="stat-val streak" id="wb-race-status" style="font-size: 0.95rem; font-weight: 700;">⚡
+                      Race Open!</span>
                   </div>
                 </div>
 
                 <!-- Main Challenge Bridge Card -->
                 <div class="wb-challenge-card card-glass">
                   <div class="wb-card-tag">✨ Word Bridge Race • Synchronized ✨</div>
-                  <p class="wb-card-subtitle">Same letters for both! First one to type a valid English word wins the round!</p>
-                  
+                  <p class="wb-card-subtitle">Same letters for both! First one to type a valid English word wins the
+                    round!</p>
+
                   <div class="wb-letters-container">
                     <div class="wb-letter-card start-card">
                       <span class="wb-letter-pos">STARTING WITH</span>
@@ -534,14 +545,9 @@
 
                   <!-- Input & Submit Form -->
                   <form id="wb-submit-form" onsubmit="return false;" class="wb-input-group">
-                    <input 
-                      type="text" 
-                      id="wb-word-input" 
-                      class="wb-word-input" 
-                      placeholder="Type an English word starting with S and ending with T..." 
-                      autocomplete="off"
-                      spellcheck="false"
-                    />
+                    <input type="text" id="wb-word-input" class="wb-word-input"
+                      placeholder="Type an English word starting with S and ending with T..." autocomplete="off"
+                      spellcheck="false" />
                     <button type="submit" id="wb-submit-btn" class="btn btn-primary wb-submit-btn">
                       <span>Submit</span>
                       <span>➔</span>
@@ -601,9 +607,12 @@
                 <div class="wb-instructions-card">
                   <h4>📖 How to Play:</h4>
                   <ul>
-                    <li>1. Look at the two letters: the left is the <strong>starting letter</strong> and the right is the <strong>ending letter</strong>.</li>
-                    <li>2. Think of any real English word (at least 3 letters) that fits. For example, for <strong>S ... T</strong>: <em>SMART, START, SWEET, SUNSET, STREET</em>!</li>
-                    <li>3. Type your word and press Enter. You can find multiple words for the same pair to boost your streak, or skip to a new pair anytime!</li>
+                    <li>1. Look at the two letters: the left is the <strong>starting letter</strong> and the right is
+                      the <strong>ending letter</strong>.</li>
+                    <li>2. Think of any real English word (at least 3 letters) that fits. For example, for <strong>S ...
+                        T</strong>: <em>SMART, START, SWEET, SUNSET, STREET</em>!</li>
+                    <li>3. Type your word and press Enter. You can find multiple words for the same pair to boost your
+                      streak, or skip to a new pair anytime!</li>
                   </ul>
                 </div>
 
@@ -693,7 +702,8 @@
                   <span style="font-size: 1.8rem;">💡</span>
                   <div>
                     <h4>Understanding Kanji: The 4 Golden Secrets</h4>
-                    <p style="margin: 0; font-size: 0.85rem; color: var(--purple-700);">Unlike Kana (which only represent sounds), Kanji represent concepts, objects, and ideas.</p>
+                    <p style="margin: 0; font-size: 0.85rem; color: var(--purple-700);">Unlike Kana (which only
+                      represent sounds), Kanji represent concepts, objects, and ideas.</p>
                   </div>
                 </div>
 
@@ -701,26 +711,32 @@
                   <div class="kanji-pillar-item">
                     <span class="pillar-tag">Pillar 1: Readings</span>
                     <h5>Onyomi vs Kunyomi</h5>
-                    <p><b>Onyomi (音読み):</b> Chinese-derived reading, mostly used in multi-kanji compound words (e.g., <i>Nihon</i> 日本).<br>
-                    <b>Kunyomi (訓読み):</b> Native Japanese reading, used when kanji stands alone or with kana (e.g., <i>mizu</i> 水).</p>
+                    <p><b>Onyomi (音読み):</b> Chinese-derived reading, mostly used in multi-kanji compound words (e.g.,
+                      <i>Nihon</i> 日本).<br>
+                      <b>Kunyomi (訓読み):</b> Native Japanese reading, used when kanji stands alone or with kana (e.g.,
+                      <i>mizu</i> 水).
+                    </p>
                   </div>
 
                   <div class="kanji-pillar-item">
                     <span class="pillar-tag">Pillar 2: Building Blocks</span>
                     <h5>Radicals (部首 - Bushu)</h5>
-                    <p>Kanji are built from shared visual parts. E.g., <b>氵</b> means water (海, 泳, 湖), and <b>亻</b> means person (休, 体). Learn radicals to memorize 2,000+ Kanji easily!</p>
+                    <p>Kanji are built from shared visual parts. E.g., <b>氵</b> means water (海, 泳, 湖), and <b>亻</b>
+                      means person (休, 体). Learn radicals to memorize 2,000+ Kanji easily!</p>
                   </div>
 
                   <div class="kanji-pillar-item">
                     <span class="pillar-tag">Pillar 3: Flow</span>
                     <h5>Stroke Order (筆順)</h5>
-                    <p>Always write from <b>Top to Bottom</b>, <b>Left to Right</b>, horizontal before vertical, and outside frame before filling and closing the bottom.</p>
+                    <p>Always write from <b>Top to Bottom</b>, <b>Left to Right</b>, horizontal before vertical, and
+                      outside frame before filling and closing the bottom.</p>
                   </div>
 
                   <div class="kanji-pillar-item">
                     <span class="pillar-tag">Pillar 4: Compounds</span>
                     <h5>Jukugo (熟語)</h5>
-                    <p>Combining 2 or more Kanji creates rich vocabulary. E.g., <b>日</b> (Sun) + <b>本</b> (Origin) = <b>日本</b> (Japan: "The Origin of the Sun").</p>
+                    <p>Combining 2 or more Kanji creates rich vocabulary. E.g., <b>日</b> (Sun) + <b>本</b> (Origin) =
+                      <b>日本</b> (Japan: "The Origin of the Sun").</p>
                   </div>
                 </div>
               </div>
@@ -738,7 +754,8 @@
 
                 <div class="kanji-search-box">
                   <span>🔍</span>
-                  <input type="text" id="kanji-search-input" placeholder="Search meaning or romaji..." autocomplete="off">
+                  <input type="text" id="kanji-search-input" placeholder="Search meaning or romaji..."
+                    autocomplete="off">
                 </div>
               </div>
 
@@ -815,16 +832,19 @@
               <div class="jp-panel-header">
                 <div>
                   <h3>Core Sentence Structure, Particles & Verb Conjugations</h3>
-                  <p>Japanese basic word order is SOV (Subject - Object - Verb). Particles mark the role of each word.</p>
+                  <p>Japanese basic word order is SOV (Subject - Object - Verb). Particles mark the role of each word.
+                  </p>
                 </div>
               </div>
 
               <!-- SOV Structure Card -->
               <div class="kanji-knowledge-card" style="margin-bottom: 2rem;">
-                <h4 style="margin-bottom: 0.5rem; font-size: 1.2rem; color: var(--purple-950);">📐 The Golden SOV Formula</h4>
+                <h4 style="margin-bottom: 0.5rem; font-size: 1.2rem; color: var(--purple-950);">📐 The Golden SOV
+                  Formula</h4>
                 <p style="font-size: 0.9rem; color: var(--purple-800); margin-bottom: 1rem;">
                   In English: <b>Subject + Verb + Object</b> ("I eat ramen").<br>
-                  In Japanese: <b>Subject (は) + Object (を) + Verb</b> (私はラーメンを食べます - <i>Watashi wa raamen o tabemasu</i>).
+                  In Japanese: <b>Subject (は) + Object (を) + Verb</b> (私はラーメンを食べます - <i>Watashi wa raamen o
+                    tabemasu</i>).
                 </p>
                 <div class="kanji-pillars-grid">
                   <div class="kanji-pillar-item">
@@ -847,12 +867,16 @@
 
               <!-- Verb Conjugation Matrix (~ます Engine) -->
               <div class="verb-matrix-card">
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                <div
+                  style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
                   <div>
-                    <h4 style="font-size: 1.25rem; font-weight: 800; color: var(--purple-950);">⚡ Polite Verb Conjugation (~ます Form)</h4>
-                    <p style="font-size: 0.88rem; color: var(--purple-700); margin: 0;">Click any verb form to hear its pronunciation!</p>
+                    <h4 style="font-size: 1.25rem; font-weight: 800; color: var(--purple-950);">⚡ Polite Verb
+                      Conjugation (~ます Form)</h4>
+                    <p style="font-size: 0.88rem; color: var(--purple-700); margin: 0;">Click any verb form to hear its
+                      pronunciation!</p>
                   </div>
-                  <span class="pillar-tag" style="background: var(--purple-200); color: var(--purple-900);">Fundamental N5</span>
+                  <span class="pillar-tag" style="background: var(--purple-200); color: var(--purple-900);">Fundamental
+                    N5</span>
                 </div>
                 <div class="verb-matrix-grid" id="verb-conjugation-grid">
                   <!-- Generated by JS -->
@@ -881,37 +905,46 @@
                 <div class="guide-tip-card">
                   <div class="guide-tip-icon">🌸</div>
                   <h4>1. The 3 Writing Systems in Harmony</h4>
-                  <p>Japanese uses 3 scripts together: <b>Hiragana</b> for grammatical glue & native endings, <b>Katakana</b> for modern loanwords & foreign names (e.g., コーヒー, パソコン), and <b>Kanji</b> for the core concept and root meaning.</p>
+                  <p>Japanese uses 3 scripts together: <b>Hiragana</b> for grammatical glue & native endings,
+                    <b>Katakana</b> for modern loanwords & foreign names (e.g., コーヒー, パソコン), and <b>Kanji</b> for the
+                    core concept and root meaning.</p>
                 </div>
 
                 <div class="guide-tip-card">
                   <div class="guide-tip-icon">🧩</div>
                   <h4>2. Radical Stories Over Rote Memorization</h4>
-                  <p>Never memorize Kanji stroke-by-stroke through repetitive copying alone. Break complex characters down into their <b>radicals (部首)</b> and create humorous visual stories. Your brain remembers vivid pictures 10x faster than abstract lines!</p>
+                  <p>Never memorize Kanji stroke-by-stroke through repetitive copying alone. Break complex characters
+                    down into their <b>radicals (部首)</b> and create humorous visual stories. Your brain remembers vivid
+                    pictures 10x faster than abstract lines!</p>
                 </div>
 
                 <div class="guide-tip-card">
                   <div class="guide-tip-icon">🎧</div>
                   <h4>3. The Shadowing Technique</h4>
-                  <p>When clicking the audio speaker button on any word or phrase, repeat it aloud immediately (within 0.5s) mimicking native pitch and tone. This builds vocal muscle memory so words pop out naturally in conversation.</p>
+                  <p>When clicking the audio speaker button on any word or phrase, repeat it aloud immediately (within
+                    0.5s) mimicking native pitch and tone. This builds vocal muscle memory so words pop out naturally in
+                    conversation.</p>
                 </div>
 
                 <div class="guide-tip-card">
                   <div class="guide-tip-icon">⏱️</div>
                   <h4>4. Consistency Over Marathon Cramming</h4>
-                  <p>Studying 15 focused minutes every single day produces vastly superior fluency compared to studying 3 hours once a week. Spaced repetition cements memories in long-term cognitive storage.</p>
+                  <p>Studying 15 focused minutes every single day produces vastly superior fluency compared to studying
+                    3 hours once a week. Spaced repetition cements memories in long-term cognitive storage.</p>
                 </div>
 
                 <div class="guide-tip-card">
                   <div class="guide-tip-icon">🎌</div>
                   <h4>5. High-Frequency JLPT N5 First</h4>
-                  <p>The top 100 Kanji and 800 basic vocabulary words account for over <b>65% of daily Japanese spoken communication</b>. Master the N5 core first to unlock huge conversational confidence!</p>
+                  <p>The top 100 Kanji and 800 basic vocabulary words account for over <b>65% of daily Japanese spoken
+                      communication</b>. Master the N5 core first to unlock huge conversational confidence!</p>
                 </div>
 
                 <div class="guide-tip-card">
                   <div class="guide-tip-icon">💬</div>
                   <h4>6. Don't Fear Mistakes</h4>
-                  <p>Japanese speakers are famously warm and encouraging when learners make an effort. Use simple ~です and ~ます polite forms, smile, and practice speaking fearlessly!</p>
+                  <p>Japanese speakers are famously warm and encouraging when learners make an effort. Use simple ~です
+                    and ~ます polite forms, smile, and practice speaking fearlessly!</p>
                 </div>
               </div>
             </div>
@@ -935,7 +968,8 @@
                   <div class="quiz-question-box">
                     <div class="quiz-prompt-lbl" id="quiz-counter">Question 1 of 8</div>
                     <div class="quiz-main-char" id="quiz-current-char">あ</div>
-                    <p id="quiz-question-subtitle" style="font-size:0.95rem; color:var(--purple-700); font-weight: 600;">
+                    <p id="quiz-question-subtitle"
+                      style="font-size:0.95rem; color:var(--purple-700); font-weight: 600;">
                       What is the correct reading / meaning for this item?
                     </p>
                   </div>
@@ -947,9 +981,12 @@
 
                 <div id="quiz-result-area" style="display: none; text-align: center; padding: 2rem;">
                   <div style="font-size: 3.5rem; margin-bottom: 0.5rem;">🎉</div>
-                  <h3 style="font-size: 1.8rem; font-weight: 800; color: var(--purple-950); margin-bottom: 0.5rem;">Quiz Completed!</h3>
-                  <p style="color: var(--purple-700); margin-bottom: 1.25rem;">Great job practicing Japanese Cuteuhhh!</p>
-                  <div style="font-size: 2.2rem; font-weight: 900; color: var(--purple-600); margin-bottom: 1.5rem;" id="quiz-final-score">8 / 8</div>
+                  <h3 style="font-size: 1.8rem; font-weight: 800; color: var(--purple-950); margin-bottom: 0.5rem;">Quiz
+                    Completed!</h3>
+                  <p style="color: var(--purple-700); margin-bottom: 1.25rem;">Great job practicing Japanese Cuteuhhh!
+                  </p>
+                  <div style="font-size: 2.2rem; font-weight: 900; color: var(--purple-600); margin-bottom: 1.5rem;"
+                    id="quiz-final-score">8 / 8</div>
                   <button id="btn-restart-quiz" class="btn btn-primary">Take Another Quiz 🔄</button>
                 </div>
               </div>
@@ -1100,7 +1137,8 @@
     </div>
 
     <div class="notepad-body">
-      <textarea id="notepad-textarea" class="notepad-textarea" placeholder="Type your lecture notes, quick thoughts, formulas, or reminders here... (Auto-saves continuously 💜)"></textarea>
+      <textarea id="notepad-textarea" class="notepad-textarea"
+        placeholder="Type your lecture notes, quick thoughts, formulas, or reminders here... (Auto-saves continuously 💜)"></textarea>
     </div>
 
     <div class="notepad-footer">
@@ -1191,21 +1229,27 @@
     <div class="modal-card" style="max-width: 480px;">
       <div class="modal-header">
         <h3>👫 Two-Device Live Sync</h3>
-        <button class="calc-close-btn" id="sync-pair-modal-close" style="font-size: 1.5rem; color: var(--purple-700);">✕</button>
+        <button class="calc-close-btn" id="sync-pair-modal-close"
+          style="font-size: 1.5rem; color: var(--purple-700);">✕</button>
       </div>
       <div class="modal-body" style="padding: 1.25rem;">
-        <div id="modal-partner-status" style="margin-bottom: 1.25rem; padding: 0.75rem 1rem; background: var(--purple-50); border-radius: var(--radius-md); border: 1px solid var(--purple-200); text-align: center;">
+        <div id="modal-partner-status"
+          style="margin-bottom: 1.25rem; padding: 0.75rem 1rem; background: var(--purple-50); border-radius: var(--radius-md); border: 1px solid var(--purple-200); text-align: center;">
           <span style="color: #ca8a04; font-weight: 600;">🟡 Connecting to Real-Time Cloud...</span>
         </div>
 
         <div class="form-field" style="margin-bottom: 1.25rem;">
-          <label style="font-weight: 700; color: var(--purple-900); font-size: 0.9rem; display: block; margin-bottom: 0.5rem;">Who is using this device?</label>
+          <label
+            style="font-weight: 700; color: var(--purple-900); font-size: 0.9rem; display: block; margin-bottom: 0.5rem;">Who
+            is using this device?</label>
           <div style="display: flex; gap: 1.25rem;">
-            <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer; font-weight: 600; color: var(--purple-900);">
+            <label
+              style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer; font-weight: 600; color: var(--purple-900);">
               <input type="radio" name="sync-user-role" id="role-me-radio" value="rk" checked />
               <span>RK 💙 (Player 1)</span>
             </label>
-            <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer; font-weight: 600; color: var(--purple-900);">
+            <label
+              style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer; font-weight: 600; color: var(--purple-900);">
               <input type="radio" name="sync-user-role" id="role-thanu-radio" value="thanu" />
               <span>Thanasri 💜 (Player 2)</span>
             </label>
@@ -1213,9 +1257,14 @@
         </div>
 
         <div class="form-field" style="margin-bottom: 1.25rem;">
-          <label for="sync-room-input" style="font-weight: 700; color: var(--purple-900); font-size: 0.9rem; display: block; margin-bottom: 0.4rem;">Shared Room Code (Must match on both devices):</label>
-          <input type="text" id="sync-room-input" class="passcode-input" style="font-size: 0.95rem; padding: 0.6rem 0.8rem; text-align: left; width: 100%; border: 1.5px solid var(--purple-300); border-radius: var(--radius-md);" value="thanu-and-ranjith-forever" placeholder="thanu-and-ranjith-forever" />
-          <p style="font-size: 0.78rem; color: var(--purple-600); margin-top: 0.35rem;">Both Ranjith and Thanasri will automatically connect as long as your room codes match.</p>
+          <label for="sync-room-input"
+            style="font-weight: 700; color: var(--purple-900); font-size: 0.9rem; display: block; margin-bottom: 0.4rem;">Shared
+            Room Code (Must match on both devices):</label>
+          <input type="text" id="sync-room-input" class="passcode-input"
+            style="font-size: 0.95rem; padding: 0.6rem 0.8rem; text-align: left; width: 100%; border: 1.5px solid var(--purple-300); border-radius: var(--radius-md);"
+            value="thanu-and-ranjith-forever" placeholder="thanu-and-ranjith-forever" />
+          <p style="font-size: 0.78rem; color: var(--purple-600); margin-top: 0.35rem;">Both Ranjith and Thanasri will
+            automatically connect as long as your room codes match.</p>
         </div>
 
         <div style="display: flex; gap: 0.6rem; margin-top: 1.25rem;">
@@ -1233,15 +1282,18 @@
   <!-- Modal 4: Answers Viewer for RK -->
   <div id="quiz-answers-modal" class="modal-overlay">
     <div class="modal-card" style="max-width: 680px; max-height: 88vh; display: flex; flex-direction: column;">
-      <div class="modal-header" style="background: linear-gradient(135deg, var(--purple-800), var(--purple-950)); color: white; border-bottom: 2px solid var(--purple-700);">
+      <div class="modal-header"
+        style="background: linear-gradient(135deg, var(--purple-800), var(--purple-950)); color: white; border-bottom: 2px solid var(--purple-700);">
         <div style="display: flex; align-items: center; gap: 0.65rem;">
           <span style="font-size: 1.5rem;">💌</span>
           <div>
             <h3 style="margin: 0; color: white; font-size: 1.2rem; font-weight: 800;">Thanu's Answers</h3>
-            <span id="quiz-modal-subtitle" style="font-size: 0.8rem; color: #e9d5ff; font-weight: 500;">Live sync & saved responses from Thanu</span>
+            <span id="quiz-modal-subtitle" style="font-size: 0.8rem; color: #e9d5ff; font-weight: 500;">Live sync &
+              saved responses from Thanu</span>
           </div>
         </div>
-        <button class="calc-close-btn" id="btn-close-quiz-answers" style="color: white; font-size: 1.5rem; opacity: 0.9;">✕</button>
+        <button class="calc-close-btn" id="btn-close-quiz-answers"
+          style="color: white; font-size: 1.5rem; opacity: 0.9;">✕</button>
       </div>
 
       <!-- Status & Quick Action Toolbar -->
@@ -1251,25 +1303,31 @@
           <span id="quiz-modal-status-text">Checking answers...</span>
         </div>
         <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
-          <button type="button" id="btn-refresh-quiz-sync" class="btn btn-sm btn-secondary" title="Request latest answers via Cloud Sync">
+          <button type="button" id="btn-refresh-quiz-sync" class="btn btn-sm btn-secondary"
+            title="Request latest answers via Cloud Sync">
             🔄 Refresh
           </button>
-          <button type="button" id="btn-copy-modal-answers" class="btn btn-sm btn-white" title="Copy formatted answers to clipboard">
+          <button type="button" id="btn-copy-modal-answers" class="btn btn-sm btn-white"
+            title="Copy formatted answers to clipboard">
             📋 Copy
           </button>
-          <button type="button" id="btn-whatsapp-modal-answers" class="btn btn-sm btn-primary" title="Open formatted answers in WhatsApp">
+          <button type="button" id="btn-whatsapp-modal-answers" class="btn btn-sm btn-primary"
+            title="Open formatted answers in WhatsApp">
             📲 WhatsApp
           </button>
         </div>
       </div>
 
       <!-- Answers Scrollable Container -->
-      <div class="modal-body quiz-answers-scroll" id="quiz-answers-list-container" style="padding: 1.25rem; overflow-y: auto; flex: 1;">
+      <div class="modal-body quiz-answers-scroll" id="quiz-answers-list-container"
+        style="padding: 1.25rem; overflow-y: auto; flex: 1;">
         <!-- Injected via JavaScript dynamically -->
       </div>
 
-      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; background: #faf5ff; border-top: 1.5px solid var(--purple-200);">
-        <span id="quiz-modal-footer-time" style="font-size: 0.8rem; color: var(--purple-700); font-weight: 600;">Synced in real-time</span>
+      <div class="modal-footer"
+        style="display: flex; justify-content: space-between; align-items: center; background: #faf5ff; border-top: 1.5px solid var(--purple-200);">
+        <span id="quiz-modal-footer-time" style="font-size: 0.8rem; color: var(--purple-700); font-weight: 600;">Synced
+          in real-time</span>
         <button type="button" class="btn btn-secondary btn-sm" id="btn-close-quiz-answers-footer">Close</button>
       </div>
     </div>

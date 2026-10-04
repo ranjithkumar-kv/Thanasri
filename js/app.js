@@ -64,7 +64,7 @@ class AppController {
         sessionStorage.removeItem('thanu_active_view');
         sessionStorage.removeItem('thanu_active_module');
       }
-    } catch (e) {}
+    } catch (e) { }
   }
 
   restoreSessionState() {
@@ -101,11 +101,11 @@ class AppController {
           this.openWorkspaceModule(savedModule, false);
           try {
             window.history.replaceState({ view: effectiveView, module: savedModule }, '');
-          } catch (e) {}
+          } catch (e) { }
           return true;
         }
       }
-    } catch (e) {}
+    } catch (e) { }
     return false;
   }
 
@@ -117,7 +117,7 @@ class AppController {
         this.historyStack.push(currentState);
         try {
           window.history.pushState({ view: viewName, module: moduleName }, '');
-        } catch (e) {}
+        } catch (e) { }
       }
     }
 
@@ -162,7 +162,7 @@ class AppController {
       }
       try {
         window.history.replaceState({ view: target.view, module: target.module }, '');
-      } catch (e) {}
+      } catch (e) { }
       this.updateBackButtons();
     }
   }
@@ -288,7 +288,7 @@ class AppController {
     try {
       sessionStorage.setItem('thanu_active_user', userObj.username);
       localStorage.setItem('thanu_sync_user_role', userObj.role);
-    } catch (e) {}
+    } catch (e) { }
 
     // Update real-time sync role
     if (window.workspaceSync) {
@@ -323,7 +323,7 @@ class AppController {
       sessionStorage.removeItem('thanu_active_view');
       sessionStorage.removeItem('thanu_active_module');
       sessionStorage.removeItem('thanu_active_session_answers');
-    } catch (e) {}
+    } catch (e) { }
 
     const pwdInput = document.getElementById('passcode-input');
     if (pwdInput) {
@@ -484,7 +484,7 @@ class AppController {
         this.historyStack.push(currentState);
         try {
           window.history.pushState({ view: 'workspace', module: moduleName }, '');
-        } catch (e) {}
+        } catch (e) { }
       }
     }
 
@@ -619,5 +619,5 @@ document.addEventListener('DOMContentLoaded', () => {
       document.head.appendChild(link);
     }
     link.href = 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.88em%22 font-size=%2288%22>💜</text></svg>';
-  } catch (e) {}
+  } catch (e) { }
 });
