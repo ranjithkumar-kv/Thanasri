@@ -20,7 +20,7 @@
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 
   <!-- Application Stylesheets (80% Purple, 20% White Theme) -->
-  <link rel="stylesheet" href="css/main.css?v=25">
+  <link rel="stylesheet" href="css/main.css?v=26">
   <link rel="stylesheet" href="css/birthday.css?v=25">
   <link rel="stylesheet" href="css/whiteboard.css?v=25">
   <link rel="stylesheet" href="css/games.css?v=25">
@@ -97,14 +97,34 @@
           </div>
         </div>
 
-        <div class="header-actions">
+        <!-- Mobile Menu Toggle Button (Visible only on mobile <= 768px) -->
+        <button type="button" id="mobile-menu-toggle-btn" class="mobile-menu-toggle-btn"
+          aria-label="Toggle navigation options" aria-expanded="false" title="Menu options">
+          <span class="menu-bar"></span>
+          <span class="menu-bar"></span>
+          <span class="menu-bar"></span>
+          <span class="mobile-menu-badge" id="mobile-menu-sync-dot"></span>
+        </button>
+
+        <!-- Backdrop overlay when menu is open on mobile -->
+        <div id="mobile-menu-backdrop" class="mobile-menu-backdrop"></div>
+
+        <div class="header-actions" id="workspace-header-actions">
+          <!-- Mobile Menu Title (visible only inside mobile dropdown) -->
+          <div class="mobile-menu-header">
+            <span class="mobile-menu-title">Workspace Options</span>
+          </div>
+
           <!-- Active Logged In User Pill -->
           <div id="header-user-pill" class="header-user-pill user-thanasri"
-            title="Logged in user - Click lock to switch user">
-            <span id="header-user-avatar">💜</span>
-            <span id="header-user-name">Thanasri</span>
+            onclick="if(window.app){window.app.lockWorkspace();}"
+            title="Logged in user - Click to switch user or lock">
+            <div class="user-pill-info">
+              <span id="header-user-avatar">💜</span>
+              <span id="header-user-name">Thanasri</span>
+            </div>
             <button type="button" id="btn-header-lock" class="btn-header-lock"
-              onclick="if(window.app){window.app.lockWorkspace();}" title="Lock & Switch User">
+              onclick="event.stopPropagation();if(window.app){window.app.lockWorkspace();}" title="Lock & Switch User">
               🔒
             </button>
           </div>

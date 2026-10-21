@@ -426,6 +426,16 @@ class AppController {
       cardLearnJapanese.addEventListener('click', () => this.openWorkspaceModule('learn-japanese'));
     }
 
+    // Header User Pill click -> switch user / lock
+    const headerUserPill = document.getElementById('header-user-pill');
+    if (headerUserPill) {
+      headerUserPill.addEventListener('click', (e) => {
+        if (!e.target.closest('#btn-header-lock')) {
+          this.lockWorkspace();
+        }
+      });
+    }
+
     // Breadcrumbs home click
     const bcHome = document.getElementById('bc-home-link');
     if (bcHome) {
@@ -434,6 +444,71 @@ class AppController {
         this.openWorkspaceModule('hub');
       });
     }
+
+    // Mobile Menu Toggle for small screens
+    this.initMobileMenu();
+  }
+
+  initMobileMenu() {
+    const toggleBtn = document.getElementById('mobile-menu-toggle-btn');
+    const headerActions = document.getElementById('workspace-header-actions');
+    const backdrop = document.getElementById('mobile-menu-backdrop');
+
+    if (!toggleBtn || !headerActions) return;
+
+    const openMenu = () => {
+      headerActions.classList.add('mobile-open');
+      toggleBtn.classList.add('is-active');
+      toggleBtn.setAttribute('aria-expanded', 'true');
+      if (backdrop) backdrop.classList.add('is-active');
+    };
+
+    const closeMenu = () => {
+      headerActions.classList.remove('mobile-open');
+      toggleBtn.classList.remove('is-active');
+      toggleBtn.setAttribute('aria-expanded', 'false');
+      if (backdrop) backdrop.classList.remove('is-active');
+    };
+
+    const toggleMenu = (e) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      if (headerActions.classList.contains('mobile-open')) {
+        closeMenu();
+      } else {
+        openMenu();
+      }
+    };
+
+    toggleBtn.addEventListener('click', toggleMenu);
+
+    if (backdrop) {
+      backdrop.addEventListener('click', closeMenu);
+    }
+
+    // Close menu when an option is selected inside the dropdown
+    headerActions.addEventListener('click', (e) => {
+      const interactiveEl = e.target.closest('button, .header-user-pill, a');
+      if (interactiveEl) {
+        setTimeout(() => closeMenu(), 120);
+      }
+    });
+
+    // Close on escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && headerActions.classList.contains('mobile-open')) {
+        closeMenu();
+      }
+    });
+
+    // Close when window resized to desktop view
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 768 && headerActions.classList.contains('mobile-open')) {
+        closeMenu();
+      }
+    });
   }
 
   enterWorkspace() {

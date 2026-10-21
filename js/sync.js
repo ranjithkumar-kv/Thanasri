@@ -545,6 +545,20 @@ class WorkspaceSyncEngine {
         headerPillText.textContent = `Connecting...`;
         if (headerPillDot) headerPillDot.style.background = '#94a3b8';
       }
+
+      // Sync indicator dot on mobile hamburger button
+      const mobileSyncDot = document.getElementById('mobile-menu-sync-dot');
+      if (mobileSyncDot) {
+        if (this.partnerOnline) {
+          mobileSyncDot.style.background = '#22c55e';
+          mobileSyncDot.style.display = 'block';
+        } else if (this.isConnected) {
+          mobileSyncDot.style.background = '#eab308';
+          mobileSyncDot.style.display = 'block';
+        } else {
+          mobileSyncDot.style.display = 'none';
+        }
+      }
     }
 
     // 2. Whiteboard Live Sync Indicator
