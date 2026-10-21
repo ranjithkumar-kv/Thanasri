@@ -1019,7 +1019,12 @@ html, body {
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .workspace-header {
-    padding: 0.75rem 1rem;
+    padding: 0.6rem 0.85rem;
+    gap: 0.5rem;
+  }
+  .header-left {
+    gap: 0.5rem;
+    flex-shrink: 0;
   }
   .header-back-btn .back-text {
     display: none;
@@ -1027,16 +1032,127 @@ html, body {
   .header-back-btn {
     padding: 0.38rem 0.65rem;
   }
+  .brand-logo-badge {
+    width: 36px;
+    height: 36px;
+    font-size: 1.15rem;
+  }
+  .brand-info h1 {
+    font-size: 1.05rem;
+  }
   .brand-info span {
     display: none;
+  }
+  .header-actions {
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  .saved-modules-pill {
+    padding: 0.38rem 0.75rem;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+  }
+  .header-user-pill {
+    padding: 0.3rem 0.55rem;
+    font-size: 0.78rem;
+    flex-shrink: 0;
+  }
+  .top-sync-pill {
+    padding: 0.35rem 0.7rem;
+    font-size: 0.78rem;
+    flex-shrink: 0;
+  }
+  .answers-pill-btn {
+    padding: 0.35rem 0.7rem;
+    font-size: 0.78rem;
+    flex-shrink: 0;
   }
   .hub-hero h2 {
     font-size: 1.85rem;
   }
   .hub-container {
-    padding: 1.75rem 1rem;
+    padding: 1.5rem 0.85rem;
   }
   .modules-grid {
     grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+  .module-card {
+    padding: 1.5rem 1.25rem;
+  }
+  .modal-overlay {
+    padding: 0.75rem;
+  }
+  .modal-card {
+    border-radius: var(--radius-lg);
+    max-height: 94vh;
+  }
+  .modal-header {
+    padding: 0.85rem 1.15rem;
+  }
+  .modal-header h3 {
+    font-size: 1.15rem;
+  }
+  .modal-body {
+    padding: 1rem 1.15rem;
+  }
+  .modal-footer {
+    padding: 0.75rem 1.15rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .workspace-header {
+    padding: 0.45rem 0.6rem;
+  }
+  .brand-logo-badge {
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+    border-radius: var(--radius-sm);
+  }
+  .brand-info h1 {
+    font-size: 0.95rem;
+  }
+  .header-actions {
+    gap: 0.3rem;
+  }
+  .saved-modules-pill {
+    padding: 0.32rem 0.55rem;
+    font-size: 0.75rem;
+    gap: 0.35rem;
+  }
+  .top-sync-pill {
+    padding: 0.32rem 0.5rem;
+    font-size: 0.75rem;
+  }
+  .top-sync-pill #top-sync-status-text {
+    display: none;
+  }
+  .header-user-pill {
+    padding: 0.25rem 0.45rem;
+    font-size: 0.75rem;
+  }
+  .header-user-pill #header-user-name {
+    max-width: 60px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .answers-pill-btn {
+    padding: 0.3rem 0.55rem;
+    font-size: 0.75rem;
+  }
+  .passcode-box {
+    padding: 1.5rem 1.15rem;
+  }
+  .passcode-avatar {
+    width: 65px;
+    height: 65px;
+    font-size: 2rem;
+  }
+  .passcode-box h2 {
+    font-size: 1.5rem;
   }
 }

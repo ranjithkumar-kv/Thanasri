@@ -1135,22 +1135,187 @@
   line-height: 1.5;
 }
 
+/* ==========================================================================
+   Mobile & Responsive Layout for Games (XO, Typing, Word Bridge)
+   ========================================================================== */
+@media (max-width: 768px) {
+  .games-container {
+    padding: 1.25rem 0.65rem;
+    gap: 1.25rem;
+  }
+  .games-header h2 {
+    font-size: 1.75rem;
+  }
+  .games-tabs {
+    gap: 0.45rem;
+  }
+  .game-tab-btn {
+    padding: 0.48rem 0.85rem;
+    font-size: 0.82rem;
+  }
+  .game-panel {
+    padding: 1.25rem 0.85rem;
+    border-radius: var(--radius-lg);
+  }
+  .panel-header h3 {
+    font-size: 1.2rem;
+  }
+  
+  /* XO Game Mobile Tuning */
+  .xo-scoreboard {
+    padding: 0.5rem 0.75rem;
+    gap: 0.45rem;
+    width: 100%;
+    max-width: 320px;
+    box-sizing: border-box;
+  }
+  .score-box {
+    padding: 0.35rem 0.65rem;
+  }
+  .score-box span {
+    font-size: 1.2rem;
+  }
+  .xo-turn-indicator {
+    padding: 0.35rem 0.75rem;
+    font-size: 0.85rem;
+    min-height: 34px;
+  }
+  .xo-grid {
+    max-width: min(320px, calc(100vw - 40px));
+    height: auto;
+    gap: 8px;
+    margin-bottom: 1rem;
+  }
+  .xo-cell {
+    border-radius: var(--radius-md);
+  }
+  .xo-cell span {
+    font-size: 2.2rem;
+  }
+  .xo-controls-bar {
+    width: 100%;
+    max-width: 320px;
+    gap: 0.5rem;
+  }
+  .xo-actions-row {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+  }
+  .xo-theme-btn {
+    padding: 0.32rem 0.65rem;
+    font-size: 0.78rem;
+  }
+  .mode-btn {
+    padding: 0.3rem 0.65rem;
+    font-size: 0.78rem;
+  }
+  .xo-reset-icon-btn {
+    width: 34px;
+    height: 34px;
+  }
+
+  /* Typing Game Mobile Tuning */
+  .typing-stats-row {
+    gap: 0.5rem;
+  }
+  .typing-stat-card {
+    padding: 0.75rem 0.5rem;
+  }
+  .typing-stat-card .val {
+    font-size: 1.4rem;
+  }
+  .typing-passage-box {
+    padding: 1rem 0.85rem;
+    font-size: 1rem;
+  }
+  .typing-input {
+    padding: 0.75rem 0.85rem;
+    font-size: 0.95rem;
+  }
+}
+
 @media (max-width: 640px) {
   .wb-stats-bar {
     grid-template-columns: repeat(2, 1fr);
+    gap: 0.45rem;
+    padding: 0.65rem;
+  }
+  .wb-challenge-card {
+    padding: 1.25rem 0.65rem;
+  }
+  .wb-letters-container {
+    gap: 0.4rem;
+    margin: 0.4rem 0;
   }
   .wb-letter-card {
-    width: 90px;
-    height: 100px;
+    width: 76px;
+    height: 88px;
+    border-width: 2px;
+    border-radius: 14px;
+  }
+  .wb-letter-pos {
+    font-size: 0.55rem;
   }
   .wb-letter-display {
-    font-size: 3rem;
+    font-size: 2.4rem;
+  }
+  .wb-bridge-connector {
+    max-width: 110px;
+    gap: 0.25rem;
+  }
+  .wb-connector-badge {
+    font-size: 0.68rem;
+    padding: 0.15rem 0.45rem;
+    white-space: nowrap;
+  }
+  .wb-actions-row {
+    gap: 0.35rem;
+  }
+  .wb-actions-row .btn {
+    padding: 0.38rem 0.65rem;
+    font-size: 0.78rem;
   }
   .wb-input-group {
     flex-direction: column;
+    gap: 0.5rem;
   }
   .wb-submit-btn {
     width: 100%;
     padding: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .games-container {
+    padding: 1rem 0.45rem;
+  }
+  .game-panel {
+    padding: 1rem 0.55rem;
+  }
+  .xo-scoreboard {
+    max-width: 100%;
+  }
+  .xo-grid {
+    max-width: calc(100vw - 32px);
+    gap: 6px;
+  }
+  .xo-cell span {
+    font-size: 1.85rem;
+  }
+  .xo-controls-bar {
+    max-width: 100%;
+  }
+  .wb-letter-card {
+    width: 68px;
+    height: 80px;
+  }
+  .wb-letter-display {
+    font-size: 2rem;
+  }
+  .wb-bridge-connector {
+    max-width: 90px;
   }
 }

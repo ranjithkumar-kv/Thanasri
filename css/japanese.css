@@ -1035,3 +1035,175 @@
   font-weight: 800;
 }
 
+/* ==========================================================================
+   Responsive Mobile Adjustments for Japanese Learning Module
+   ========================================================================== */
+@media (max-width: 768px) {
+  .japanese-container {
+    padding: 1.25rem 0.65rem;
+    gap: 1.25rem;
+  }
+  .japanese-header h2 {
+    font-size: 1.85rem;
+  }
+  .japanese-desc-badge {
+    font-size: 0.85rem;
+    padding: 0.2rem 0.75rem;
+  }
+  .japanese-subtext {
+    font-size: 0.88rem;
+  }
+
+  /* Curriculum Tabs Strip - Horizontal scroll ribbon */
+  .jp-tabs-strip {
+    justify-content: flex-start;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+    padding-bottom: 6px;
+    gap: 0.4rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--purple-300) transparent;
+  }
+  .jp-tabs-strip::-webkit-scrollbar {
+    height: 4px;
+  }
+  .jp-tabs-strip::-webkit-scrollbar-thumb {
+    background: var(--purple-300);
+    border-radius: 4px;
+  }
+  .jp-tab-btn {
+    flex-shrink: 0;
+    padding: 0.45rem 0.85rem;
+    font-size: 0.82rem;
+  }
+
+  .jp-panel {
+    padding: 1.25rem 0.75rem;
+    border-radius: var(--radius-lg);
+  }
+  .jp-panel-header {
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    gap: 0.75rem;
+  }
+  .jp-panel-header h3 {
+    font-size: 1.2rem;
+  }
+
+  .kana-section {
+    padding: 1rem 0.65rem;
+  }
+  .kana-cards-grid {
+    grid-template-columns: repeat(auto-fill, minmax(78px, 1fr));
+    gap: 8px;
+  }
+  .kana-card {
+    padding: 0.65rem 0.35rem;
+  }
+  .kana-char {
+    font-size: 1.6rem;
+  }
+
+  /* Kanji Controls & Filter Options */
+  .kanji-controls-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+  .kanji-filter-pills {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+    gap: 0.35rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--purple-300) transparent;
+  }
+  .kanji-filter-pills::-webkit-scrollbar {
+    height: 3px;
+  }
+  .kanji-filter-pills::-webkit-scrollbar-thumb {
+    background: var(--purple-300);
+    border-radius: 3px;
+  }
+  .kanji-filter-btn {
+    flex-shrink: 0;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.78rem;
+  }
+  .kanji-search-box {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .kanji-knowledge-card {
+    padding: 1.15rem 0.85rem;
+  }
+  .kanji-pillars-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  .kanji-cards-grid {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 10px;
+  }
+
+  .phrases-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  .phrase-card {
+    padding: 0.85rem 1rem;
+  }
+
+  .vocab-grid {
+    grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
+    gap: 10px;
+  }
+  .numbers-grid {
+    grid-template-columns: repeat(auto-fill, minmax(95px, 1fr));
+    gap: 8px;
+  }
+  .days-grid {
+    grid-template-columns: repeat(auto-fill, minmax(125px, 1fr));
+    gap: 8px;
+  }
+
+  .verb-matrix-card {
+    padding: 1.15rem 0.85rem;
+  }
+  .verb-matrix-grid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.6rem;
+  }
+  .verb-form-box {
+    padding: 0.75rem 0.5rem;
+  }
+  .verb-form-jp {
+    font-size: 1.05rem;
+  }
+
+  .learning-guide-grid {
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+  }
+  .guide-tip-card {
+    padding: 1.15rem;
+  }
+
+  .quiz-modes-strip {
+    gap: 0.4rem;
+  }
+  .quiz-mode-btn {
+    padding: 0.38rem 0.75rem;
+    font-size: 0.8rem;
+  }
+  .quiz-options-grid {
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
+  }
+}
+
