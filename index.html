@@ -20,12 +20,13 @@
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 
   <!-- Application Stylesheets (80% Purple, 20% White Theme) -->
-  <link rel="stylesheet" href="css/main.css?v=26">
-  <link rel="stylesheet" href="css/birthday.css?v=25">
-  <link rel="stylesheet" href="css/whiteboard.css?v=25">
-  <link rel="stylesheet" href="css/games.css?v=25">
-  <link rel="stylesheet" href="css/japanese.css?v=25">
-  <link rel="stylesheet" href="css/saved-modules.css?v=25">
+  <link rel="stylesheet" href="css/main.css?v=31">
+  <link rel="stylesheet" href="css/birthday.css?v=26">
+  <link rel="stylesheet" href="css/whiteboard.css?v=27">
+  <link rel="stylesheet" href="css/games.css?v=28">
+  <link rel="stylesheet" href="css/japanese.css?v=28">
+  <link rel="stylesheet" href="css/saved-modules.css?v=26">
+  <link rel="stylesheet" href="css/play-with-bytes.css?v=19">
 </head>
 
 <body>
@@ -89,7 +90,7 @@
 
           <div class="brand-wrapper" id="brand-btn" onclick="if(window.app){window.app.openWorkspaceModule('hub');}"
             title="Back to Hub">
-            <div class="brand-logo-badge">T💜</div>
+            <div class="brand-logo-badge" title="Thanu's WorkSpace">💜</div>
             <div class="brand-info">
               <h1>Thanu's WorkSpace</h1>
               <span>Personal Studio</span>
@@ -226,6 +227,22 @@
                 </div>
               </div>
 
+              <!-- Option 4: Play with Bytes -->
+              <div class="module-card" id="card-play-with-bytes"
+                onclick="if(window.app){window.app.openWorkspaceModule('play-with-bytes');}">
+                <div class="card-icon-bubble">⚡</div>
+                <h3>Play with Bytes</h3>
+                <div class="module-desc">Code Practice & Compilers</div>
+                <p class="module-detail">
+                  Interactive multi-language compiler for Java, Python, C, C++, JavaScript & SQL. Features Lively Flow
+                  step tracer, interactive stdin console, syntax recommendations, and Saved Modules.
+                </p>
+                <div class="card-action">
+                  <span>Open Compiler</span>
+                  <span>➔</span>
+                </div>
+              </div>
+
             </div>
 
           </div>
@@ -240,9 +257,14 @@
 
             <!-- Top Whiteboard Controls Bar -->
             <div class="wb-header">
-              <div class="wb-title-group">
-                <h2>Wish to Know</h2>
-                <span class="wb-desc-tag">Develop your knowledge</span>
+              <div class="wb-header-left" style="display: flex; align-items: center; gap: 0.85rem;">
+                <button type="button" class="module-back-btn" onclick="if(window.app){window.app.openWorkspaceModule('hub');}" title="Go back to Hub">
+                  <span class="back-arrow">←</span>
+                </button>
+                <div class="wb-title-group">
+                  <h2>Wish to Know</h2>
+                  <span class="wb-desc-tag">Develop your knowledge</span>
+                </div>
               </div>
 
               <!-- Zoom-like Live Sync Badge -->
@@ -296,8 +318,8 @@
 
                 <!-- Palette Colors -->
                 <div class="color-swatches-wrapper">
-                  <div class="color-swatch active" data-color="#6d28d9" style="background: #6d28d9;"
-                    title="Royal Purple"></div>
+                  <div class="color-swatch active" data-color="#8a00c2" style="background: #8a00c2;"
+                    title="Primary Purple"></div>
                   <div class="color-swatch" data-color="#8b5cf6" style="background: #8b5cf6;" title="Electric Purple">
                   </div>
                   <div class="color-swatch" data-color="#4c1d95" style="background: #4c1d95;" title="Deep Amethyst">
@@ -307,7 +329,7 @@
                   </div>
                   <div class="color-swatch" data-color="#ec4899" style="background: #ec4899;" title="Cute Pink"></div>
                   <div class="color-swatch" data-color="#0284c7" style="background: #0284c7;" title="Sky Blue"></div>
-                  <input type="color" id="custom-color-picker" class="custom-color-input" value="#6d28d9"
+                  <input type="color" id="custom-color-picker" class="custom-color-input" value="#8a00c2"
                     title="Pick any color" />
                 </div>
 
@@ -354,6 +376,9 @@
              SUBVIEW 3C: PASS THE TIME (Stress Buster Games)
              ------------------------------------------------------------------ -->
         <div id="subview-pass-the-time" class="workspace-subview" style="display: none;">
+          <button type="button" class="module-back-btn-fixed" onclick="if(window.app){window.app.openWorkspaceModule('hub');}" title="Go back to Hub">
+            <span class="back-arrow">←</span>
+          </button>
           <div class="games-container">
 
             <div class="games-header">
@@ -623,6 +648,9 @@
              SUBVIEW 3D: 日本語を学ぶ (Learn Japanese)
              ------------------------------------------------------------------ -->
         <div id="subview-learn-japanese" class="workspace-subview" style="display: none;">
+          <button type="button" class="module-back-btn-fixed" onclick="if(window.app){window.app.openWorkspaceModule('hub');}" title="Go back to Hub">
+            <span class="back-arrow">←</span>
+          </button>
           <div class="japanese-container">
 
             <div class="japanese-header">
@@ -990,6 +1018,221 @@
 
 
         <!-- ------------------------------------------------------------------
+             SUBVIEW 3D: PLAY WITH BYTES (Zeroes-Style Visual Coding Studio)
+             ------------------------------------------------------------------ -->
+        <div id="subview-play-with-bytes" class="workspace-subview" style="display: none;">
+          <div class="compiler-app-container">
+
+            <!-- MAIN SPLIT WORKSPACE: 50% LEFT EDITOR, 50% RIGHT OUTPUT / ITERATION -->
+            <div class="compiler-main-split">
+
+              <!-- ================= LEFT: CODE EDITOR PANEL ================= -->
+              <div class="compiler-editor-panel">
+                <!-- Header Strip -->
+                <div class="compiler-panel-header editor-header-strip">
+                  <div class="panel-header-left">
+                    <!-- Top Left Back to Hub Button -->
+                    <button type="button" class="compiler-back-btn" onclick="if(window.app){window.app.openWorkspaceModule('hub');}" title="Back to Hub">
+                      <span class="back-arrow">←</span>
+                    </button>
+
+                    <!-- Purple Heart Logo Icon -->
+                    <span class="compiler-logo-icon" id="compiler-logo" title="Play with Bytes">💜</span>
+
+                    <!-- Language Dropdown (Main.java ⌵) -->
+                    <div class="compiler-file-dropdown-wrap">
+                      <button type="button" class="compiler-file-btn" id="compiler-file-btn" aria-haspopup="true" aria-expanded="false" title="Switch programming language">
+                        <span id="compiler-active-filename">Main.java</span>
+                        <span class="dropdown-chevron">▾</span>
+                      </button>
+                      <div class="compiler-file-menu" id="compiler-file-menu" style="display: none;">
+                        <div class="compiler-menu-item active" data-lang="java">☕ Java (Main.java)</div>
+                        <div class="compiler-menu-item" data-lang="python">🐍 Python (main.py)</div>
+                        <div class="compiler-menu-item" data-lang="c">🔷 C (main.c)</div>
+                        <div class="compiler-menu-item" data-lang="cpp">💠 C++ (main.cpp)</div>
+                        <div class="compiler-menu-item" data-lang="javascript">🟨 JavaScript (script.js)</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="panel-header-right">
+                    <!-- Status Pill with Connect / Disconnect Dropdown Menu -->
+                    <div class="compiler-status-dropdown-wrap">
+                      <button type="button" class="compiler-status-pill" id="compiler-status-pill" aria-haspopup="true" aria-expanded="false" title="Pair Programming & Presence Status">
+                        <span class="status-dot" id="compiler-status-dot"></span>
+                        <span id="compiler-status-text">Offline</span>
+                        <span class="status-chevron">▾</span>
+                      </button>
+                      <div class="compiler-status-menu" id="compiler-status-menu" style="display: none;">
+                        <div class="compiler-status-menu-header">
+                          <span class="status-menu-title">Pair-Programming Mode</span>
+                          <span class="status-menu-partner" id="status-menu-partner">Partner: Pair Programming</span>
+                        </div>
+                        <button type="button" class="status-menu-item" id="btn-mode-connect" data-mode="connected">
+                          <div class="status-menu-item-icon">⚡</div>
+                          <div class="status-menu-item-text">
+                            <div class="status-menu-item-title">Connect</div>
+                            <div class="status-menu-item-desc">Shared Live Compiler</div>
+                          </div>
+                          <span class="status-check" id="check-mode-connect" style="display: none;">✓</span>
+                        </button>
+                        <button type="button" class="status-menu-item active" id="btn-mode-disconnect" data-mode="disconnected">
+                          <div class="status-menu-item-icon">👤</div>
+                          <div class="status-menu-item-text">
+                            <div class="status-menu-item-title">Disconnect</div>
+                            <div class="status-menu-item-desc">Separate Compilers (Solo)</div>
+                          </div>
+                          <span class="status-check" id="check-mode-disconnect">✓</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Run / Stop Button (Pink pill ▶ Run / Red pill ⏹ Stop) -->
+                    <button type="button" class="btn-compiler-run" id="btn-run-code" title="Run Code (Ctrl + Enter)">
+                      <span class="run-triangle" id="run-btn-icon">▶</span>
+                      <span id="run-btn-label">Run</span>
+                    </button>
+
+                    <button type="button" class="compiler-action-btn" id="btn-compiler-save" title="Save code snippet into Saved Modules">
+                      <span>💾</span> Save
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Editor Body -->
+                <div class="compiler-editor-wrapper" id="compiler-editor-wrapper">
+                  <!-- Line Numbers Gutter -->
+                  <div class="compiler-line-numbers" id="compiler-line-numbers">1</div>
+
+                  <!-- Active Line Highlight Bar (Pink accent matching image) -->
+                  <div class="compiler-active-line-bg" id="compiler-active-line-bg" style="top: 0px; display: none;"></div>
+
+                  <!-- Code Textarea -->
+                  <textarea id="coding-editor-textarea" class="compiler-textarea" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="Write Java code here..."></textarea>
+
+                  <!-- Auto-Recommend Syntax Popup -->
+                  <div class="syntax-recommend-popup" id="syntax-recommend-popup" style="display: none;">
+                    <div class="recommend-popup-header">
+                      <span class="popup-title">✨ Recommended Syntax</span>
+                      <span class="popup-shortcut">Tab / ↵ to insert</span>
+                    </div>
+                    <div class="recommend-list" id="recommend-list">
+                      <!-- Populated dynamically -->
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ================= RIGHT: CONSOLE / ITERATION PANEL ================= -->
+              <div class="compiler-output-panel">
+                <!-- Header Strip -->
+                <div class="compiler-panel-header console-header-strip">
+                  <div class="panel-header-left">
+                    <!-- Segmented Tabs: >_ Output & 🪄 Iteration -->
+                    <div class="compiler-view-tabs">
+                      <button type="button" class="compiler-view-tab active" id="tab-view-output" data-view="output">
+                        <span class="tab-icon">&gt;_</span> Output
+                      </button>
+                      <button type="button" class="compiler-view-tab" id="tab-view-iteration" data-view="iteration">
+                        <span class="tab-icon">🪄</span> Iteration <span class="tab-count-badge" id="iteration-count-badge" style="display: none;">0</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="panel-header-right">
+                    <!-- Lively Flow vs Script Text Sub-toggle (Visible when Iteration active) -->
+                    <div class="compiler-flow-toggle" id="compiler-flow-toggle" style="display: none;">
+                      <button type="button" class="flow-toggle-btn active" id="btn-toggle-lively" data-flow="lively">Lively Flow</button>
+                      <button type="button" class="flow-toggle-btn" id="btn-toggle-script" data-flow="script">Script Text</button>
+                    </div>
+
+                    <button type="button" class="compiler-action-btn btn-clear-pill" id="btn-clear-code" title="Clear console or reset">
+                      <span>🗑</span> Clear
+                    </button>
+                  </div>
+                </div>
+
+                <!-- 1. TERMINAL / OUTPUT VIEW (Matches Image 1, 2, 3) -->
+                <div class="compiler-output-view" id="compiler-output-view">
+                  <div class="compiler-output-scroll" id="compiler-output-scroll">
+                    <pre class="compiler-terminal-text" id="compiler-terminal-text">Terminal ready. Click Run to compile and execute.</pre>
+                    <!-- Interactive Terminal Input Row (Matches Image 2 & 8) -->
+                    <div class="terminal-input-row" id="terminal-input-row" style="display: none;">
+                      <span class="terminal-prompt-prefix" id="terminal-prompt-prefix">&gt;</span>
+                      <input type="text" class="terminal-inline-input" id="terminal-inline-input" placeholder="Enter input..." autocomplete="off" spellcheck="false" />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 2. ITERATION VIEW (Matches Image 4, 5, 6, 7, 8, 9) -->
+                <div class="compiler-iteration-view" id="compiler-iteration-view" style="display: none;">
+                  <!-- Iteration History Runs Strip -->
+                  <div class="iteration-history-strip" id="iteration-history-strip" style="display: none;">
+                    <span class="iteration-history-label">🪄 Runs:</span>
+                    <div class="iteration-history-pills" id="iteration-history-pills"></div>
+                  </div>
+
+                  <!-- Playback Controls Bar -->
+                  <div class="compiler-playback-bar">
+                    <div class="playback-controls-left">
+                      <button type="button" class="playback-btn" id="btn-tracer-restart" title="Restart to Step 1">⟲</button>
+                      <button type="button" class="playback-btn" id="btn-tracer-prev" title="Previous Step">⏮</button>
+                      <button type="button" class="playback-btn-play" id="btn-tracer-play" title="Play Live">
+                        <span id="play-icon">▶</span> <span id="play-text">Play Live</span>
+                      </button>
+                      <button type="button" class="playback-btn" id="btn-tracer-next" title="Next Step">⏭</button>
+                      <button type="button" class="playback-btn" id="btn-tracer-forward" title="Jump to End">⏩</button>
+                    </div>
+
+                    <div class="playback-controls-right">
+                      <div class="playback-speed-group">
+                        <button type="button" class="speed-btn" data-speed="0.5">0.5x</button>
+                        <button type="button" class="speed-btn active" data-speed="1">1x</button>
+                        <button type="button" class="speed-btn" data-speed="2">2x</button>
+                      </div>
+                      <span class="playback-step-pill" id="playback-step-pill">No steps</span>
+                    </div>
+                  </div>
+
+                  <!-- Horizontal Pink Progress Bar -->
+                  <div class="compiler-progress-track">
+                    <div class="compiler-progress-fill" id="compiler-progress-fill" style="width: 0%;"></div>
+                  </div>
+
+                  <!-- Empty State (Matches Image 5) -->
+                  <div class="iteration-empty-state" id="iteration-empty-state" style="display: flex;">
+                    <div class="iteration-empty-icon-wrap">💜</div>
+                    <h3>No Iterations Detected Yet</h3>
+                    <p>Click Run to compile, then press Play Live in the Iteration window to watch your loops step through!</p>
+                    <button type="button" class="btn-iteration-run-now" id="btn-iteration-run-now">Run Now</button>
+                  </div>
+
+                  <!-- Lively Flow Cards Scroll Area (Matches Image 4, 6, 8, 9) -->
+                  <div class="lively-flow-scroll" id="lively-flow-container" style="display: none;">
+                    <!-- Step cards populated dynamically -->
+                  </div>
+
+                  <!-- Script Text View (Matches Image 7) -->
+                  <div class="script-text-scroll" id="script-text-container" style="display: none;">
+                    <div class="script-text-card">
+                      <div class="script-text-header">
+                        <span class="script-title">&lt;/&gt; Clean Iteration Trace</span>
+                        <button type="button" class="btn-copy-trace" id="btn-copy-trace" title="Copy iteration trace">📋 Copy</button>
+                      </div>
+                      <pre class="script-text-content" id="script-text-content"></pre>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+
+
+        <!-- ------------------------------------------------------------------
              SUBVIEW 3E: SAVED MODULES
              ------------------------------------------------------------------ -->
         <div id="subview-saved-modules" class="workspace-subview" style="display: none;">
@@ -1015,6 +1258,9 @@
               </button>
               <button class="saved-tab-btn" data-target="lectures">
                 <span>📖</span> Lectures & Topics Taken
+              </button>
+              <button class="saved-tab-btn" data-target="code">
+                <span>💻</span> Play with Bytes Codes
               </button>
             </div>
 
@@ -1052,6 +1298,44 @@
 
               <div class="lectures-list-grid" id="lectures-list-grid">
                 <!-- Lecture cards rendered by JS -->
+              </div>
+            </div>
+
+            <!-- TAB 3: PLAY WITH BYTES CODES -->
+            <div id="saved-code" class="saved-panel">
+              <div class="lectures-controls-bar">
+                <div class="search-input-wrap">
+                  <span class="search-icon-pos">🔍</span>
+                  <input type="text" id="saved-code-search-input" placeholder="Search saved code by title, language or notes..." />
+                </div>
+                <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                  <select id="saved-code-lang-filter" class="code-filter-select">
+                    <option value="all">All Languages</option>
+                    <option value="java">☕ Java</option>
+                    <option value="python">🐍 Python</option>
+                    <option value="c">🔷 C</option>
+                    <option value="cpp">💠 C++</option>
+                    <option value="javascript">🟨 JavaScript</option>
+                    <option value="sql">🗄️ SQL</option>
+                  </select>
+                  <button type="button" class="btn btn-secondary btn-sm" id="btn-goto-coding-from-saved" onclick="if(window.app){window.app.openWorkspaceModule('play-with-bytes');}">
+                    <span>⚡</span> Open Play with Bytes
+                  </button>
+                </div>
+              </div>
+
+              <div id="saved-codes-empty" class="empty-state-box" style="display: none;">
+                <div class="empty-state-icon">💻</div>
+                <h3>No Saved Code Snippets Yet</h3>
+                <p>Write your code in "Play with Bytes" and click "💾 Save" to archive your scripts and loop practices here!
+                </p>
+                <button type="button" class="btn btn-primary" onclick="if(window.app){window.app.openWorkspaceModule('play-with-bytes');}">
+                  Go to Play with Bytes ➔
+                </button>
+              </div>
+
+              <div class="saved-codes-grid" id="saved-codes-grid">
+                <!-- Saved code cards rendered by JS -->
               </div>
             </div>
 
@@ -1318,11 +1602,51 @@
       </div>
 
       <div class="modal-footer"
-        style="display: flex; justify-content: space-between; align-items: center; background: #faf5ff; border-top: 1.5px solid var(--purple-200);">
+        style="display: flex; justify-content: space-between; align-items: center; background: #faf2fe; border-top: 1.5px solid var(--purple-200);">
         <span id="quiz-modal-footer-time" style="font-size: 0.8rem; color: var(--purple-700); font-weight: 600;">Synced
           in real-time</span>
         <button type="button" class="btn btn-secondary btn-sm" id="btn-close-quiz-answers-footer">Close</button>
       </div>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       SAVE CODE MODAL (FOR PLAY WITH BYTES)
+       ==================================================================== -->
+  <div id="save-code-modal" class="modal-overlay compiler-save-modal-overlay">
+    <div class="compiler-save-card">
+      <div class="compiler-save-header">
+        <div class="compiler-save-title-wrap">
+          <span class="compiler-save-icon">💾</span>
+          <div>
+            <h3 class="compiler-save-title">Save Code Snippet</h3>
+            <p class="compiler-save-subtext">Archive this program in your Saved Modules to practice anytime</p>
+          </div>
+        </div>
+        <button type="button" class="compiler-save-close" id="btn-cancel-save-code" title="Close">✕</button>
+      </div>
+
+      <form id="save-code-form" class="compiler-save-form">
+        <div class="compiler-save-body">
+          <label for="save-code-title" class="compiler-save-label">Filename / Title</label>
+          <div class="compiler-save-input-wrap">
+            <span class="compiler-save-input-icon">📝</span>
+            <input type="text" id="save-code-title" class="compiler-save-input" placeholder="e.g. AddFiveNumbers.java, Solution.py..." required autocomplete="off" />
+          </div>
+
+          <div class="compiler-save-meta-row">
+            <span class="compiler-save-pill" id="compiler-save-lang-pill">☕ Java</span>
+            <span class="compiler-save-hint">Press <strong>Enter ↵</strong> to save immediately</span>
+          </div>
+        </div>
+
+        <div class="compiler-save-footer">
+          <button type="button" class="btn-save-modal-cancel" id="btn-cancel-save-code-footer">Cancel</button>
+          <button type="submit" class="btn-save-modal-submit" id="btn-submit-save-code">
+            <span>💾</span> Save Snippet
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -1331,9 +1655,11 @@
 
 
   <!-- Application Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <script src="js/vendor/mqtt.min.js"></script>
   <script src="https://unpkg.com/mqtt@5.3.5/dist/mqtt.min.js"></script>
-  <script src="js/sync.js?v=16"></script>
+  <script src="js/sync.js?v=17"></script>
   <script src="js/calculator.js?v=19"></script>
   <script src="js/notepad.js?v=19"></script>
   <script src="js/whiteboard.js?v=19"></script>
@@ -1341,8 +1667,9 @@
   <script src="js/games.js?v=22"></script>
   <script src="js/japanese.js?v=23"></script>
   <script src="js/savedModules.js?v=15"></script>
+  <script src="js/playWithBytes.js?v=17"></script>
   <script src="js/birthday.js?v=15"></script>
-  <script src="js/app.js?v=20"></script>
+  <script src="js/app.js?v=23"></script>
 
 </body>
 

@@ -20,9 +20,20 @@ class AppController {
         theme: 'rk-theme',
         hint: 'thanu@47'
       },
+      'thanu': {
+        username: 'thanu',
+        aliases: ['thanasri'],
+        password: '12345678',
+        name: 'Thanasri',
+        displayName: 'Thanasri 💜',
+        role: 'thanu',
+        avatar: '💜',
+        theme: 'thanasri-theme',
+        hint: '12345678'
+      },
       'thanasri': {
-        username: 'thanasri',
-        aliases: ['thanu'],
+        username: 'thanu',
+        aliases: ['thanasri'],
         password: '12345678',
         name: 'Thanasri',
         displayName: 'Thanasri 💜',
@@ -69,7 +80,8 @@ class AppController {
 
   restoreSessionState() {
     try {
-      const savedUser = sessionStorage.getItem('thanu_active_user');
+      let savedUser = sessionStorage.getItem('thanu_active_user') || localStorage.getItem('thanu_active_user');
+      if (savedUser === 'thanasri') savedUser = 'thanu';
       const savedView = sessionStorage.getItem('thanu_active_view');
       const savedModule = sessionStorage.getItem('thanu_active_module') || 'hub';
 
@@ -82,6 +94,11 @@ class AppController {
           window.workspaceSync.setRole(userObj.role);
         } else {
           localStorage.setItem('thanu_sync_user_role', userObj.role);
+        }
+
+        // Notify compiler
+        if (window.playWithBytes) {
+          window.playWithBytes.onUserLogin(savedUser);
         }
 
         // Update header user pill
@@ -131,6 +148,17 @@ class AppController {
   }
 
   goBack() {
+    // If inside any workspace module other than hub, return directly to hub on 1 single click
+    if (this.currentView === 'workspace' && this.currentWorkspaceModule !== 'hub') {
+      this.historyStack = this.historyStack.filter(s => s.view !== 'workspace');
+      this.openWorkspaceModule('hub', false);
+      try {
+        window.history.replaceState({ view: 'workspace', module: 'hub' }, '');
+      } catch (e) { }
+      this.updateBackButtons();
+      return;
+    }
+
     let target = null;
     if (this.historyStack.length > 0) {
       target = this.historyStack.pop();
@@ -255,13 +283,13 @@ class AppController {
     }
 
     // Determine user automatically based on the passcode entered:
-    // 1. "thanu@47"  -> RK (directly moves to workspace)
-    // 2. "12345678"  -> Thanasri (directly moves to workspace)
+    // 1. "thanu@47"  -> RK (currentUser = 'rk', partnerUser = 'thanu')
+    // 2. "12345678"  -> Thanu (currentUser = 'thanu', partnerUser = 'rk')
     let detectedUser = null;
     if (enteredPwd.toLowerCase() === 'thanu@47') {
       detectedUser = this.users['rk'];
     } else if (enteredPwd === '12345678') {
-      detectedUser = this.users['thanasri'];
+      detectedUser = this.users['thanu'];
       if (window.birthdayQuiz) {
         window.birthdayQuiz.resetQuizForNewLogin();
       }
@@ -280,15 +308,23 @@ class AppController {
   }
 
   loginAs(userObj) {
-    this.currentUser = userObj.username;
+    const role = (userObj.role === 'rk' || userObj.username === 'rk') ? 'rk' : 'thanu';
+    this.currentUser = role;
     try {
-      sessionStorage.setItem('thanu_active_user', userObj.username);
-      localStorage.setItem('thanu_sync_user_role', userObj.role);
+      sessionStorage.setItem('thanu_active_user', role);
+      localStorage.setItem('thanu_active_user', role);
+      sessionStorage.setItem('thanu_sync_user_role', role);
+      localStorage.setItem('thanu_sync_user_role', role);
     } catch (e) { }
 
     // Update real-time sync role
     if (window.workspaceSync) {
-      window.workspaceSync.setRole(userObj.role);
+      window.workspaceSync.setRole(role);
+    }
+
+    // Notify compiler manager immediately of user login
+    if (window.playWithBytes) {
+      window.playWithBytes.onUserLogin(role);
     }
 
     // Update header pill
@@ -409,21 +445,6 @@ class AppController {
       savedModulesBtn.addEventListener('click', () => {
         this.openWorkspaceModule('saved-modules');
       });
-    }
-
-    // Hub 3 Cards clicks
-    const cardWishToKnow = document.getElementById('card-wish-to-know');
-    const cardPassTheTime = document.getElementById('card-pass-the-time');
-    const cardLearnJapanese = document.getElementById('card-learn-japanese');
-
-    if (cardWishToKnow) {
-      cardWishToKnow.addEventListener('click', () => this.openWorkspaceModule('wish-to-know'));
-    }
-    if (cardPassTheTime) {
-      cardPassTheTime.addEventListener('click', () => this.openWorkspaceModule('pass-the-time'));
-    }
-    if (cardLearnJapanese) {
-      cardLearnJapanese.addEventListener('click', () => this.openWorkspaceModule('learn-japanese'));
     }
 
     // Header User Pill click -> switch user / lock
@@ -548,6 +569,10 @@ class AppController {
   }
 
   openWorkspaceModule(moduleName, recordHistory = true) {
+    if (this.currentView === 'workspace' && this.currentWorkspaceModule === moduleName) {
+      return;
+    }
+
     if (recordHistory) {
       const currentState = { view: this.currentView, module: this.currentWorkspaceModule };
       const last = this.historyStack[this.historyStack.length - 1];
@@ -576,6 +601,18 @@ class AppController {
       targetSubview.style.opacity = '1';
     }
 
+    // Toggle global workspace-header visibility for modules with their own top controls
+    const wsView = document.getElementById('workspace-view');
+    const wsHeader = document.querySelector('.workspace-header');
+    const noHeaderModules = ['wish-to-know', 'pass-the-time', 'learn-japanese', 'play-with-bytes'];
+    if (noHeaderModules.includes(moduleName)) {
+      if (wsView) wsView.classList.add('view-no-header');
+      if (wsHeader) wsHeader.style.setProperty('display', 'none', 'important');
+    } else {
+      if (wsView) wsView.classList.remove('view-no-header');
+      if (wsHeader) wsHeader.style.setProperty('display', 'flex', 'important');
+    }
+
     // Subnav breadcrumb visibility
     const subnav = document.getElementById('workspace-subnav');
     if (subnav) {
@@ -587,6 +624,13 @@ class AppController {
       if (window.whiteboard) {
         setTimeout(() => {
           window.whiteboard.handleResize();
+        }, 50);
+      }
+    } else if (moduleName === 'play-with-bytes') {
+      if (window.playWithBytes) {
+        setTimeout(() => {
+          window.playWithBytes.updateLineNumbers();
+          window.playWithBytes.updateLineHighlight();
         }, 50);
       }
     } else {

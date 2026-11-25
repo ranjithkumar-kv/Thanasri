@@ -8,14 +8,15 @@
   max-width: 1150px;
   width: 100%;
   margin: 0 auto;
-  padding: 2.25rem 1.5rem;
+  padding: 1.25rem 1.5rem 2.5rem;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1.4rem;
 }
 
 .japanese-header {
   text-align: center;
+  margin-top: 0.15rem;
 }
 
 .japanese-header h2 {

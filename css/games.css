@@ -9,14 +9,15 @@
   max-width: 1100px;
   width: 100%;
   margin: 0 auto;
-  padding: 2rem 1.5rem;
+  padding: 1.25rem 1.5rem 2.5rem;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1.4rem;
 }
 
 .games-header {
   text-align: center;
+  margin-top: 0.15rem;
 }
 .games-header h2 {
   font-size: 2.2rem;
@@ -759,7 +760,7 @@
   min-width: 2.2rem;
   height: 2.2rem;
   background: #facc15;
-  color: #1e1b4b;
+  color: #2d0042;
   font-size: 1.15rem;
   font-weight: 900;
   border-radius: var(--radius-full);

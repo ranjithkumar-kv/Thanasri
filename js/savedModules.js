@@ -8,13 +8,16 @@ class SavedModulesManager {
   constructor() {
     this.slidesKey = 'thanu_saved_slides_v1';
     this.lecturesKey = 'thanu_saved_lectures_v1';
+    this.codesKey = 'thanu_saved_codes_v1';
     this.savedSlides = [];
     this.savedLectures = [];
+    this.savedCodes = [];
 
     this.loadData();
     this.initEvents();
     this.renderSlides();
     this.renderLectures();
+    this.renderCodes();
     this.updateBadge();
   }
 
@@ -56,6 +59,42 @@ class SavedModulesManager {
         ];
         this.saveLecturesToStorage();
       }
+
+      const storedCodes = localStorage.getItem(this.codesKey);
+      if (storedCodes) {
+        this.savedCodes = JSON.parse(storedCodes);
+      } else {
+        this.savedCodes = [
+          {
+            id: 'code-1',
+            title: 'Add Five Numbers Practice',
+            language: 'java',
+            category: 'Loops & Scanner',
+            date: '2024-10-15',
+            notes: 'Reads 5 numbers interactively using a for loop and calculates the total sum.',
+            code: `import java.util.Scanner;
+
+public class AddFiveNumbers {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        int sum = 0;
+
+        System.out.println("Enter 5 numbers:");
+
+        for (int i = 1; i <= 5; i++) {
+            System.out.print("Number " + i + ": ");
+            int num = scanner.nextInt();
+            sum += num;
+        }
+
+        System.out.println("Total Sum = " + sum);
+        scanner.close();
+    }
+}`
+          }
+        ];
+        this.saveCodesToStorage();
+      }
     } catch (e) {
       console.warn('LocalStorage error:', e);
     }
@@ -74,13 +113,20 @@ class SavedModulesManager {
     try {
       localStorage.setItem(this.lecturesKey, JSON.stringify(this.savedLectures));
       this.updateBadge();
-    } catch (e) {}
+    } catch (e) { }
+  }
+
+  saveCodesToStorage() {
+    try {
+      localStorage.setItem(this.codesKey, JSON.stringify(this.savedCodes));
+      this.updateBadge();
+    } catch (e) { }
   }
 
   updateBadge() {
     const badgeEl = document.getElementById('saved-modules-badge');
     if (badgeEl) {
-      const total = this.savedSlides.length + this.savedLectures.length;
+      const total = this.savedSlides.length + this.savedLectures.length + this.savedCodes.length;
       badgeEl.textContent = total;
     }
   }
@@ -146,6 +192,16 @@ class SavedModulesManager {
       closeSlideModal.addEventListener('click', () => {
         slidePreviewModal.classList.remove('active');
       });
+    }
+
+    // Search saved codes input & lang filter
+    const codeSearchInput = document.getElementById('saved-code-search-input');
+    const codeLangFilter = document.getElementById('saved-code-lang-filter');
+    if (codeSearchInput) {
+      codeSearchInput.addEventListener('input', () => this.filterCodes());
+    }
+    if (codeLangFilter) {
+      codeLangFilter.addEventListener('change', () => this.filterCodes());
     }
   }
 
@@ -345,12 +401,162 @@ class SavedModulesManager {
       this.renderLectures();
       return;
     }
-    const filtered = this.savedLectures.filter(l => 
+    const filtered = this.savedLectures.filter(l =>
       l.title.toLowerCase().includes(query) ||
       l.category.toLowerCase().includes(query) ||
       l.notes.toLowerCase().includes(query)
     );
     this.renderLectures(filtered);
+  }
+
+  /* 3. Play with Bytes Code Management */
+  saveCode({ title, language, category, notes, code, output }) {
+    const newCode = {
+      id: 'code-' + Date.now(),
+      title: title || `${(language || 'code').toUpperCase()} Snippet`,
+      language: language || 'java',
+      category: category || 'Practice',
+      notes: notes || '',
+      code: code || '',
+      output: output || '',
+      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    };
+
+    this.savedCodes.unshift(newCode);
+    this.saveCodesToStorage();
+    this.renderCodes();
+    return newCode;
+  }
+
+  deleteCode(codeId) {
+    if (confirm('Delete this saved code snippet?')) {
+      this.savedCodes = this.savedCodes.filter(c => c.id !== codeId);
+      this.saveCodesToStorage();
+      this.renderCodes();
+      if (window.app) window.app.showToast('Code snippet deleted');
+    }
+  }
+
+  getLangBadge(lang) {
+    switch (lang) {
+      case 'java': return '☕ Java';
+      case 'python': return '🐍 Python';
+      case 'c': return '🔷 C';
+      case 'cpp': return '💠 C++';
+      case 'javascript': return '🟨 JavaScript';
+      case 'sql': return '🗄️ SQL';
+      default: return lang;
+    }
+  }
+
+  getFileExtension(lang) {
+    switch (lang) {
+      case 'java': return '.java';
+      case 'python': return '.py';
+      case 'c': return '.c';
+      case 'cpp': return '.cpp';
+      case 'javascript': return '.js';
+      case 'sql': return '.sql';
+      default: return '.txt';
+    }
+  }
+
+  renderCodes(filteredList = null) {
+    const grid = document.getElementById('saved-codes-grid');
+    const emptyBox = document.getElementById('saved-codes-empty');
+    if (!grid) return;
+
+    const list = filteredList || this.savedCodes;
+
+    if (list.length === 0) {
+      grid.style.display = 'none';
+      if (emptyBox) emptyBox.style.display = 'block';
+      return;
+    }
+
+    grid.style.display = 'grid';
+    if (emptyBox) emptyBox.style.display = 'none';
+    grid.innerHTML = '';
+
+    list.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'saved-code-card';
+
+      const notesHtml = item.notes 
+        ? `<p class="saved-code-notes">${item.notes}</p>` 
+        : '';
+
+      card.innerHTML = `
+        <div class="saved-code-meta">
+          <span class="saved-code-lang-pill">${this.getLangBadge(item.language)}</span>
+          <span class="saved-code-date">📅 ${item.date}</span>
+        </div>
+        <h4>${item.title}</h4>
+        ${notesHtml}
+        <pre class="saved-code-snippet">${item.code}</pre>
+        <div class="saved-code-actions">
+          <button type="button" class="btn btn-primary btn-sm" data-action="open" style="flex:1;">▶ Open in Play with Bytes</button>
+          <button type="button" class="btn btn-secondary btn-sm" data-action="copy" title="Copy Code">📋</button>
+          <button type="button" class="btn btn-white btn-sm" data-action="download" title="Download Source File">⬇️</button>
+          <button type="button" class="btn btn-white btn-sm" style="color:#dc2626;" data-action="delete" title="Delete">🗑️</button>
+        </div>
+      `;
+
+      card.querySelector('[data-action="open"]').addEventListener('click', () => {
+        if (window.playWithBytes) {
+          window.playWithBytes.loadCodeSnippet(item);
+        } else if (window.app) {
+          window.app.openWorkspaceModule('play-with-bytes');
+        }
+      });
+
+      card.querySelector('[data-action="copy"]').addEventListener('click', () => {
+        navigator.clipboard.writeText(item.code).then(() => {
+          if (window.app) window.app.showToast('Code copied to clipboard! 📋');
+        });
+      });
+
+      card.querySelector('[data-action="download"]').addEventListener('click', () => {
+        const ext = this.getFileExtension(item.language);
+        const blob = new Blob([item.code], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${item.title.replace(/[^a-zA-Z0-9_-]/g, '_')}${ext}`;
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+
+      card.querySelector('[data-action="delete"]').addEventListener('click', () => {
+        this.deleteCode(item.id);
+      });
+
+      grid.appendChild(card);
+    });
+  }
+
+  filterCodes() {
+    const searchInput = document.getElementById('saved-code-search-input');
+    const langFilter = document.getElementById('saved-code-lang-filter');
+    const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+    const lang = langFilter ? langFilter.value : 'all';
+
+    let filtered = this.savedCodes;
+
+    if (lang !== 'all') {
+      filtered = filtered.filter(c => c.language === lang);
+    }
+
+    if (query) {
+      filtered = filtered.filter(c =>
+        c.title.toLowerCase().includes(query) ||
+        (c.notes && c.notes.toLowerCase().includes(query)) ||
+        (c.category && c.category.toLowerCase().includes(query)) ||
+        c.code.toLowerCase().includes(query)
+      );
+    }
+
+    this.renderCodes(filtered);
   }
 }
 
