@@ -26,7 +26,7 @@
   <link rel="stylesheet" href="css/games.css?v=28">
   <link rel="stylesheet" href="css/japanese.css?v=28">
   <link rel="stylesheet" href="css/saved-modules.css?v=26">
-  <link rel="stylesheet" href="css/play-with-bytes.css?v=19">
+  <link rel="stylesheet" href="css/play-with-bytes.css?v=24">
 </head>
 
 <body>
@@ -1107,14 +1107,20 @@
                   <!-- Active Line Highlight Bar (Pink accent matching image) -->
                   <div class="compiler-active-line-bg" id="compiler-active-line-bg" style="top: 0px; display: none;"></div>
 
-                  <!-- Code Textarea -->
-                  <textarea id="coding-editor-textarea" class="compiler-textarea" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="Write Java code here..."></textarea>
+                  <!-- Code Editor Box (Underlay Syntax Highlight + Overlay Editable Textarea) -->
+                  <div class="compiler-code-box" id="compiler-code-box">
+                    <pre class="compiler-highlight-pre" id="compiler-highlight-pre" aria-hidden="true"><code class="compiler-highlight-code" id="compiler-highlight-code"></code></pre>
+                    <textarea id="coding-editor-textarea" class="compiler-textarea" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="Write Java code here..."></textarea>
+                  </div>
 
                   <!-- Auto-Recommend Syntax Popup -->
                   <div class="syntax-recommend-popup" id="syntax-recommend-popup" style="display: none;">
                     <div class="recommend-popup-header">
                       <span class="popup-title">✨ Recommended Syntax</span>
-                      <span class="popup-shortcut">Tab / ↵ to insert</span>
+                      <div class="recommend-popup-actions">
+                        <span class="popup-shortcut">Tab / ↵ to insert</span>
+                        <button type="button" class="rec-popup-close-btn" id="recommend-popup-close" title="Dismiss recommendations">✕</button>
+                      </div>
                     </div>
                     <div class="recommend-list" id="recommend-list">
                       <!-- Populated dynamically -->
@@ -1667,7 +1673,7 @@
   <script src="js/games.js?v=22"></script>
   <script src="js/japanese.js?v=23"></script>
   <script src="js/savedModules.js?v=15"></script>
-  <script src="js/playWithBytes.js?v=17"></script>
+  <script src="js/playWithBytes.js?v=23"></script>
   <script src="js/birthday.js?v=15"></script>
   <script src="js/app.js?v=23"></script>
 

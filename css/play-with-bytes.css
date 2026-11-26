@@ -490,35 +490,121 @@ body:has(#subview-play-with-bytes:not([style*="display: none"])) {
     transition: top 0.16s ease-out;
 }
 
-/* Code Textarea */
-.compiler-textarea {
+/* Dual-Layer Code Editor Box */
+.compiler-code-box {
+    position: relative;
     flex: 1;
     height: 100%;
-    background: transparent;
-    color: #2d0042;
-    font-family: 'JetBrains Mono', Consolas, 'Courier New', monospace;
-    font-size: 14px;
-    line-height: 1.7;
-    tab-size: 4;
+    min-width: 0;
+    overflow: hidden;
+    background: #ffffff;
+}
+
+/* Syntax Highlighting Underlay */
+.compiler-highlight-pre {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
     padding: 1rem 1.25rem;
+    box-sizing: border-box;
+    border: none;
+    outline: none;
+    pointer-events: none;
+    user-select: none;
+    overflow: hidden;
+    background: transparent;
+    z-index: 1;
+}
+
+/* Identical typography across underlay and textarea */
+.compiler-highlight-pre,
+.compiler-highlight-code,
+.compiler-textarea {
+    font-family: 'JetBrains Mono', Consolas, 'Courier New', monospace !important;
+    font-size: 14px !important;
+    line-height: 23.8px !important;
+    letter-spacing: normal !important;
+    word-spacing: normal !important;
+    tab-size: 4 !important;
+    -moz-tab-size: 4 !important;
+    white-space: pre !important;
+    font-variant-ligatures: none !important;
+    font-feature-settings: normal !important;
+}
+
+.compiler-highlight-code {
+    display: block;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border: none;
+}
+
+/* Syntax Highlighting Colors: #8a00c2 (Keywords/Types/Strings) and Black (Code/Brackets/Identifiers) */
+.compiler-highlight-code .hl-keyword {
+    color: #8a00c2 !important;
+    font-weight: 700;
+}
+
+.compiler-highlight-code .hl-code {
+    color: #000000 !important;
+    font-weight: 400;
+}
+
+.compiler-highlight-code .hl-string {
+    color: #8a00c2 !important;
+    font-weight: 500;
+}
+
+.compiler-highlight-code .hl-comment {
+    color: #64748b !important;
+    font-style: italic;
+    font-weight: 400;
+}
+
+.compiler-highlight-code .hl-number {
+    color: #000000 !important;
+}
+
+/* Code Textarea Overlay (Transparent text so underlay spans show) */
+.compiler-textarea {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 1rem 1.25rem;
+    box-sizing: border-box;
     border: none;
     outline: none;
     resize: none;
-    white-space: pre;
     overflow-wrap: normal;
+    word-break: normal;
     overflow-x: auto;
     overflow-y: auto;
-    caret-color: #ec4899;
+    background: transparent;
+    color: transparent !important;
+    -webkit-text-fill-color: transparent !important;
+    caret-color: #8a00c2;
     z-index: 2;
 }
 
 .compiler-textarea::placeholder {
-    color: #9ca3af;
+    color: #9ca3af !important;
+    -webkit-text-fill-color: #9ca3af !important;
     font-family: 'JetBrains Mono', Consolas, monospace;
 }
 
 .compiler-textarea::selection {
-    background: rgba(236, 72, 153, 0.2);
+    background: rgba(138, 0, 194, 0.25);
 }
 
 /* Auto-Recommend Syntax Popup */
@@ -563,10 +649,36 @@ body:has(#subview-play-with-bytes:not([style*="display: none"])) {
     color: var(--purple-900);
 }
 
+.recommend-popup-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
 .popup-shortcut {
     font-size: 0.68rem;
     color: var(--purple-600);
     font-weight: 600;
+}
+
+.rec-popup-close-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    background: transparent;
+    border: none;
+    font-size: 0.75rem;
+    color: var(--purple-700);
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all var(--transition-fast);
+}
+
+.rec-popup-close-btn:hover {
+    background: var(--purple-200);
+    color: var(--purple-950);
 }
 
 .recommend-list {

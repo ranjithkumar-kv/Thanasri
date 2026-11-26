@@ -249,6 +249,13 @@ class PlayWithBytesManager {
         this.activeLineNumber = 1;
         this.lineHeight = 23.8; // 14px font * 1.7 line-height
 
+        // History (Undo / Redo) Stack for Code Editor
+        this.undoStack = [];
+        this.redoStack = [];
+        this.isUndoingOrRedoing = false;
+        this.typingDebounceTimer = null;
+        this.maxHistorySize = 150;
+
         // Two-User Role & Presence State
         this.currentUser = this.resolveCurrentUser();
         this.partnerUser = this.currentUser === 'rk' ? 'thanu' : 'rk';
@@ -301,26 +308,9 @@ class PlayWithBytesManager {
 
         // Standard boilerplate programs (used only when clicking 🔄 Basic)
         this.boilerplates = {
-            java: `// Online Java Compiler
-// Use this editor to write, compile and run your Java code online
-
-import java.util.Scanner;
-
-class Main {
+            java: `class Main {
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        int sum = 0;
-
-        System.out.println("Enter 5 numbers:");
-
-        for (int i = 1; i <= 5; i++) {
-            System.out.print("Number " + i + ": ");
-            int num = scanner.nextInt();
-            sum += num;
-        }
-
-        System.out.println("Total Sum = " + sum);
-        scanner.close();
+        // Write your code here...
     }
 }
 `,
@@ -475,11 +465,19 @@ SELECT id, val, SUM(val) OVER (ORDER BY id) AS running_sum FROM numbers;
         try {
             const key = this.getStorageKey();
             const stored = localStorage.getItem(key);
-            if (stored) return JSON.parse(stored);
-            const legacy = localStorage.getItem(this.storageKey);
-            return legacy ? JSON.parse(legacy) : {};
+            let drafts = stored ? JSON.parse(stored) : null;
+            if (!drafts) {
+                const legacy = localStorage.getItem(this.storageKey);
+                drafts = legacy ? JSON.parse(legacy) : {};
+            }
+            if (!drafts.java || !drafts.java.trim() || drafts.java.includes('Scanner scanner = new Scanner(System.in);')) {
+                drafts.java = `class Main {\n    public static void main(String[] args) {\n        // Write your code here...\n    }\n}\n`;
+            }
+            return drafts;
         } catch (e) {
-            return {};
+            return {
+                java: `class Main {\n    public static void main(String[] args) {\n        // Write your code here...\n    }\n}\n`
+            };
         }
     }
 
@@ -495,13 +493,25 @@ SELECT id, val, SUM(val) OVER (ORDER BY id) AS running_sum FROM numbers;
         this.initEvents();
         this.initFirebase();
 
-        // 1. Starts completely EMPTY when opening (As requested by user!)
-        this.setLanguage(this.currentLanguage, false);
+        // Ensure Java starts with the standard boilerplate or preserved draft
+        this.setLanguage(this.currentLanguage, true);
         if (this.textarea) {
-            this.textarea.value = '';
+            if (!this.textarea.value || !this.textarea.value.trim()) {
+                if (this.currentLanguage === 'java') {
+                    this.textarea.value = this.boilerplates.java;
+                } else {
+                    this.textarea.value = '';
+                }
+            }
             this.textarea.placeholder = `Write ${this.getLanguageDisplayName(this.currentLanguage)} code here...`;
+            if (this.textarea.value.includes('// Write your code here...')) {
+                const commentIdx = this.textarea.value.indexOf('// Write your code here...');
+                this.textarea.setSelectionRange(commentIdx, commentIdx + 26);
+            }
         }
+        this.resetHistory();
         this.updateLineNumbers();
+        this.updateSyntaxHighlight();
         this.setActiveLine(1);
         this.renderEmptyIterationState();
 
@@ -547,6 +557,8 @@ SELECT id, val, SUM(val) OVER (ORDER BY id) AS running_sum FROM numbers;
         this.lineNumbers = document.getElementById('compiler-line-numbers');
         this.activeLineBg = document.getElementById('compiler-active-line-bg');
         this.textarea = document.getElementById('coding-editor-textarea');
+        this.highlightPre = document.getElementById('compiler-highlight-pre');
+        this.highlightCodeEl = document.getElementById('compiler-highlight-code');
 
         this.recommendPopup = document.getElementById('syntax-recommend-popup');
         this.recommendList = document.getElementById('recommend-list');
@@ -699,9 +711,22 @@ SELECT id, val, SUM(val) OVER (ORDER BY id) AS running_sum FROM numbers;
                 if (this.isConnected && !this.isApplyingRemote) {
                     this.writeToSharedRoom(false);
                 }
+
+                if (!this.isUndoingOrRedoing) {
+                    this.recordSnapshot(false);
+                }
             };
 
             this.textarea.addEventListener('input', onEditorInputOrKey);
+            this.textarea.addEventListener('paste', () => {
+                this.recordSnapshot(true);
+                setTimeout(() => {
+                    this.recordSnapshot(true);
+                    this.updateLineNumbers();
+                    this.updateLineHighlightFromCursor();
+                    this.saveCurrentDraft();
+                }, 10);
+            });
             this.textarea.addEventListener('keyup', (e) => {
                 if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
                     this.updateLineHighlightFromCursor();
@@ -725,11 +750,47 @@ SELECT id, val, SUM(val) OVER (ORDER BY id) AS running_sum FROM numbers;
                 if (this.lineNumbers) {
                     this.lineNumbers.scrollTop = this.textarea.scrollTop;
                 }
+                if (this.highlightPre) {
+                    this.highlightPre.scrollTop = this.textarea.scrollTop;
+                    this.highlightPre.scrollLeft = this.textarea.scrollLeft;
+                }
                 this.updateLineHighlight();
             });
 
             this.textarea.addEventListener('keydown', (e) => {
                 this.handleEditorKeydown(e);
+            });
+
+            const closeRecBtn = document.getElementById('recommend-popup-close');
+            if (closeRecBtn) {
+                closeRecBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.hideRecommendations();
+                    if (this.textarea) this.textarea.focus();
+                });
+            }
+
+            // Global Ctrl+Z and Ctrl+Y fallback for the compiler subview
+            document.addEventListener('keydown', (e) => {
+                const subview = document.getElementById('subview-play-with-bytes');
+                if (!subview || subview.style.display === 'none') return;
+                if (e.target && (e.target.id === 'compiler-save-title' || e.target.id === 'coding-terminal-input')) return;
+
+                if ((e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'Z')) {
+                    if (e.target !== this.textarea) {
+                        e.preventDefault();
+                        if (e.shiftKey) {
+                            this.redo();
+                        } else {
+                            this.undo();
+                        }
+                    }
+                } else if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || e.key === 'Y')) {
+                    if (e.target !== this.textarea) {
+                        e.preventDefault();
+                        this.redo();
+                    }
+                }
             });
         }
 
@@ -748,7 +809,15 @@ SELECT id, val, SUM(val) OVER (ORDER BY id) AS running_sum FROM numbers;
                     if (window.app) window.app.showToast('Output cleared');
                 } else {
                     if (confirm('Clear the code editor?')) {
-                        this.textarea.value = '';
+                        if (this.currentLanguage === 'java') {
+                            this.textarea.value = this.boilerplates.java;
+                            if (this.textarea.value.includes('// Write your code here...')) {
+                                const commentIdx = this.textarea.value.indexOf('// Write your code here...');
+                                this.textarea.setSelectionRange(commentIdx, commentIdx + 26);
+                            }
+                        } else {
+                            this.textarea.value = '';
+                        }
                         this.updateLineNumbers();
                         this.saveCurrentDraft();
                         this.renderEmptyIterationState();
@@ -1000,7 +1069,9 @@ SELECT id, val, SUM(val) OVER (ORDER BY id) AS running_sum FROM numbers;
             }
             // In solo mode, load user's solo drafts
             this.codeDrafts = this.loadDrafts();
-            const soloCode = this.codeDrafts[this.currentLanguage] || '';
+            const soloCode = (this.codeDrafts[this.currentLanguage] && this.codeDrafts[this.currentLanguage].trim())
+                ? this.codeDrafts[this.currentLanguage]
+                : (this.currentLanguage === 'java' ? this.boilerplates.java : '');
             if (this.textarea) {
                 this.isApplyingRemote = true;
                 this.textarea.value = soloCode;
@@ -1500,15 +1571,24 @@ SELECT id, val, SUM(val) OVER (ORDER BY id) AS running_sum FROM numbers;
 
         if (this.textarea) {
             this.textarea.placeholder = `Write ${this.getLanguageDisplayName(lang)} code here...`;
-            if (preserveDraft && this.codeDrafts[lang]) {
+            if (preserveDraft && this.codeDrafts[lang] && this.codeDrafts[lang].trim()) {
                 this.textarea.value = this.codeDrafts[lang];
-            } else if (!preserveDraft) {
-                this.textarea.value = '';
+            } else if (!preserveDraft || !this.codeDrafts[lang] || !this.codeDrafts[lang].trim()) {
+                if (lang === 'java') {
+                    this.textarea.value = this.boilerplates.java;
+                } else {
+                    this.textarea.value = '';
+                }
+            }
+            if (this.textarea.value.includes('// Write your code here...')) {
+                const commentIdx = this.textarea.value.indexOf('// Write your code here...');
+                this.textarea.setSelectionRange(commentIdx, commentIdx + 26);
             }
         }
 
         this.updateLineNumbers();
         this.saveCurrentDraft();
+        this.resetHistory();
 
         // Zero-delay write to compiler/sharedRoom if connected and not applying remote
         if (this.isConnected && !this.isApplyingRemote) {
@@ -1524,9 +1604,16 @@ SELECT id, val, SUM(val) OVER (ORDER BY id) AS running_sum FROM numbers;
 
     loadBoilerplate() {
         if (!this.textarea) return;
+        this.recordSnapshot(true);
         this.textarea.value = this.boilerplates[this.currentLanguage] || '';
         this.updateLineNumbers();
         this.saveCurrentDraft();
+        this.resetHistory();
+        if (this.textarea.value.includes('// Write your code here...')) {
+            const commentIdx = this.textarea.value.indexOf('// Write your code here...');
+            this.textarea.setSelectionRange(commentIdx, commentIdx + 26);
+            this.textarea.focus();
+        }
     }
 
     saveCurrentDraft() {
@@ -1571,6 +1658,7 @@ SELECT id, val, SUM(val) OVER (ORDER BY id) AS running_sum FROM numbers;
             numsText += i + '\n';
         }
         this.lineNumbers.textContent = numsText;
+        this.updateSyntaxHighlight();
     }
 
     updateLineHighlightFromCursor() {
@@ -1597,6 +1685,125 @@ SELECT id, val, SUM(val) OVER (ORDER BY id) AS running_sum FROM numbers;
         } else {
             this.activeLineBg.style.display = 'none';
         }
+    }
+
+    /* --------------------------------------------------------------------------
+       SYNTAX HIGHLIGHTING ENGINE
+       Colors: #8a00c2 (Keywords/Types/Strings) & Black (Code/Brackets/Identifiers)
+       -------------------------------------------------------------------------- */
+    updateSyntaxHighlight() {
+        if (!this.highlightCodeEl || !this.textarea) return;
+        const code = this.textarea.value || '';
+        this.highlightCodeEl.innerHTML = this.highlightCode(code, this.currentLanguage) + '\n';
+        if (this.highlightPre) {
+            this.highlightPre.scrollTop = this.textarea.scrollTop;
+            this.highlightPre.scrollLeft = this.textarea.scrollLeft;
+        }
+    }
+
+    escapeHtml(text) {
+        if (!text) return '';
+        return text
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    }
+
+    highlightCode(code, lang = 'java') {
+        if (!code) return '';
+        const safeLang = (lang || 'java').toLowerCase();
+
+        const KEYWORDS = {
+            java: new Set([
+                'abstract', 'assert', 'boolean', 'break', 'byte', 'case', 'catch', 'char', 'class',
+                'const', 'continue', 'default', 'do', 'double', 'else', 'enum', 'extends', 'final',
+                'finally', 'float', 'for', 'goto', 'if', 'implements', 'import', 'instanceof', 'int',
+                'interface', 'long', 'native', 'new', 'package', 'private', 'protected', 'public',
+                'return', 'short', 'static', 'strictfp', 'super', 'switch', 'synchronized', 'this',
+                'throw', 'throws', 'transient', 'try', 'void', 'volatile', 'while', 'true', 'false',
+                'null', 'String', 'System', 'Scanner', 'Integer', 'Double', 'Boolean', 'Math', 'Override'
+            ]),
+            python: new Set([
+                'False', 'None', 'True', 'and', 'as', 'assert', 'async', 'await', 'break', 'class',
+                'continue', 'def', 'del', 'elif', 'else', 'except', 'finally', 'for', 'from', 'global',
+                'if', 'import', 'in', 'is', 'lambda', 'nonlocal', 'not', 'or', 'pass', 'raise', 'return',
+                'try', 'while', 'with', 'yield', 'print', 'range', 'len', 'input', 'int', 'float', 'str',
+                'list', 'dict', 'set', 'tuple', 'bool', 'self'
+            ]),
+            c: new Set([
+                'auto', 'break', 'case', 'char', 'const', 'continue', 'default', 'do', 'double', 'else',
+                'enum', 'extern', 'float', 'for', 'goto', 'if', 'int', 'long', 'register', 'return',
+                'short', 'signed', 'sizeof', 'static', 'struct', 'switch', 'typedef', 'union',
+                'unsigned', 'void', 'volatile', 'while', 'include', 'define', 'printf', 'scanf', 'NULL'
+            ]),
+            cpp: new Set([
+                'auto', 'break', 'case', 'char', 'const', 'continue', 'default', 'do', 'double', 'else',
+                'enum', 'extern', 'float', 'for', 'goto', 'if', 'int', 'long', 'register', 'return',
+                'short', 'signed', 'sizeof', 'static', 'struct', 'switch', 'typedef', 'union',
+                'unsigned', 'void', 'volatile', 'while', 'class', 'public', 'private', 'protected',
+                'template', 'typename', 'this', 'virtual', 'friend', 'namespace', 'using', 'std',
+                'cout', 'cin', 'endl', 'new', 'delete', 'true', 'false', 'include', 'define', 'NULL'
+            ]),
+            javascript: new Set([
+                'abstract', 'arguments', 'await', 'boolean', 'break', 'byte', 'case', 'catch', 'char',
+                'class', 'const', 'continue', 'debugger', 'default', 'delete', 'do', 'double', 'else',
+                'enum', 'eval', 'export', 'extends', 'false', 'final', 'finally', 'float', 'for',
+                'function', 'goto', 'if', 'implements', 'import', 'in', 'instanceof', 'int', 'interface',
+                'let', 'long', 'native', 'new', 'null', 'package', 'private', 'protected', 'public',
+                'return', 'short', 'static', 'super', 'switch', 'synchronized', 'this', 'throw',
+                'throws', 'transient', 'true', 'try', 'typeof', 'var', 'void', 'volatile', 'while',
+                'with', 'yield', 'console', 'log', 'document', 'window'
+            ]),
+            sql: new Set([
+                'select', 'from', 'where', 'insert', 'into', 'update', 'delete', 'create', 'table',
+                'drop', 'alter', 'and', 'or', 'not', 'order', 'by', 'group', 'having', 'join',
+                'inner', 'outer', 'left', 'right', 'on', 'as', 'distinct', 'count', 'sum', 'avg',
+                'max', 'min', 'limit', 'primary', 'key', 'foreign', 'null', 'is', 'in', 'between',
+                'like', 'values', 'set', 'over', 'partition', 'rows', 'range'
+            ])
+        };
+
+        const kwSet = KEYWORDS[safeLang] || KEYWORDS.java;
+
+        // Build comment pattern
+        const commentPattern = safeLang === 'python'
+            ? '(?:#.*)'
+            : safeLang === 'sql'
+                ? '(?:--.*|/\\*[\\s\\S]*?(?:\\*/|$))'
+                : '(?:/\\*[\\s\\S]*?(?:\\*/|$)|//.*)';
+
+        // Comprehensive tokenizer regex
+        const tokenRegex = new RegExp(
+            `(${commentPattern})|` +
+            `("(?:\\\\.|[^"\\\\])*"?|'(?:\\\\.|[^'\\\\])*'?|\`(?:\\\\.|[^\`\\\\])*\`?)|` +
+            `(\\b[a-zA-Z_$][a-zA-Z0-9_$]*\\b)|` +
+            `(\\d+(?:\\.\\d+)?)|` +
+            `([^a-zA-Z0-9_$"'\`#/]+|[/])`,
+            'g'
+        );
+
+        return code.replace(tokenRegex, (match, comment, str, word, num, other) => {
+            if (comment) {
+                return `<span class="hl-comment">${this.escapeHtml(comment)}</span>`;
+            }
+            if (str) {
+                return `<span class="hl-string">${this.escapeHtml(str)}</span>`;
+            }
+            if (word) {
+                const isKeyword = safeLang === 'sql'
+                    ? kwSet.has(word.toLowerCase())
+                    : kwSet.has(word);
+
+                if (isKeyword) {
+                    return `<span class="hl-keyword">${this.escapeHtml(word)}</span>`;
+                }
+                return `<span class="hl-code">${this.escapeHtml(word)}</span>`;
+            }
+            if (num) {
+                return `<span class="hl-number">${this.escapeHtml(num)}</span>`;
+            }
+            return `<span class="hl-code">${this.escapeHtml(match)}</span>`;
+        });
     }
 
     /* --------------------------------------------------------------------------
@@ -3506,12 +3713,47 @@ SELECT id, val, SUM(val) OVER (ORDER BY id) AS running_sum FROM numbers;
         this.renderRecommendationsList();
 
         const textBefore = this.textarea.value.slice(0, cursorPos);
-        const lineIndex = textBefore.split('\n').length - 1;
-        let topPos = 20 + (lineIndex * this.lineHeight) - this.textarea.scrollTop;
-        topPos = Math.max(10, Math.min(topPos, 280));
+        const lines = textBefore.split('\n');
+        const lineIndex = lines.length - 1;
+        const curLineText = lines[lineIndex] || '';
 
-        this.recommendPopup.style.top = `${topPos}px`;
-        this.recommendPopup.style.left = `75px`;
+        // 16px is textarea top padding; this.lineHeight is ~23.8px
+        const lineTop = 16 + (lineIndex * this.lineHeight) - this.textarea.scrollTop;
+        const lineBottom = lineTop + this.lineHeight;
+
+        const editorHeight = this.textarea.clientHeight || 450;
+        const editorWidth = this.textarea.clientWidth || 550;
+
+        // Position strictly BELOW the active line so it never covers what the user is typing
+        let topPos = lineBottom + 6;
+
+        // Estimated popup height (approx 42px header + ~36px per item)
+        const popupHeight = Math.min(240, 42 + (this.currentRecommendations.length * 36));
+
+        // If rendering below would clip below the visible editor panel, flip above the line
+        if (topPos + popupHeight > editorHeight - 12) {
+            const abovePos = lineTop - popupHeight - 6;
+            if (abovePos >= 10) {
+                topPos = abovePos;
+            } else {
+                topPos = Math.max(10, editorHeight - popupHeight - 12);
+            }
+        }
+
+        // Horizontal position: follow typing column with gutter offset
+        // Gutter (48px) + textarea padding (20px) = 68px
+        const charWidth = 8.4;
+        const cursorCol = curLineText.length;
+        let leftPos = 68 + (cursorCol * charWidth);
+
+        const popupWidth = 320;
+        if (leftPos + popupWidth > editorWidth + 48) {
+            leftPos = Math.max(68, editorWidth + 48 - popupWidth - 16);
+        }
+        leftPos = Math.max(68, leftPos);
+
+        this.recommendPopup.style.top = `${Math.round(topPos)}px`;
+        this.recommendPopup.style.left = `${Math.round(leftPos)}px`;
         this.recommendPopup.style.display = 'block';
     }
 
@@ -3561,6 +3803,8 @@ SELECT id, val, SUM(val) OVER (ORDER BY id) AS running_sum FROM numbers;
         const item = this.currentRecommendations[this.activeRecIndex];
         if (!item) return;
 
+        this.recordSnapshot(true);
+
         const cursorPos = this.textarea.selectionStart;
         const textBefore = this.textarea.value.slice(0, cursorPos);
         const textAfter = this.textarea.value.slice(cursorPos);
@@ -3587,13 +3831,35 @@ SELECT id, val, SUM(val) OVER (ORDER BY id) AS running_sum FROM numbers;
     }
 
     handleEditorKeydown(e) {
+        // 0. Undo: Ctrl+Z (or Cmd+Z). Redo: Ctrl+Y, Cmd+Y, or Ctrl+Shift+Z / Cmd+Shift+Z
+        if ((e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'Z')) {
+            e.preventDefault();
+            if (e.shiftKey) {
+                this.redo();
+            } else {
+                this.undo();
+            }
+            return;
+        }
+
+        if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || e.key === 'Y')) {
+            e.preventDefault();
+            this.redo();
+            return;
+        }
+
         if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
             e.preventDefault();
             this.compileAndRun();
             return;
         }
 
-        if (this.recommendPopup && this.recommendPopup.style.display !== 'none' && this.currentRecommendations.length > 0) {
+        const isRecOpen = this.recommendPopup &&
+            this.recommendPopup.style.display !== 'none' &&
+            this.currentRecommendations &&
+            this.currentRecommendations.length > 0;
+
+        if (isRecOpen) {
             if (e.key === 'ArrowDown') {
                 e.preventDefault();
                 this.activeRecIndex = (this.activeRecIndex + 1) % this.currentRecommendations.length;
@@ -3618,24 +3884,127 @@ SELECT id, val, SUM(val) OVER (ORDER BY id) AS running_sum FROM numbers;
             }
         }
 
-        if (e.key === 'Tab') {
+        // Bracket & quote pairs mapping
+        const BRACKET_PAIRS = {
+            '(': ')',
+            '{': '}',
+            '[': ']',
+            '"': '"',
+            "'": "'",
+            '`': '`'
+        };
+
+        const CLOSING_CHARS = [')', '}', ']', '"', "'", '`'];
+
+        const start = this.textarea.selectionStart;
+        const end = this.textarea.selectionEnd;
+        const val = this.textarea.value;
+
+        // 1. Step-over closing character if next character matches what was typed
+        if (CLOSING_CHARS.includes(e.key) && start === end) {
+            const nextChar = val.charAt(start);
+            if (nextChar === e.key) {
+                e.preventDefault();
+                this.textarea.setSelectionRange(start + 1, start + 1);
+                this.updateLineHighlightFromCursor();
+                this.hideRecommendations();
+                return;
+            }
+        }
+
+        // 2. Auto-close opening brackets & quotes and place cursor inside
+        if (BRACKET_PAIRS[e.key] && !e.ctrlKey && !e.metaKey && !e.altKey) {
+            this.recordSnapshot(true);
             e.preventDefault();
-            const start = this.textarea.selectionStart;
-            const end = this.textarea.selectionEnd;
-            this.textarea.setRangeText('    ', start, end, 'end');
+            const openChar = e.key;
+            const closeChar = BRACKET_PAIRS[openChar];
+
+            if (start !== end) {
+                // Wrap selected text
+                const selectedText = val.slice(start, end);
+                this.textarea.setRangeText(openChar + selectedText + closeChar, start, end, 'select');
+                this.textarea.setSelectionRange(start + 1, end + 1);
+            } else {
+                // Insert pair and place cursor between brackets
+                this.textarea.setRangeText(openChar + closeChar, start, start, 'end');
+                this.textarea.setSelectionRange(start + 1, start + 1);
+            }
+
             this.updateLineNumbers();
             this.saveCurrentDraft();
+            this.updateLineHighlightFromCursor();
+            this.hideRecommendations();
+            if (this.isConnected && !this.isApplyingRemote) {
+                this.writeToSharedRoom(false);
+            }
             return;
         }
 
+        // 3. Backspace deletes matching empty pair
+        if (e.key === 'Backspace' && start === end && start > 0) {
+            const prevChar = val.charAt(start - 1);
+            const nextChar = val.charAt(start);
+            if (BRACKET_PAIRS[prevChar] === nextChar) {
+                this.recordSnapshot(true);
+                e.preventDefault();
+                this.textarea.setRangeText('', start - 1, start + 1, 'end');
+                this.textarea.setSelectionRange(start - 1, start - 1);
+                this.updateLineNumbers();
+                this.saveCurrentDraft();
+                this.updateLineHighlightFromCursor();
+                this.checkSyntaxRecommendations(start - 1);
+                if (this.isConnected && !this.isApplyingRemote) {
+                    this.writeToSharedRoom(false);
+                }
+                return;
+            }
+        }
+
+        // 4. Tab indentation
+        if (e.key === 'Tab') {
+            this.recordSnapshot(true);
+            e.preventDefault();
+            this.textarea.setRangeText('    ', start, end, 'end');
+            this.updateLineNumbers();
+            this.saveCurrentDraft();
+            this.updateLineHighlightFromCursor();
+            if (this.isConnected && !this.isApplyingRemote) {
+                this.writeToSharedRoom(false);
+            }
+            return;
+        }
+
+        // 5. Enter key auto-indentation and newline expansion between { and }
         if (e.key === 'Enter') {
-            const start = this.textarea.selectionStart;
-            const val = this.textarea.value;
+            this.recordSnapshot(true);
             const textBefore = val.slice(0, start);
             const curLine = textBefore.split('\n').pop();
-            const matchIndent = curLine.match(/^(\s+)/);
-            let indent = matchIndent ? matchIndent[1] : '';
+            const matchIndent = curLine.match(/^(\s*)/);
+            const baseIndent = matchIndent ? matchIndent[1] : '';
 
+            // If Enter between { and } -> expand cleanly with 4 space indent
+            if (start === end && start > 0) {
+                const prevChar = val.charAt(start - 1);
+                const nextChar = val.charAt(start);
+                if (prevChar === '{' && nextChar === '}') {
+                    e.preventDefault();
+                    const innerIndent = baseIndent + '    ';
+                    const insertText = '\n' + innerIndent + '\n' + baseIndent;
+                    this.textarea.setRangeText(insertText, start, start, 'end');
+                    const newPos = start + 1 + innerIndent.length;
+                    this.textarea.setSelectionRange(newPos, newPos);
+                    this.updateLineNumbers();
+                    this.saveCurrentDraft();
+                    this.updateLineHighlightFromCursor();
+                    this.hideRecommendations();
+                    if (this.isConnected && !this.isApplyingRemote) {
+                        this.writeToSharedRoom(false);
+                    }
+                    return;
+                }
+            }
+
+            let indent = baseIndent;
             const trimmed = curLine.trim();
             if (trimmed.endsWith(':') || trimmed.endsWith('{') || trimmed.endsWith('(')) {
                 indent += '    ';
@@ -3646,9 +4015,167 @@ SELECT id, val, SUM(val) OVER (ORDER BY id) AS running_sum FROM numbers;
                 this.textarea.setRangeText('\n' + indent, start, start, 'end');
                 this.updateLineNumbers();
                 this.saveCurrentDraft();
+                this.updateLineHighlightFromCursor();
+                this.hideRecommendations();
+                if (this.isConnected && !this.isApplyingRemote) {
+                    this.writeToSharedRoom(false);
+                }
                 return;
             }
         }
+    }
+
+    /* --------------------------------------------------------------------------
+       HISTORY (UNDO / REDO) SYSTEM
+       -------------------------------------------------------------------------- */
+    resetHistory() {
+        if (this.typingDebounceTimer) {
+            clearTimeout(this.typingDebounceTimer);
+            this.typingDebounceTimer = null;
+        }
+        this.undoStack = [];
+        this.redoStack = [];
+        if (this.textarea) {
+            this.undoStack.push({
+                value: this.textarea.value,
+                selectionStart: this.textarea.selectionStart || 0,
+                selectionEnd: this.textarea.selectionEnd || 0,
+                time: Date.now()
+            });
+        }
+    }
+
+    recordSnapshot(immediate = false) {
+        if (!this.textarea || this.isUndoingOrRedoing) return;
+
+        const currentValue = this.textarea.value;
+        const currentSelectionStart = this.textarea.selectionStart || 0;
+        const currentSelectionEnd = this.textarea.selectionEnd || 0;
+
+        const snapshot = {
+            value: currentValue,
+            selectionStart: currentSelectionStart,
+            selectionEnd: currentSelectionEnd,
+            time: Date.now()
+        };
+
+        const topOfUndo = this.undoStack[this.undoStack.length - 1];
+        if (topOfUndo && topOfUndo.value === currentValue) {
+            topOfUndo.selectionStart = currentSelectionStart;
+            topOfUndo.selectionEnd = currentSelectionEnd;
+            return;
+        }
+
+        if (immediate) {
+            if (this.typingDebounceTimer) {
+                clearTimeout(this.typingDebounceTimer);
+                this.typingDebounceTimer = null;
+            }
+            this.undoStack.push(snapshot);
+            if (this.undoStack.length > this.maxHistorySize) {
+                this.undoStack.shift();
+            }
+            this.redoStack = [];
+        } else {
+            if (this.typingDebounceTimer) clearTimeout(this.typingDebounceTimer);
+            this.typingDebounceTimer = setTimeout(() => {
+                this.recordSnapshot(true);
+            }, 350);
+        }
+    }
+
+    undo() {
+        if (!this.textarea) return;
+
+        if (this.typingDebounceTimer) {
+            clearTimeout(this.typingDebounceTimer);
+            this.typingDebounceTimer = null;
+        }
+
+        const currentValue = this.textarea.value;
+        const currentSelectionStart = this.textarea.selectionStart || 0;
+        const currentSelectionEnd = this.textarea.selectionEnd || 0;
+
+        const topOfUndo = this.undoStack[this.undoStack.length - 1];
+        if (!topOfUndo || topOfUndo.value !== currentValue) {
+            this.redoStack.push({
+                value: currentValue,
+                selectionStart: currentSelectionStart,
+                selectionEnd: currentSelectionEnd,
+                time: Date.now()
+            });
+        } else {
+            if (this.undoStack.length <= 1) {
+                return;
+            }
+            const currentSnapshot = this.undoStack.pop();
+            this.redoStack.push(currentSnapshot);
+        }
+
+        let targetState = null;
+        while (this.undoStack.length > 0) {
+            const candidate = this.undoStack[this.undoStack.length - 1];
+            if (candidate && candidate.value !== currentValue) {
+                targetState = candidate;
+                break;
+            } else {
+                this.undoStack.pop();
+            }
+        }
+
+        if (!targetState) return;
+
+        this.isUndoingOrRedoing = true;
+        this.textarea.value = targetState.value;
+        const selStart = Math.min(targetState.selectionStart, targetState.value.length);
+        const selEnd = Math.min(targetState.selectionEnd, targetState.value.length);
+        this.textarea.setSelectionRange(selStart, selEnd);
+        this.textarea.focus();
+
+        this.updateLineNumbers();
+        this.updateLineHighlightFromCursor();
+        this.saveCurrentDraft();
+        this.hideRecommendations();
+
+        if (this.isConnected && !this.isApplyingRemote) {
+            this.writeToSharedRoom(false);
+        }
+        this.isUndoingOrRedoing = false;
+    }
+
+    redo() {
+        if (!this.textarea || this.redoStack.length === 0) return;
+
+        if (this.typingDebounceTimer) {
+            clearTimeout(this.typingDebounceTimer);
+            this.typingDebounceTimer = null;
+        }
+
+        const nextState = this.redoStack.pop();
+        if (!nextState) return;
+
+        const currentValue = this.textarea.value;
+        const lastInUndo = this.undoStack[this.undoStack.length - 1];
+        if (!lastInUndo || lastInUndo.value !== nextState.value) {
+            this.undoStack.push(nextState);
+        }
+
+        this.isUndoingOrRedoing = true;
+        this.textarea.value = nextState.value;
+        const selStart = Math.min(nextState.selectionStart, nextState.value.length);
+        const selEnd = Math.min(nextState.selectionEnd, nextState.value.length);
+        this.textarea.setSelectionRange(selStart, selEnd);
+        this.textarea.focus();
+
+        this.updateLineNumbers();
+        this.updateLineHighlightFromCursor();
+        this.saveCurrentDraft();
+        this.hideRecommendations();
+
+        if (this.isConnected && !this.isApplyingRemote) {
+            this.writeToSharedRoom(false);
+        }
+        this.isUndoingOrRedoing = false;
     }
 
     /* --------------------------------------------------------------------------
